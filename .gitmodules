@@ -1,3 +1,9 @@
 [submodule "references/mattpocock-skills"]
 	path = references/mattpocock-skills
 	url = https://github.com/mattpocock/skills.git
+[submodule "references/harmonyos-skills"]
+	path = references/harmonyos-skills
+	url = https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git
+[submodule "references/android-skills"]
+	path = references/android-skills
+	url = https://github.com/android/skills.git
