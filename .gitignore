@@ -1,0 +1,37 @@
+# ── 操作系统杂物 ──────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── 编辑器 / IDE 临时文件 ────────────────────
+# 保留上游自带的 .vscode/.idea 配置（如 harmonyos-agent-skills.code-workspace）
+*.swp
+*.swo
+*~
+.vscode/settings.json
+
+# ── 日志与缓存 ────────────────────────────────
+*.log
+.cache/
+.eslintcache
+
+# ── skills CLI 产物（不应入库）─────────────────
+.skills/
+**/agent-skills.lock.json
+
+# ── 仓库根的 node_modules（误装工具时产生，永远不入库）──
+/node_modules/
+/package.json
+/package-lock.json
+
+# ── HarmonyOS linter-cli 的运行时依赖（用户用时再装）──
+# 该 skill 的 package.json 故意不把 OpenHarmony 定制版 typescript 写进 dependencies，
+# 因为标准 npm 上没有 4.9.5-r4 这个版本。还原流程见 skill 内 SKILL.md：
+#   cd linter-cli && npm install --force && npm run install-runtime-deps
+# install-runtime-deps 会从 gitcode.com/openharmony/third_party_typescript.git
+# clone 定制版 typescript 到 node_modules/typescript/。
+skills/harmonyos/development/application-framework/ArkTS/hmos-arkts-knowledge-retriever/linter-cli/node_modules/
+
+# ── 注意：不要加全局 node_modules/ 规则 ────────
+# 上面只针对仓库根和 linter-cli 两个确切的 node_modules 位置做忽略。
+# 若未来有其他 skill 自带需入库的 node_modules，不会被误伤。
