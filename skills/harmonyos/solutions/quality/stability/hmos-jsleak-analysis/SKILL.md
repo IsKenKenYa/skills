@@ -48,14 +48,20 @@ ${SKILL_DIR}/scripts/macos/rawheap_translator_x64 memory_leak/memleak-js-com.exa
 
 ## Step 0 — heapsnapshot 预处理（仅当输入是 .heapsnapshot 文件时）
 
-技能内置聚类脚本：`scripts/windows/heap_cluster.exe`。直接调用它把原始快照转成结构化聚类报告。
+技能使用聚类脚本 `heap_cluster` 把原始快照转成结构化聚类报告。按你的平台选择对应二进制：
+- Linux：`scripts/linux/heap_cluster`
+- macOS (Apple Silicon)：`scripts/macos/heap_cluster_arm64`
+- macOS (Intel)：`scripts/macos/heap_cluster_x64`
+- Windows：`scripts/windows/heap_cluster.exe`
+
+> **注意：`heap_cluster` 二进制未随本仓库入库**（单文件超过 GitHub 100MB 限制）。`scripts/` 下只保留了体积较小的 `rawheap_translator*`。若 `heap_cluster` 不在对应目录，请从上游 [harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) 的 `03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/` 获取并放回本 skill 的同名目录。
 
 ```bash
 # 单文件模式
-${SKILL_DIR}/scripts/windows/heap_cluster.exe <input.heapsnapshot>
+${SKILL_DIR}/scripts/<平台>/heap_cluster[.exe] <input.heapsnapshot>
 
 # 或指定输出目录
-${SKILL_DIR}/scripts/windows/heap_cluster.exe <input.heapsnapshot> <output_dir>
+${SKILL_DIR}/scripts/<平台>/heap_cluster[.exe] <input.heapsnapshot> <output_dir>
 ```
 
 ## Step 1 — 数据校验

@@ -32,6 +32,14 @@ desktop.ini
 # clone 定制版 typescript 到 node_modules/typescript/。
 skills/harmonyos/development/application-framework/ArkTS/hmos-arkts-knowledge-retriever/linter-cli/node_modules/
 
+# ── HarmonyOS hmos-jsleak-analysis 的 heap_cluster 二进制 ──
+# 单文件超 100MB（116/110/103/93MB），超过 GitHub 硬限，不入库。
+# 用户从上游获取：https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git
+# 路径：03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/
+# 取回后放至本 skill 同名目录。详见 skill 内 SKILL.md 的 Step 0。
+skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster
+skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster_*
+
 # ── 注意：不要加全局 node_modules/ 规则 ────────
 # 上面只针对仓库根和 linter-cli 两个确切的 node_modules 位置做忽略。
 # 若未来有其他 skill 自带需入库的 node_modules，不会被误伤。

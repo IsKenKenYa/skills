@@ -118,6 +118,17 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 - `install-runtime-deps` 脚本从 `gitcode.com/openharmony/third_party_typescript.git` clone 定制版 TypeScript（标准 npm 上没有 `4.9.5-r4` 这个版本），装到 `node_modules/typescript/`。这是上游的官方还原流程，不要把 typescript 塞进 package.json 的 dependencies。
 - 已验证：上述两步能完整还原 linter-cli 的运行环境。
 
+## HarmonyOS hmos-jsleak-analysis 的 heap_cluster 二进制
+
+`skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/heap_cluster*`（4 个平台二进制，93–116MB）**未入库**，原因：单文件超过 GitHub 100MB 硬限制，push 会被拒。
+
+处理方式：
+- 这些二进制在 `.gitignore` 中排除，不会进入仓库。
+- skill 的 `scripts/` 下保留了体积较小的 `rawheap_translator*`（<1MB，入库）。
+- `hmos-jsleak-analysis/SKILL.md` 的 Step 0 已说明：若 `heap_cluster` 缺失，从上游 [harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) 的 `03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/` 获取并放回本 skill 同名目录。
+
+同步上游更新时注意：若上游的 heap_cluster 二进制有更新，不要复制进本仓库（会触发 GitHub 大文件拒绝），保持 .gitignore 排除即可，文档指引不变。
+
 ## description 翻译规范
 
 - **翻译对象**：仅 frontmatter 的 `description` 字段。
