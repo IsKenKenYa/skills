@@ -50,6 +50,9 @@ git checkout main
 - 上游新增 skill → 复制到 main 对应分类，翻译 description，并在 `.claude-plugin/plugin.json` 和 `README.md` 清单中补上。
 - 上游删除 skill → 从 main、plugin.json、README 清单中一并移除。
 
+已知上游删除项：
+- `mattpocock/skills` 在 2026-06-17 删除了 `zoom-out`（上游说明：实际使用率低）。本仓库按最新版上游同步，不把 `zoom-out` 当作漏同步项；如果未来要保留历史 skill，先建立明确的 archived/legacy 区域并单独决策。
+
 ### HarmonyOS（原生中文上游，不翻译）
 
 - 直接把上游变更原样同步到 main 的 `skills/harmonyos/` 下对应位置。
@@ -145,9 +148,15 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 - `plugin.json`：扫描 `skills/` 下所有 SKILL.md，**排除 `metadata.internal: true` 的**，收集相对路径。name 字段为 `kenken-skills`。
 - `README.md`：按上游分组（mattpocock 按 6 类、HarmonyOS 按 design/solutions/.../tooling、Android 按技术域、meta），每组列 skill 名 + 中文 description 的表格。
 
-生成命令参考（脚本见历史 commit / 本仓库维护记录）：
+生成命令：
 
 ```bash
 python3 gen_plugin.py     # 生成 .claude-plugin/plugin.json
 python3 gen_readme.py     # 生成 README.md 的清单部分
+```
+
+同步 mattpocock 后，可运行审计脚本确认本地镜像与当前上游 `main` 对齐：
+
+```bash
+python3 audit_mattpocock_sync.py
 ```
