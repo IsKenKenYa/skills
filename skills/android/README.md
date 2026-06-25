@@ -1,69 +1,54 @@
 ## Android skills
 
-**Android skills** are a dedicated repository of **AI-optimized, modular instructions** and
-resources, to help LLMs better understand and execute specific patterns that follow the best
-practices and guidance on Android development
-from [developer.android.com](https://developer.android.com).
+**Android skills** 是一组专门面向 Android 开发的、模块化的 AI 优化指令与资源，帮助 LLM 更好地理解并执行符合 [developer.android.com](https://developer.android.com) 最佳实践与官方指导的开发模式。
 
-Android skills follow the [open-standard agent skills](https://agentskills.io/home) - markdown
-files (SKILL.md) that provide a technical specification of a task, and **ground LLMs** with
-information on specialized domains and workflows.
+Android skills 遵循 [open-standard agent skills](https://agentskills.io/home)：每个 skill 都是一个 Markdown 文件（`SKILL.md`），用于描述任务的技术规格，并用特定领域和工作流的信息为 LLM 提供上下文。
 
-Our Android skill development focuses on **use cases and workflows where evaluations show LLMs
-underperform**.
-We aren't prioritizing well-established areas where LLMs are already proficient, such
-as basic Jetpack Compose best practices.
+Android skill 的开发重点放在**评测显示 LLM 表现不足的用例和工作流**上。对于 LLM 已经较擅长的成熟领域，例如基础 Jetpack Compose 最佳实践，不会优先覆盖。
 
-To learn more, read the official documentation:
+更多信息请阅读官方文档：
 
 - [Android skills](https://developer.android.com/tools/agents/android-skills)
 - [Android CLI](https://developer.android.com/tools/agents/android-cli)
 - [Android Studio](https://developer.android.com/studio/gemini/skills)
 
-### Install Android skills
+### 安装 Android skills
 
-Use Android CLI to install a specific skill into the current directory:
+使用 Android CLI 将某个指定 skill 安装到当前目录：
 
-```
+```bash
 android skills add --skill=r8-analyzer --project=.
 ```
 
-Use Android CLI to install all Android skills to directories for all detected agents:
+使用 Android CLI 将全部 Android skills 安装到检测到的所有 agent 目录：
 
-```
+```bash
 android skills add --all
 ```
 
-If you don't have any existing agent directories and don't specify particular agents, the skills
-will be installed for Gemini and Antigravity at `~/.gemini/antigravity/skills`.
+如果你没有任何已有 agent 目录，也没有指定特定 agent，skills 会安装到 Gemini 和 Antigravity 使用的 `~/.gemini/antigravity/skills`。
 
-**Options:**
+**选项：**
 
-- `--all` - Add all Android skills. If omitted (and `--skill` isn't specified), only the
-  `android-cli` skill will be installed.
-- `--agent` - A comma-separated list of agents to install the skill for. If omitted, the skill will
-  be installed for all detected agents.
-- `--skill` - Specific skill that you want to install. If omitted (and `--all` isn't specified),
-  only the `android-cli` skill will be installed.
-- `--project` - Path to a project root in which to install the skills.
+- `--all` - 添加全部 Android skills。如果省略该选项且未指定 `--skill`，只会安装 `android-cli` skill。
+- `--agent` - 要安装到的 agent 列表，用逗号分隔。如果省略，会安装到所有检测到的 agent。
+- `--skill` - 要安装的指定 skill。如果省略该选项且未指定 `--all`，只会安装 `android-cli` skill。
+- `--project` - 要安装 skills 的项目根目录路径。
 
-## Disclaimer
+## 免责声明
 
-AI can make mistakes, so always double-check the results.
+AI 可能会犯错，因此请始终复核结果。
 
-## Contributing
+## 贡献
 
-Submit a GitHub issue to provide feedback, report issues, or make new skill requests and changes.
+如需反馈、报告问题，或提出新的 skill 请求与修改建议，请提交 GitHub issue。
 
-Public contributions are not accepted at this time.
+当前暂不接受公开贡献。
 
-## License
+## 许可证
 
-Android Skills is licensed under the [Apache License 2.0](LICENSE.txt). See the `LICENSE.txt` file
-for
-details.
+Android Skills 使用 [Apache License 2.0](LICENSE.txt) 授权。详情见 `LICENSE.txt` 文件。
 
-## Review our community guidelines
+## 社区准则
 
-This project follows
-[Google's Open Source Community Guidelines](https://opensource.google/conduct/).
+本项目遵循 [Google Open Source Community Guidelines](https://opensource.google/conduct/)。

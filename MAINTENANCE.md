@@ -141,6 +141,12 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 - **保留调用线索**：description 里 "Use when user..." 的触发条件要译清楚，这是模型/用户判断何时用该 skill 的依据。
 - **HarmonyOS 例外**：上游已是中文（含中英混合），不翻译，原样保留。
 
+## README 本土化规范
+
+- `skills/**/README.md` 是给人类维护者和浏览者看的分类索引，不是 agent 触发 skill 的关键入口，应翻译为中文以方便查阅。
+- README 中保留 skill 名、路径、命令、专有名词和外部链接；只本土化说明文字。
+- 不要为了翻译 README 改动 `SKILL.md` 正文。`SKILL.md` 正文仍按上游同步策略处理，避免影响 agent 执行语义。
+
 ## 重新生成 plugin.json 和 README 清单
 
 新增/删除 skill 后，两者都要更新。生成脚本逻辑：
