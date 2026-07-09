@@ -1,6 +1,6 @@
 ---
 name: hmos-multidevice-avoid-areas
-description: Handle HarmonyOS avoid-area adaptation through a declarative scene and resource index. Use when the task involves safe area expansion, status bar or navigation bar avoidance, notch or cutout handling, immersive full-screen layouts, or soft keyboard overlap handling.
+description: 通过声明式场景和资源索引处理 HarmonyOS 避让区适配。适用于涉及安全区扩展、状态栏或导航栏避让、挖孔/刘海处理、沉浸式全屏布局、软键盘遮挡处理等任务。
 metadata:
   version: 1.0.1
   keywords:

@@ -1,6 +1,6 @@
 ---
 name: hmos-multidevice-scenario-entry
-description: Entry skill for HarmonyOS multi-device adaptation. Use when the task broadly concerns HarmonyOS multi-device adaptation, the task involves foldable device verification or when the correct scenario is still unclear. This skill classifies the request by phase and scenario type, then routes to one or more scenario files for screen and window size, fold state, avoid areas, interaction methods, natural orientation, hardware access, or HDS (UI Design Kit) enhanced components.
+description: HarmonyOS 多设备适配的入口技能。当任务广泛涉及 HarmonyOS 多设备适配、折叠屏验证或目标场景尚不明确时使用。该技能按阶段和场景类型对请求进行分类，然后路由到屏幕窗口尺寸、折叠状态、避让区、交互方式、自然方向、硬件访问或 HDS（UI Design Kit）增强组件等场景文件。
 metadata:
   version: 1.0.1
   keywords:

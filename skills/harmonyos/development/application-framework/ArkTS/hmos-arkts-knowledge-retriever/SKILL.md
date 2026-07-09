@@ -1,6 +1,6 @@
 ---
 name: hmos-arkts-knowledge-retriever
-description: Retrieve grounded ArkTS references for pure non-UI ArkTS work and ArkTS API usage. Use this skill whenever the user is writing, reviewing, testing, validating, running, or debugging ArkTS code and the answer should be backed by repository sources such as `docs/ArkTS-Language-Guide/`, `docs/ArkTS-API-Reference/`, the linter-derived `docs/linter/ArkTS_Syntax_Knowledge_From_Linter.md`, and the bundled lightweight lint tool docs `docs/linter/linter-cli.md` plus `linter-cli/` instead of model memory. This skill is especially useful for syntax rules, ArkTS-specific restrictions, API/module/member lookup, common-library usage, lightweight lint workflow lookup, runnable example lookup, snippet validation context, and figuring out which repository section to trust before suggesting code or fixes.
+description: 检索有据可查的 ArkTS 引用，用于纯非 UI 的 ArkTS 开发和 API 调用。当用户编写、审查、测试、验证、运行或调试 ArkTS 代码，且答案需要基于仓库源码（如 `docs/ArkTS-Language-Guide/`、`docs/ArkTS-API-Reference/`、linter 派生的 `docs/linter/ArkTS_Syntax_Knowledge_From_Linter.md`、轻量级 lint 工具文档 `docs/linter/linter-cli.md` 及 `linter-cli/`）而非模型记忆时使用。尤其适用于语法规则、ArkTS 特有限制、API/模块/成员查询、常用库用法、轻量级 lint 工作流查询、可运行示例查询、代码片段验证上下文，以及在提出代码建议前确定应信任的仓库章节。
 ---
 
 # ArkTS Retrieval Skill
