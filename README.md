@@ -37,17 +37,18 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 103 个）
+## Skill 清单（共 107 个）
 
-## 一、mattpocock 通用 Skills（36 个，description 已中文化）
+## 一、mattpocock 通用 Skills（40 个，description 已中文化）
 
-### Engineering — 工程类（15）
+### Engineering — 工程类（17）
 
 *日常编码工作*
 
 | skill | 调用方式 | 中文介绍 |
 |-------|---------|---------|
 | [`/ask-matt`](./skills/engineering/ask-matt/SKILL.md) | 用户调用 | 询问哪种 skill 或流程适合你的场景。是本仓库中用户调用类 skill 的路由器。 |
+| [`/code-review`](./skills/engineering/code-review/SKILL.md) | 模型/用户调用 | 沿两个轴线审查自某个固定点以来的变更——标准（编码规范）和规格（PRD 要求）。 |
 | [`/codebase-design`](./skills/engineering/codebase-design/SKILL.md) | 模型/用户调用 | 设计深层模块（deep module）的共享词汇。当用户想设计或改进模块接口、寻找深化机会、决定接缝（seam）位置、让代码更易测试或更易被 AI 导航，或当其他 skill 需要深层模块词汇时使用。 |
 | [`/diagnosing-bugs`](./skills/engineering/diagnosing-bugs/SKILL.md) | 模型/用户调用 | 针对疑难 bug 和性能回归的诊断循环。当用户说"诊断"/"调试这个"，或报告某东西坏了/抛异常/失败/变慢时使用。 |
 | [`/domain-modeling`](./skills/engineering/domain-modeling/SKILL.md) | 模型/用户调用 | 构建并打磨项目的领域模型。当用户想敲定领域术语或统一语言、记录架构决策（ADR），或当其他 skill 需要维护领域模型时使用。 |
@@ -55,6 +56,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/implement`](./skills/engineering/implement/SKILL.md) | 用户调用 | 基于 PRD 或一组 issue 实现一项工作。 |
 | [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) | 用户调用 | 扫描代码库寻找深化机会，以可视化 HTML 报告呈现，然后针对你选中的那一个进行 grill 访谈。 |
 | [`/prototype`](./skills/engineering/prototype/SKILL.md) | 用户调用 | 构建一次性原型来充实设计——针对状态/业务逻辑问题做一个可运行的终端应用，或做几套截然不同、可从同一路由切换的 UI 变体。 |
+| [`/research`](./skills/engineering/research/SKILL.md) | 模型/用户调用 | 基于高可信度的一手来源调查问题，并将发现以 Markdown 文件形式保存到仓库中。 |
 | [`/resolving-merge-conflicts`](./skills/engineering/resolving-merge-conflicts/SKILL.md) | 模型/用户调用 | 当你需要解决进行中的 git merge/rebase 冲突时使用。 |
 | [`/setup-matt-pocock-skills`](./skills/engineering/setup-matt-pocock-skills/SKILL.md) | 用户调用 | 为工程类 skill 配置本仓库——设置 issue 追踪器、triage 标签词汇和领域文档布局。在其他工程类 skill 首次使用前运行一次。 |
 | [`/tdd`](./skills/engineering/tdd/SKILL.md) | 模型/用户调用 | 测试驱动开发（TDD）。当用户想以测试优先的方式构建功能或修 bug、提到"red-green-refactor"，或想要集成测试时使用。 |
@@ -95,18 +97,20 @@ npx skills@latest add IsKenKenYa/skills
 | [`/edit-article`](./skills/personal/edit-article/SKILL.md) | 用户调用 | 通过重组章节、提升清晰度、收紧文字来编辑和改进文章。当用户想编辑、修订或改进一篇文章草稿时使用。 |
 | [`/obsidian-vault`](./skills/personal/obsidian-vault/SKILL.md) | 模型/用户调用 | 用 wikilinks 和索引笔记在 Obsidian 知识库中搜索、创建和管理笔记。当用户想在 Obsidian 中查找、创建或组织笔记时使用。 |
 
-### In-progress — 进行中（6）
+### In-progress — 进行中（8）
 
 *尚未定稿的草稿*
 
 | skill | 调用方式 | 中文介绍 |
 |-------|---------|---------|
+| [`/claude-handoff`](./skills/in-progress/claude-handoff/SKILL.md) | 用户调用 | 把当前对话交接给一个新的后台代理，由其立即接手后续工作。 |
 | [`/decision-mapping`](./skills/in-progress/decision-mapping/SKILL.md) | 用户调用 | 把一个松散的想法转化为按顺序排列的调研工单地图，然后逐个推进直到解决。 |
 | [`/loop-me`](./skills/in-progress/loop-me/SKILL.md) | 用户调用 | 在当前工作区内，通过 grilling 访谈把你想构建的重复工作流打磨成可实现的规格说明。 |
 | [`/review`](./skills/in-progress/review/SKILL.md) | 模型/用户调用 | 沿两条轴线审查自某个固定点（提交、分支、标签或 merge-base）以来的变更——标准（代码是否遵循本仓库文档化的编码规范？）和规格（代码是否符合原始 issue/PRD 的要求？）。两个审查由并行子代理执行并并排汇报。当用户想审查一个分支、PR、进行中的改动，或要求"自 X 起审查"时使用。 |
 | [`/writing-beats`](./skills/in-progress/writing-beats/SKILL.md) | 模型/用户调用 | 像选择你自己的冒险那样，把文章塑造为一段节拍（beat）之旅。用户从原始素材中选一个起始节拍，你只写那一个节拍，然后给出下一步走向的选项，逐拍推进，直到文章自然收尾。当用户手头有原始素材、想把它组织成叙事而非论证时使用。 |
 | [`/writing-fragments`](./skills/in-progress/writing-fragments/SKILL.md) | 模型/用户调用 | 一种 grilling 会话，从用户身上挖掘片段（fragments）——各种异质的写作 nugget（论断、小故事、犀利的句子、半成形的想法）——并把它们追加到同一个文档中，作为未来文章的原始素材。当用户想在强加结构之前先发展想法，或提到写作的"fragments"、"ideate"、"raw material"时使用。 |
 | [`/writing-shape`](./skills/in-progress/writing-shape/SKILL.md) | 模型/用户调用 | 通过一场对话式会话，把一份原始素材的 markdown 文件塑造成文章——起草候选开篇，逐段生长全文，在每一步就格式（列表、表格、标注、引用）展开讨论。当用户手头有一堆笔记、片段或粗糙草稿，想把它变成可发布的东西时使用。 |
+| [`/wizard`](./skills/in-progress/wizard/SKILL.md) | 用户调用 | 生成一个交互式 bash 向导，引导用户逐步完成手动操作流程。 |
 
 ### Deprecated — 已废弃（4）
 
