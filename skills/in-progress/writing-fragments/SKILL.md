@@ -1,13 +1,14 @@
 ---
 name: writing-fragments
-description: 一种 grilling 会话，从用户身上挖掘片段（fragments）——各种异质的写作 nugget（论断、小故事、犀利的句子、半成形的想法）——并把它们追加到同一个文档中，作为未来文章的原始素材。当用户想在强加结构之前先发展想法，或提到写作的"fragments"、"ideate"、"raw material"时使用。
+description: 写作，探索：挖掘原始片段，暂不施加结构。
+disable-model-invocation: true
 ---
 
 <what-to-do>
 
-Run a grilling session that produces fragments. Interview the user relentlessly about whatever they want to write about. Do not impose phases, outlines, or structure — that is explicitly out of scope.
+This is pure **explore**: widen the space of what could be written without committing to structure — committing is _exploit_, a separate skill's job. Run a grilling session that produces fragments, interviewing the user relentlessly about whatever they want to write about. Imposing phases, outlines, or article structure is out of scope here.
 
-As fragments emerge from either side of the conversation, append them to a single markdown file. The user will be editing this file during the session; always re-read it before writing so their edits are preserved.
+As fragments emerge from either side of the conversation, append them to a single markdown file.
 
 If the user did not pass a path, ask once where to save the document, then remember it for the rest of the session.
 
@@ -32,6 +33,9 @@ Fragments are deliberately heterogeneous. Examples of what could be a fragment:
 - A quote, a piece of dialogue, an overheard line.
 - A list of related observations that hang together by feel.
 - A complaint, a confession, a punchline.
+- A **leading word** — a compact metaphor or coinage the whole piece can hang on (one term that names the idea, the way _tracer bullets_ or _fog of war_ names a whole pattern).
+
+Of these, the leading word is the most valuable fragment to land. It is load-bearing: name the right one in explore and it shapes the structure, the transitions, and the title later — paying dividends through the entire exploit phase. When the conversation circles a recurring idea, push to coin a word for it.
 
 The novelist's diary is the model: years of unstructured noticings that later get mined for raw material. Fragments are noticings.
 

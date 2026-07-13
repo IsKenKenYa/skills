@@ -4,7 +4,7 @@ description: 学习如何安装并迁移到 Jetpack Navigation 3，以及如何�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-06-02'
+  last-updated: '2026-07-09'
   keywords:
   - recipe
   - Android
@@ -29,6 +29,8 @@ metadata:
   - View interop.
 ---
 
+*** ** * ** ***
+
 ## Migration guide
 
 - *[Navigation 2 to Navigation 3 migration guide](references/android/guide/navigation/navigation-3/migration-guide.md)*: Step-by-step guide to migrate an Android application from Navigation 2 to Navigation 3, covering dependency updates, route changes, state management, and UI component replacements.
@@ -39,7 +41,7 @@ metadata:
 
 ## Developer documentation
 
-- \*[Navigation 3](references/android/guide/navigation/navigation-3/index.md). Search documentation for more information on basics, saving and managing navigation state, modularizing navigation code, creating custom layouts using Scenes, animating between destinations, or applying logic or wrappers to destinations.
+- *[Navigation 3](references/android/guide/navigation/navigation-3/index.md)*. Search documentation for more information on basics, saving and managing navigation state, modularizing navigation code, creating custom layouts using Scenes, animating between destinations, or applying logic or wrappers to destinations.
 
 ## Recipes
 
@@ -57,7 +59,7 @@ Code examples showcasing common patterns.
 
 ### Deep links
 
-- *[Basic](references/android/guide/navigation/navigation-3/recipes/deeplinks-basic.md)*: Shows how to parse a deep link URL from an Android Intent into a navigation key.
+- *[Basic](https://developer.android.com/guide/navigation/navigation-3/recipes/deeplinks-basic)*: Shows how to parse a deep link URL from an Android Intent into a navigation key.
 - *[Advanced](references/android/guide/navigation/navigation-3/recipes/deeplinks-advanced.md)*: Shows how to handle deep links with a synthetic back stack and correct "Up" navigation behavior.
 
 ### Scenes

@@ -1,24 +1,25 @@
 {
   "version": "1.0",
-  "total_documents": 553,
+  "total_documents": 539,
   "categories": {
     "01-basics": 12,
     "02-state-management": 74,
-    "11-theme-style": 18,
     "03-layout": 54,
     "04-components": 118,
     "05-animation": 27,
-    "08-dialog-menu": 30,
     "06-interaction": 51,
     "07-navigation": 41,
-    "16-window": 7,
+    "08-dialog-menu": 30,
     "09-rendering": 25,
     "10-extension": 20,
+    "11-theme-style": 18,
     "12-i18n": 1,
     "13-accessibility": 4,
     "14-performance": 7,
     "15-advanced": 13,
-    "17-error-code": 25
+    "16-window": 7,
+    "17-error-code": 30,
+    "18-arkts-rules": 7
   },
   "documents": [
     {
@@ -68,6 +69,13 @@
       "path": "01-basics/arkui-support-for-aging-adaptation.md",
       "filename": "arkui-support-for-aging-adaptation.md",
       "title": "支持适老化",
+      "category": "01-basics"
+    },
+    {
+      "id": "doc_0516",
+      "path": "01-basics/ts-appendix-enums.md",
+      "filename": "ts-appendix-enums.md",
+      "title": "枚举说明",
       "category": "01-basics"
     },
     {
@@ -288,6 +296,20 @@
       "category": "02-state-management"
     },
     {
+      "id": "doc_0498",
+      "path": "02-state-management/ts-universal-attributes-reuse-id.md",
+      "filename": "ts-universal-attributes-reuse-id.md",
+      "title": "复用标识",
+      "category": "02-state-management"
+    },
+    {
+      "id": "doc_0499",
+      "path": "02-state-management/ts-universal-attributes-reuse.md",
+      "filename": "ts-universal-attributes-reuse.md",
+      "title": "复用选项",
+      "category": "02-state-management"
+    },
+    {
       "id": "doc_0038",
       "path": "02-state-management/v1/arkts-animatable-extend.md",
       "filename": "arkts-animatable-extend.md",
@@ -302,18 +324,25 @@
       "category": "02-state-management"
     },
     {
+      "id": "doc_0529",
+      "path": "02-state-management/v1/arkts-builder.md",
+      "filename": "arkts-builder.md",
+      "title": "@Builder装饰器：自定义构建函数",
+      "category": "02-state-management"
+    },
+    {
+      "id": "doc_0530",
+      "path": "02-state-management/v1/arkts-builderparam.md",
+      "filename": "arkts-builderparam.md",
+      "title": "@BuilderParam装饰器：引用@Builder函数",
+      "category": "02-state-management"
+    },
+    {
       "id": "doc_0042",
       "path": "02-state-management/v1/arkts-environment.md",
       "filename": "arkts-environment.md",
       "title": "Environment：设备环境查询",
       "category": "02-state-management"
-    },
-    {
-      "id": "doc_0043",
-      "path": "11-theme-style/arkts-extend.md",
-      "filename": "arkts-extend.md",
-      "title": "@Extend装饰器：定义扩展组件样式",
-      "category": "11-theme-style"
     },
     {
       "id": "doc_0044",
@@ -398,20 +427,6 @@
       "filename": "arkts-state.md",
       "title": "@State装饰器：组件内状态",
       "category": "02-state-management"
-    },
-    {
-      "id": "doc_0056",
-      "path": "11-theme-style/arkts-statestyles.md",
-      "filename": "arkts-statestyles.md",
-      "title": "stateStyles：多态样式",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0057",
-      "path": "11-theme-style/arkts-style.md",
-      "filename": "arkts-style.md",
-      "title": "@Styles装饰器：定义组件重用样式",
-      "category": "11-theme-style"
     },
     {
       "id": "doc_0058",
@@ -610,13 +625,6 @@
       "category": "02-state-management"
     },
     {
-      "id": "doc_0086",
-      "path": "03-layout/arkts-layout-development-overview.md",
-      "filename": "arkts-layout-development-overview.md",
-      "title": "布局概述",
-      "category": "03-layout"
-    },
-    {
       "id": "doc_0087",
       "path": "03-layout/advanced/arkts-layout-debug.md",
       "filename": "arkts-layout-debug.md",
@@ -649,6 +657,13 @@
       "path": "03-layout/advanced/arkts-list-grid-development-overview.md",
       "filename": "arkts-list-grid-development-overview.md",
       "title": "列表与网格概述",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0086",
+      "path": "03-layout/arkts-layout-development-overview.md",
+      "filename": "arkts-layout-development-overview.md",
+      "title": "布局概述",
       "category": "03-layout"
     },
     {
@@ -946,10 +961,66 @@
       "category": "03-layout"
     },
     {
+      "id": "doc_0467",
+      "path": "03-layout/ts-universal-attributes-flex-layout.md",
+      "filename": "ts-universal-attributes-flex-layout.md",
+      "title": "Flex布局",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0474",
+      "path": "03-layout/ts-universal-attributes-grid.md",
+      "filename": "ts-universal-attributes-grid.md",
+      "title": "栅格设置",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0479",
+      "path": "03-layout/ts-universal-attributes-layout-constraints.md",
+      "filename": "ts-universal-attributes-layout-constraints.md",
+      "title": "布局约束",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0480",
+      "path": "03-layout/ts-universal-attributes-location.md",
+      "filename": "ts-universal-attributes-location.md",
+      "title": "位置设置",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0503",
+      "path": "03-layout/ts-universal-attributes-size.md",
+      "filename": "ts-universal-attributes-size.md",
+      "title": "尺寸设置",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0511",
+      "path": "03-layout/ts-universal-attributes-z-order.md",
+      "filename": "ts-universal-attributes-z-order.md",
+      "title": "Z序控制",
+      "category": "03-layout"
+    },
+    {
+      "id": "doc_0531",
+      "path": "04-components/advanced/arkts-advanced-components-arcbutton.md",
+      "filename": "arkts-advanced-components-arcbutton.md",
+      "title": "弧形按钮 (ArcButton)",
+      "category": "04-components"
+    },
+    {
       "id": "doc_0134",
       "path": "04-components/advanced/arkts-common-components-richeditor.md",
       "filename": "arkts-common-components-richeditor.md",
       "title": "富文本编辑（RichEditor）",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0532",
+      "path": "04-components/advanced/ohos-arkui-advanced-ArcButton.md",
+      "filename": "ohos-arkui-advanced-ArcButton.md",
+      "title": "ArcButton",
       "category": "04-components"
     },
     {
@@ -1044,13 +1115,6 @@
       "category": "04-components"
     },
     {
-      "id": "doc_0149",
-      "path": "04-components/advanced/ohos-arkui-advanced-formmenu.md",
-      "filename": "ohos-arkui-advanced-formmenu.md",
-      "title": "FormMenu",
-      "category": "04-components"
-    },
-    {
       "id": "doc_0150",
       "path": "04-components/advanced/ohos-arkui-advanced-FullScreenLaunchComponent.md",
       "filename": "ohos-arkui-advanced-FullScreenLaunchComponent.md",
@@ -1114,17 +1178,17 @@
       "category": "04-components"
     },
     {
-      "id": "doc_0159",
-      "path": "04-components/advanced/ohos-arkui-advanced-SelectionMenu.md",
-      "filename": "ohos-arkui-advanced-SelectionMenu.md",
-      "title": "SelectionMenu",
-      "category": "04-components"
-    },
-    {
       "id": "doc_0160",
       "path": "04-components/advanced/ohos-arkui-advanced-SelectTitleBar.md",
       "filename": "ohos-arkui-advanced-SelectTitleBar.md",
       "title": "SelectTitleBar",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0159",
+      "path": "04-components/advanced/ohos-arkui-advanced-SelectionMenu.md",
+      "filename": "ohos-arkui-advanced-SelectionMenu.md",
+      "title": "SelectionMenu",
       "category": "04-components"
     },
     {
@@ -1184,6 +1248,13 @@
       "category": "04-components"
     },
     {
+      "id": "doc_0149",
+      "path": "04-components/advanced/ohos-arkui-advanced-formmenu.md",
+      "filename": "ohos-arkui-advanced-formmenu.md",
+      "title": "FormMenu",
+      "category": "04-components"
+    },
+    {
       "id": "doc_0169",
       "path": "04-components/advanced/ts-basic-components-richeditor.md",
       "filename": "ts-basic-components-richeditor.md",
@@ -1202,6 +1273,13 @@
       "path": "04-components/advanced/ts-basic-components-xcomponent.md",
       "filename": "ts-basic-components-xcomponent.md",
       "title": "XComponent",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0533",
+      "path": "04-components/advanced/ts-container-formlink.md",
+      "filename": "ts-container-formlink.md",
+      "title": "FormLink",
       "category": "04-components"
     },
     {
@@ -1415,6 +1493,48 @@
       "category": "04-components"
     },
     {
+      "id": "doc_0534",
+      "path": "04-components/basic/ts-image-common.md",
+      "filename": "ts-image-common.md",
+      "title": "图像类型定义",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0535",
+      "path": "04-components/basic/ts-text-common.md",
+      "filename": "ts-text-common.md",
+      "title": "文本组件公共接口",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0536",
+      "path": "04-components/common-attribute/ts-universal-attributes-component-id.md",
+      "filename": "ts-universal-attributes-component-id.md",
+      "title": "组件标识",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0537",
+      "path": "04-components/common-attribute/ts-universal-attributes-obscured.md",
+      "filename": "ts-universal-attributes-obscured.md",
+      "title": "隐私遮罩",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0538",
+      "path": "04-components/common-attribute/ts-universal-attributes-restoreId.md",
+      "filename": "ts-universal-attributes-restoreId.md",
+      "title": "分布式迁移标识",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0539",
+      "path": "04-components/common-attribute/ts-universal-attributes-text-style.md",
+      "filename": "ts-universal-attributes-text-style.md",
+      "title": "输入框类组件通用接口",
+      "category": "04-components"
+    },
+    {
       "id": "doc_0202",
       "path": "04-components/display/ts-basic-components-calendarpicker.md",
       "filename": "ts-basic-components-calendarpicker.md",
@@ -1454,6 +1574,13 @@
       "path": "04-components/display/ts-basic-components-texttimer.md",
       "filename": "ts-basic-components-texttimer.md",
       "title": "TextTimer",
+      "category": "04-components"
+    },
+    {
+      "id": "doc_0540",
+      "path": "04-components/display/ts-information-display-common.md",
+      "filename": "ts-information-display-common.md",
+      "title": "信息展示公共接口",
       "category": "04-components"
     },
     {
@@ -1674,6 +1801,13 @@
       "category": "04-components"
     },
     {
+      "id": "doc_0541",
+      "path": "04-components/picker/ts-picker-common.md",
+      "filename": "ts-picker-common.md",
+      "title": "选择器（Picker）公共接口",
+      "category": "04-components"
+    },
+    {
       "id": "doc_0239",
       "path": "04-components/security/ts-security-components-pastebutton.md",
       "filename": "ts-security-components-pastebutton.md",
@@ -1814,13 +1948,6 @@
       "category": "05-animation"
     },
     {
-      "id": "doc_0259",
-      "path": "08-dialog-menu/modal/arkts-modal-transition.md",
-      "filename": "arkts-modal-transition.md",
-      "title": "模态转场",
-      "category": "08-dialog-menu"
-    },
-    {
       "id": "doc_0260",
       "path": "05-animation/transition/arkts-page-transition-animation.md",
       "filename": "arkts-page-transition-animation.md",
@@ -1877,6 +2004,20 @@
       "category": "05-animation"
     },
     {
+      "id": "doc_0455",
+      "path": "05-animation/ts-universal-attributes-click-effect.md",
+      "filename": "ts-universal-attributes-click-effect.md",
+      "title": "点击回弹效果",
+      "category": "05-animation"
+    },
+    {
+      "id": "doc_0484",
+      "path": "05-animation/ts-universal-attributes-motionBlur.md",
+      "filename": "ts-universal-attributes-motionBlur.md",
+      "title": "运动模糊",
+      "category": "05-animation"
+    },
+    {
       "id": "doc_0268",
       "path": "06-interaction/drag/arkts-common-events-drag-event.md",
       "filename": "arkts-common-events-drag-event.md",
@@ -1902,6 +2043,13 @@
       "path": "06-interaction/focus/arkts-common-events-focus-event.md",
       "filename": "arkts-common-events-focus-event.md",
       "title": "支持焦点处理",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0542",
+      "path": "06-interaction/focus/ts-universal-attributes-focus.md",
+      "filename": "ts-universal-attributes-focus.md",
+      "title": "焦点控制",
       "category": "06-interaction"
     },
     {
@@ -2129,6 +2277,104 @@
       "category": "06-interaction"
     },
     {
+      "id": "doc_0456",
+      "path": "06-interaction/ts-universal-attributes-click.md",
+      "filename": "ts-universal-attributes-click.md",
+      "title": "点击控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0459",
+      "path": "06-interaction/ts-universal-attributes-cursor.md",
+      "filename": "ts-universal-attributes-cursor.md",
+      "title": "鼠标光标控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0461",
+      "path": "06-interaction/ts-universal-attributes-drag-drop.md",
+      "filename": "ts-universal-attributes-drag-drop.md",
+      "title": "拖拽控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0462",
+      "path": "06-interaction/ts-universal-attributes-drag-sorting.md",
+      "filename": "ts-universal-attributes-drag-sorting.md",
+      "title": "拖拽排序",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0464",
+      "path": "06-interaction/ts-universal-attributes-enable.md",
+      "filename": "ts-universal-attributes-enable.md",
+      "title": "禁用控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0469",
+      "path": "06-interaction/ts-universal-attributes-foreground-blur-style.md",
+      "filename": "ts-universal-attributes-foreground-blur-style.md",
+      "title": "组件内容模糊",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0475",
+      "path": "06-interaction/ts-universal-attributes-hit-test-behavior.md",
+      "filename": "ts-universal-attributes-hit-test-behavior.md",
+      "title": "触摸测试控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0476",
+      "path": "06-interaction/ts-universal-attributes-hover-effect.md",
+      "filename": "ts-universal-attributes-hover-effect.md",
+      "title": "悬浮态效果",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0483",
+      "path": "06-interaction/ts-universal-attributes-monopolize-events.md",
+      "filename": "ts-universal-attributes-monopolize-events.md",
+      "title": "事件独占控制",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0486",
+      "path": "06-interaction/ts-universal-attributes-on-child-touch-test.md",
+      "filename": "ts-universal-attributes-on-child-touch-test.md",
+      "title": "自定义事件分发",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0487",
+      "path": "06-interaction/ts-universal-attributes-on-touch-intercept.md",
+      "filename": "ts-universal-attributes-on-touch-intercept.md",
+      "title": "自定义事件拦截",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0507",
+      "path": "06-interaction/ts-universal-attributes-touch-target.md",
+      "filename": "ts-universal-attributes-touch-target.md",
+      "title": "触摸热区设置",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0520",
+      "path": "06-interaction/ts-universal-events-drag-drop-sys.md",
+      "filename": "ts-universal-events-drag-drop-sys.md",
+      "title": "拖拽事件（系统接口）",
+      "category": "06-interaction"
+    },
+    {
+      "id": "doc_0526",
+      "path": "06-interaction/ts-universal-events-show-hide.md",
+      "filename": "ts-universal-events-show-hide.md",
+      "title": "挂载卸载事件",
+      "category": "06-interaction"
+    },
+    {
       "id": "doc_0304",
       "path": "07-navigation/navigation/arkts-navigation-animation-faq.md",
       "filename": "arkts-navigation-animation-faq.md",
@@ -2220,6 +2466,27 @@
       "category": "07-navigation"
     },
     {
+      "id": "doc_0482",
+      "path": "07-navigation/ts-universal-attributes-modal-transition.md",
+      "filename": "ts-universal-attributes-modal-transition.md",
+      "title": "全屏模态转场",
+      "category": "07-navigation"
+    },
+    {
+      "id": "doc_0501",
+      "path": "07-navigation/ts-universal-attributes-sheet-transition-sys.md",
+      "filename": "ts-universal-attributes-sheet-transition-sys.md",
+      "title": "半模态转场 (系统接口)",
+      "category": "07-navigation"
+    },
+    {
+      "id": "doc_0502",
+      "path": "07-navigation/ts-universal-attributes-sheet-transition.md",
+      "filename": "ts-universal-attributes-sheet-transition.md",
+      "title": "半模态转场",
+      "category": "07-navigation"
+    },
+    {
       "id": "doc_0317",
       "path": "07-navigation/uicontext/arkts-apis-uicontext-atomicservicebar.md",
       "filename": "arkts-apis-uicontext-atomicservicebar.md",
@@ -2281,13 +2548,6 @@
       "filename": "arkts-apis-uicontext-focuscontroller.md",
       "title": "Class (FocusController)",
       "category": "07-navigation"
-    },
-    {
-      "id": "doc_0326",
-      "path": "16-window/arkts-apis-uicontext-font.md",
-      "filename": "arkts-apis-uicontext-font.md",
-      "title": "Class (Font)",
-      "category": "16-window"
     },
     {
       "id": "doc_0327",
@@ -2444,6 +2704,13 @@
       "category": "08-dialog-menu"
     },
     {
+      "id": "doc_0543",
+      "path": "08-dialog-menu/dialog/arkts-embedded-dialog.md",
+      "filename": "arkts-embedded-dialog.md",
+      "title": "页面级弹出框",
+      "category": "08-dialog-menu"
+    },
+    {
       "id": "doc_0349",
       "path": "08-dialog-menu/dialog/arkts-sheet-page.md",
       "filename": "arkts-sheet-page.md",
@@ -2584,6 +2851,27 @@
       "category": "08-dialog-menu"
     },
     {
+      "id": "doc_0259",
+      "path": "08-dialog-menu/modal/arkts-modal-transition.md",
+      "filename": "arkts-modal-transition.md",
+      "title": "模态转场",
+      "category": "08-dialog-menu"
+    },
+    {
+      "id": "doc_0505",
+      "path": "08-dialog-menu/ts-universal-attributes-tips.md",
+      "filename": "ts-universal-attributes-tips.md",
+      "title": "Tips控制",
+      "category": "08-dialog-menu"
+    },
+    {
+      "id": "doc_0506",
+      "path": "08-dialog-menu/ts-universal-attributes-toolbar.md",
+      "filename": "ts-universal-attributes-toolbar.md",
+      "title": "工具栏设置",
+      "category": "08-dialog-menu"
+    },
+    {
       "id": "doc_0370",
       "path": "09-rendering/arkts-lazyforeach-repeat-migration-guide.md",
       "filename": "arkts-lazyforeach-repeat-migration-guide.md",
@@ -2658,6 +2946,104 @@
       "path": "09-rendering/ts-rendering-control-repeat.md",
       "filename": "ts-rendering-control-repeat.md",
       "title": "Repeat",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0465",
+      "path": "09-rendering/ts-universal-attributes-expand-safe-area.md",
+      "filename": "ts-universal-attributes-expand-safe-area.md",
+      "title": "安全区域",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0466",
+      "path": "09-rendering/ts-universal-attributes-filter-effect.md",
+      "filename": "ts-universal-attributes-filter-effect.md",
+      "title": "视效设置",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0477",
+      "path": "09-rendering/ts-universal-attributes-image-effect-sys.md",
+      "filename": "ts-universal-attributes-image-effect-sys.md",
+      "title": "图像效果 (系统接口)",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0478",
+      "path": "09-rendering/ts-universal-attributes-image-effect.md",
+      "filename": "ts-universal-attributes-image-effect.md",
+      "title": "图像效果",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0488",
+      "path": "09-rendering/ts-universal-attributes-opacity.md",
+      "filename": "ts-universal-attributes-opacity.md",
+      "title": "透明度设置",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0490",
+      "path": "09-rendering/ts-universal-attributes-overlay.md",
+      "filename": "ts-universal-attributes-overlay.md",
+      "title": "浮层",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0491",
+      "path": "09-rendering/ts-universal-attributes-pixelRoundForComponent.md",
+      "filename": "ts-universal-attributes-pixelRoundForComponent.md",
+      "title": "组件级像素取整",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0492",
+      "path": "09-rendering/ts-universal-attributes-pixelRoundForPage.md",
+      "filename": "ts-universal-attributes-pixelRoundForPage.md",
+      "title": "页面级像素取整",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0493",
+      "path": "09-rendering/ts-universal-attributes-point-light-style-sys.md",
+      "filename": "ts-universal-attributes-point-light-style-sys.md",
+      "title": "点光源设置 (系统接口)",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0496",
+      "path": "09-rendering/ts-universal-attributes-renderfit.md",
+      "filename": "ts-universal-attributes-renderfit.md",
+      "title": "组件内容填充方式",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0500",
+      "path": "09-rendering/ts-universal-attributes-sharp-clipping.md",
+      "filename": "ts-universal-attributes-sharp-clipping.md",
+      "title": "形状裁剪",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0508",
+      "path": "09-rendering/ts-universal-attributes-transformation.md",
+      "filename": "ts-universal-attributes-transformation.md",
+      "title": "图形变换",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0509",
+      "path": "09-rendering/ts-universal-attributes-use-effect.md",
+      "filename": "ts-universal-attributes-use-effect.md",
+      "title": "特效绘制合并",
+      "category": "09-rendering"
+    },
+    {
+      "id": "doc_0510",
+      "path": "09-rendering/ts-universal-attributes-visibility.md",
+      "filename": "ts-universal-attributes-visibility.md",
+      "title": "显隐控制",
       "category": "09-rendering"
     },
     {
@@ -2794,6 +3180,13 @@
       "category": "10-extension"
     },
     {
+      "id": "doc_0460",
+      "path": "10-extension/ts-universal-attributes-custom-property.md",
+      "filename": "ts-universal-attributes-custom-property.md",
+      "title": "自定义属性设置",
+      "category": "10-extension"
+    },
+    {
       "id": "doc_0402",
       "path": "11-theme-style/arkts-blur-effect.md",
       "filename": "arkts-blur-effect.md",
@@ -2815,10 +3208,31 @@
       "category": "11-theme-style"
     },
     {
+      "id": "doc_0043",
+      "path": "11-theme-style/arkts-extend.md",
+      "filename": "arkts-extend.md",
+      "title": "@Extend装饰器：定义扩展组件样式",
+      "category": "11-theme-style"
+    },
+    {
       "id": "doc_0406",
       "path": "11-theme-style/arkts-shadow-effect.md",
       "filename": "arkts-shadow-effect.md",
       "title": "阴影",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0056",
+      "path": "11-theme-style/arkts-statestyles.md",
+      "filename": "arkts-statestyles.md",
+      "title": "stateStyles：多态样式",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0057",
+      "path": "11-theme-style/arkts-style.md",
+      "filename": "arkts-style.md",
+      "title": "@Styles装饰器：定义组件重用样式",
       "category": "11-theme-style"
     },
     {
@@ -2833,6 +3247,62 @@
       "path": "11-theme-style/ts-container-with-theme.md",
       "filename": "ts-container-with-theme.md",
       "title": "WithTheme",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0452",
+      "path": "11-theme-style/ts-universal-attributes-background.md",
+      "filename": "ts-universal-attributes-background.md",
+      "title": "背景设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0453",
+      "path": "11-theme-style/ts-universal-attributes-border-image.md",
+      "filename": "ts-universal-attributes-border-image.md",
+      "title": "图片边框设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0454",
+      "path": "11-theme-style/ts-universal-attributes-border.md",
+      "filename": "ts-universal-attributes-border.md",
+      "title": "边框设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0470",
+      "path": "11-theme-style/ts-universal-attributes-foreground-color.md",
+      "filename": "ts-universal-attributes-foreground-color.md",
+      "title": "前景色设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0471",
+      "path": "11-theme-style/ts-universal-attributes-foreground-effect.md",
+      "filename": "ts-universal-attributes-foreground-effect.md",
+      "title": "前景属性设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0473",
+      "path": "11-theme-style/ts-universal-attributes-gradient-color.md",
+      "filename": "ts-universal-attributes-gradient-color.md",
+      "title": "颜色渐变",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0489",
+      "path": "11-theme-style/ts-universal-attributes-outline.md",
+      "filename": "ts-universal-attributes-outline.md",
+      "title": "外描边设置",
+      "category": "11-theme-style"
+    },
+    {
+      "id": "doc_0494",
+      "path": "11-theme-style/ts-universal-attributes-polymorphic-style.md",
+      "filename": "ts-universal-attributes-polymorphic-style.md",
+      "title": "多态样式",
       "category": "11-theme-style"
     },
     {
@@ -2927,6 +3397,13 @@
       "category": "14-performance"
     },
     {
+      "id": "doc_0544",
+      "path": "15-advanced/atomic-service/arkts-FullScreenComponent.md",
+      "filename": "arkts-FullScreenComponent.md",
+      "title": "全屏启动原子化服务组件（FullScreenLaunchComponent）",
+      "category": "15-advanced"
+    },
+    {
       "id": "doc_0424",
       "path": "15-advanced/atomic-service/ohos-atomicservice-AtomicServiceNavigation.md",
       "filename": "ohos-atomicservice-AtomicServiceNavigation.md",
@@ -2959,531 +3436,6 @@
       "path": "15-advanced/embedded/arkts-embedded-components.md",
       "filename": "arkts-embedded-components.md",
       "title": "同应用进程嵌入式组件 (EmbeddedComponent)",
-      "category": "15-advanced"
-    },
-    {
-      "id": "doc_0443",
-      "path": "16-window/arkts-apis-window-Window.md",
-      "filename": "arkts-apis-window-Window.md",
-      "title": "Interface (Window)",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0444",
-      "path": "16-window/arkts-apis-window-WindowStage.md",
-      "filename": "arkts-apis-window-WindowStage.md",
-      "title": "Interface (WindowStage)",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0445",
-      "path": "16-window/arkts-apis-window.md",
-      "filename": "arkts-apis-window.md",
-      "title": "模块描述",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0446",
-      "path": "16-window/arkts-env-system-property.md",
-      "filename": "arkts-env-system-property.md",
-      "title": "@Env：环境变量",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0447",
-      "path": "16-window/arkts-manage-components-visibility.md",
-      "filename": "arkts-manage-components-visibility.md",
-      "title": "感知组件可见性",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0448",
-      "path": "16-window/arkts-manage-keyboard.md",
-      "filename": "arkts-manage-keyboard.md",
-      "title": "管理软键盘",
-      "category": "16-window"
-    },
-    {
-      "id": "doc_0452",
-      "path": "11-theme-style/ts-universal-attributes-background.md",
-      "filename": "ts-universal-attributes-background.md",
-      "title": "背景设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0453",
-      "path": "11-theme-style/ts-universal-attributes-border-image.md",
-      "filename": "ts-universal-attributes-border-image.md",
-      "title": "图片边框设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0454",
-      "path": "11-theme-style/ts-universal-attributes-border.md",
-      "filename": "ts-universal-attributes-border.md",
-      "title": "边框设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0455",
-      "path": "05-animation/ts-universal-attributes-click-effect.md",
-      "filename": "ts-universal-attributes-click-effect.md",
-      "title": "点击回弹效果",
-      "category": "05-animation"
-    },
-    {
-      "id": "doc_0456",
-      "path": "06-interaction/ts-universal-attributes-click.md",
-      "filename": "ts-universal-attributes-click.md",
-      "title": "点击控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0459",
-      "path": "06-interaction/ts-universal-attributes-cursor.md",
-      "filename": "ts-universal-attributes-cursor.md",
-      "title": "鼠标光标控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0460",
-      "path": "10-extension/ts-universal-attributes-custom-property.md",
-      "filename": "ts-universal-attributes-custom-property.md",
-      "title": "自定义属性设置",
-      "category": "10-extension"
-    },
-    {
-      "id": "doc_0461",
-      "path": "06-interaction/ts-universal-attributes-drag-drop.md",
-      "filename": "ts-universal-attributes-drag-drop.md",
-      "title": "拖拽控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0462",
-      "path": "06-interaction/ts-universal-attributes-drag-sorting.md",
-      "filename": "ts-universal-attributes-drag-sorting.md",
-      "title": "拖拽排序",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0464",
-      "path": "06-interaction/ts-universal-attributes-enable.md",
-      "filename": "ts-universal-attributes-enable.md",
-      "title": "禁用控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0465",
-      "path": "09-rendering/ts-universal-attributes-expand-safe-area.md",
-      "filename": "ts-universal-attributes-expand-safe-area.md",
-      "title": "安全区域",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0466",
-      "path": "09-rendering/ts-universal-attributes-filter-effect.md",
-      "filename": "ts-universal-attributes-filter-effect.md",
-      "title": "视效设置",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0467",
-      "path": "03-layout/ts-universal-attributes-flex-layout.md",
-      "filename": "ts-universal-attributes-flex-layout.md",
-      "title": "Flex布局",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0469",
-      "path": "06-interaction/ts-universal-attributes-foreground-blur-style.md",
-      "filename": "ts-universal-attributes-foreground-blur-style.md",
-      "title": "组件内容模糊",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0470",
-      "path": "11-theme-style/ts-universal-attributes-foreground-color.md",
-      "filename": "ts-universal-attributes-foreground-color.md",
-      "title": "前景色设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0471",
-      "path": "11-theme-style/ts-universal-attributes-foreground-effect.md",
-      "filename": "ts-universal-attributes-foreground-effect.md",
-      "title": "前景属性设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0473",
-      "path": "11-theme-style/ts-universal-attributes-gradient-color.md",
-      "filename": "ts-universal-attributes-gradient-color.md",
-      "title": "颜色渐变",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0474",
-      "path": "03-layout/ts-universal-attributes-grid.md",
-      "filename": "ts-universal-attributes-grid.md",
-      "title": "栅格设置",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0475",
-      "path": "06-interaction/ts-universal-attributes-hit-test-behavior.md",
-      "filename": "ts-universal-attributes-hit-test-behavior.md",
-      "title": "触摸测试控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0476",
-      "path": "06-interaction/ts-universal-attributes-hover-effect.md",
-      "filename": "ts-universal-attributes-hover-effect.md",
-      "title": "悬浮态效果",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0477",
-      "path": "09-rendering/ts-universal-attributes-image-effect-sys.md",
-      "filename": "ts-universal-attributes-image-effect-sys.md",
-      "title": "图像效果 (系统接口)",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0478",
-      "path": "09-rendering/ts-universal-attributes-image-effect.md",
-      "filename": "ts-universal-attributes-image-effect.md",
-      "title": "图像效果",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0479",
-      "path": "03-layout/ts-universal-attributes-layout-constraints.md",
-      "filename": "ts-universal-attributes-layout-constraints.md",
-      "title": "布局约束",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0480",
-      "path": "03-layout/ts-universal-attributes-location.md",
-      "filename": "ts-universal-attributes-location.md",
-      "title": "位置设置",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0482",
-      "path": "07-navigation/ts-universal-attributes-modal-transition.md",
-      "filename": "ts-universal-attributes-modal-transition.md",
-      "title": "全屏模态转场",
-      "category": "07-navigation"
-    },
-    {
-      "id": "doc_0483",
-      "path": "06-interaction/ts-universal-attributes-monopolize-events.md",
-      "filename": "ts-universal-attributes-monopolize-events.md",
-      "title": "事件独占控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0484",
-      "path": "05-animation/ts-universal-attributes-motionBlur.md",
-      "filename": "ts-universal-attributes-motionBlur.md",
-      "title": "运动模糊",
-      "category": "05-animation"
-    },
-    {
-      "id": "doc_0486",
-      "path": "06-interaction/ts-universal-attributes-on-child-touch-test.md",
-      "filename": "ts-universal-attributes-on-child-touch-test.md",
-      "title": "自定义事件分发",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0487",
-      "path": "06-interaction/ts-universal-attributes-on-touch-intercept.md",
-      "filename": "ts-universal-attributes-on-touch-intercept.md",
-      "title": "自定义事件拦截",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0488",
-      "path": "09-rendering/ts-universal-attributes-opacity.md",
-      "filename": "ts-universal-attributes-opacity.md",
-      "title": "透明度设置",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0489",
-      "path": "11-theme-style/ts-universal-attributes-outline.md",
-      "filename": "ts-universal-attributes-outline.md",
-      "title": "外描边设置",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0490",
-      "path": "09-rendering/ts-universal-attributes-overlay.md",
-      "filename": "ts-universal-attributes-overlay.md",
-      "title": "浮层",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0491",
-      "path": "09-rendering/ts-universal-attributes-pixelRoundForComponent.md",
-      "filename": "ts-universal-attributes-pixelRoundForComponent.md",
-      "title": "组件级像素取整",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0492",
-      "path": "09-rendering/ts-universal-attributes-pixelRoundForPage.md",
-      "filename": "ts-universal-attributes-pixelRoundForPage.md",
-      "title": "页面级像素取整",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0493",
-      "path": "09-rendering/ts-universal-attributes-point-light-style-sys.md",
-      "filename": "ts-universal-attributes-point-light-style-sys.md",
-      "title": "点光源设置 (系统接口)",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0494",
-      "path": "11-theme-style/ts-universal-attributes-polymorphic-style.md",
-      "filename": "ts-universal-attributes-polymorphic-style.md",
-      "title": "多态样式",
-      "category": "11-theme-style"
-    },
-    {
-      "id": "doc_0496",
-      "path": "09-rendering/ts-universal-attributes-renderfit.md",
-      "filename": "ts-universal-attributes-renderfit.md",
-      "title": "组件内容填充方式",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0498",
-      "path": "02-state-management/ts-universal-attributes-reuse-id.md",
-      "filename": "ts-universal-attributes-reuse-id.md",
-      "title": "复用标识",
-      "category": "02-state-management"
-    },
-    {
-      "id": "doc_0499",
-      "path": "02-state-management/ts-universal-attributes-reuse.md",
-      "filename": "ts-universal-attributes-reuse.md",
-      "title": "复用选项",
-      "category": "02-state-management"
-    },
-    {
-      "id": "doc_0500",
-      "path": "09-rendering/ts-universal-attributes-sharp-clipping.md",
-      "filename": "ts-universal-attributes-sharp-clipping.md",
-      "title": "形状裁剪",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0501",
-      "path": "07-navigation/ts-universal-attributes-sheet-transition-sys.md",
-      "filename": "ts-universal-attributes-sheet-transition-sys.md",
-      "title": "半模态转场 (系统接口)",
-      "category": "07-navigation"
-    },
-    {
-      "id": "doc_0502",
-      "path": "07-navigation/ts-universal-attributes-sheet-transition.md",
-      "filename": "ts-universal-attributes-sheet-transition.md",
-      "title": "半模态转场",
-      "category": "07-navigation"
-    },
-    {
-      "id": "doc_0503",
-      "path": "03-layout/ts-universal-attributes-size.md",
-      "filename": "ts-universal-attributes-size.md",
-      "title": "尺寸设置",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0505",
-      "path": "08-dialog-menu/ts-universal-attributes-tips.md",
-      "filename": "ts-universal-attributes-tips.md",
-      "title": "Tips控制",
-      "category": "08-dialog-menu"
-    },
-    {
-      "id": "doc_0506",
-      "path": "08-dialog-menu/ts-universal-attributes-toolbar.md",
-      "filename": "ts-universal-attributes-toolbar.md",
-      "title": "工具栏设置",
-      "category": "08-dialog-menu"
-    },
-    {
-      "id": "doc_0507",
-      "path": "06-interaction/ts-universal-attributes-touch-target.md",
-      "filename": "ts-universal-attributes-touch-target.md",
-      "title": "触摸热区设置",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0508",
-      "path": "09-rendering/ts-universal-attributes-transformation.md",
-      "filename": "ts-universal-attributes-transformation.md",
-      "title": "图形变换",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0509",
-      "path": "09-rendering/ts-universal-attributes-use-effect.md",
-      "filename": "ts-universal-attributes-use-effect.md",
-      "title": "特效绘制合并",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0510",
-      "path": "09-rendering/ts-universal-attributes-visibility.md",
-      "filename": "ts-universal-attributes-visibility.md",
-      "title": "显隐控制",
-      "category": "09-rendering"
-    },
-    {
-      "id": "doc_0511",
-      "path": "03-layout/ts-universal-attributes-z-order.md",
-      "filename": "ts-universal-attributes-z-order.md",
-      "title": "Z序控制",
-      "category": "03-layout"
-    },
-    {
-      "id": "doc_0516",
-      "path": "01-basics/ts-appendix-enums.md",
-      "filename": "ts-appendix-enums.md",
-      "title": "枚举说明",
-      "category": "01-basics"
-    },
-    {
-      "id": "doc_0520",
-      "path": "06-interaction/ts-universal-events-drag-drop-sys.md",
-      "filename": "ts-universal-events-drag-drop-sys.md",
-      "title": "拖拽事件（系统接口）",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0526",
-      "path": "06-interaction/ts-universal-events-show-hide.md",
-      "filename": "ts-universal-events-show-hide.md",
-      "title": "挂载卸载事件",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0529",
-      "path": "02-state-management/v1/arkts-builder.md",
-      "filename": "arkts-builder.md",
-      "title": "@Builder装饰器：自定义构建函数",
-      "category": "02-state-management"
-    },
-    {
-      "id": "doc_0530",
-      "path": "02-state-management/v1/arkts-builderparam.md",
-      "filename": "arkts-builderparam.md",
-      "title": "@BuilderParam装饰器：引用@Builder函数",
-      "category": "02-state-management"
-    },
-    {
-      "id": "doc_0531",
-      "path": "04-components/advanced/arkts-advanced-components-arcbutton.md",
-      "filename": "arkts-advanced-components-arcbutton.md",
-      "title": "弧形按钮 (ArcButton)",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0532",
-      "path": "04-components/advanced/ohos-arkui-advanced-ArcButton.md",
-      "filename": "ohos-arkui-advanced-ArcButton.md",
-      "title": "ArcButton",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0533",
-      "path": "04-components/advanced/ts-container-formlink.md",
-      "filename": "ts-container-formlink.md",
-      "title": "FormLink",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0534",
-      "path": "04-components/basic/ts-image-common.md",
-      "filename": "ts-image-common.md",
-      "title": "图像类型定义",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0535",
-      "path": "04-components/basic/ts-text-common.md",
-      "filename": "ts-text-common.md",
-      "title": "文本组件公共接口",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0536",
-      "path": "04-components/common-attribute/ts-universal-attributes-component-id.md",
-      "filename": "ts-universal-attributes-component-id.md",
-      "title": "组件标识",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0537",
-      "path": "04-components/common-attribute/ts-universal-attributes-obscured.md",
-      "filename": "ts-universal-attributes-obscured.md",
-      "title": "隐私遮罩",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0538",
-      "path": "04-components/common-attribute/ts-universal-attributes-restoreId.md",
-      "filename": "ts-universal-attributes-restoreId.md",
-      "title": "分布式迁移标识",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0539",
-      "path": "04-components/common-attribute/ts-universal-attributes-text-style.md",
-      "filename": "ts-universal-attributes-text-style.md",
-      "title": "输入框类组件通用接口",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0540",
-      "path": "04-components/display/ts-information-display-common.md",
-      "filename": "ts-information-display-common.md",
-      "title": "信息展示公共接口",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0541",
-      "path": "04-components/picker/ts-picker-common.md",
-      "filename": "ts-picker-common.md",
-      "title": "选择器（Picker）公共接口",
-      "category": "04-components"
-    },
-    {
-      "id": "doc_0542",
-      "path": "06-interaction/focus/ts-universal-attributes-focus.md",
-      "filename": "ts-universal-attributes-focus.md",
-      "title": "焦点控制",
-      "category": "06-interaction"
-    },
-    {
-      "id": "doc_0543",
-      "path": "08-dialog-menu/dialog/arkts-embedded-dialog.md",
-      "filename": "arkts-embedded-dialog.md",
-      "title": "页面级弹出框",
-      "category": "08-dialog-menu"
-    },
-    {
-      "id": "doc_0544",
-      "path": "15-advanced/atomic-service/arkts-FullScreenComponent.md",
-      "filename": "arkts-FullScreenComponent.md",
-      "title": "全屏启动原子化服务组件（FullScreenLaunchComponent）",
       "category": "15-advanced"
     },
     {
@@ -3536,6 +3488,69 @@
       "category": "15-advanced"
     },
     {
+      "id": "doc_0326",
+      "path": "16-window/arkts-apis-uicontext-font.md",
+      "filename": "arkts-apis-uicontext-font.md",
+      "title": "Class (Font)",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0443",
+      "path": "16-window/arkts-apis-window-Window.md",
+      "filename": "arkts-apis-window-Window.md",
+      "title": "Interface (Window)",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0444",
+      "path": "16-window/arkts-apis-window-WindowStage.md",
+      "filename": "arkts-apis-window-WindowStage.md",
+      "title": "Interface (WindowStage)",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0445",
+      "path": "16-window/arkts-apis-window.md",
+      "filename": "arkts-apis-window.md",
+      "title": "模块描述",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0446",
+      "path": "16-window/arkts-env-system-property.md",
+      "filename": "arkts-env-system-property.md",
+      "title": "@Env：环境变量",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0447",
+      "path": "16-window/arkts-manage-components-visibility.md",
+      "filename": "arkts-manage-components-visibility.md",
+      "title": "感知组件可见性",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0448",
+      "path": "16-window/arkts-manage-keyboard.md",
+      "filename": "arkts-manage-keyboard.md",
+      "title": "管理软键盘",
+      "category": "16-window"
+    },
+    {
+      "id": "doc_0577",
+      "path": "17-error-code/errorcode-adopt.md",
+      "filename": "errorcode-adopt.md",
+      "title": "附属节点错误码",
+      "category": "17-error-code"
+    },
+    {
+      "id": "doc_0578",
+      "path": "17-error-code/errorcode-attributeModifier.md",
+      "filename": "errorcode-attributeModifier.md",
+      "title": "动态属性设置错误码",
+      "category": "17-error-code"
+    },
+    {
       "id": "doc_0552",
       "path": "17-error-code/errorcode-bindSheet.md",
       "filename": "errorcode-bindSheet.md",
@@ -3561,6 +3576,20 @@
       "path": "17-error-code/errorcode-drag-event.md",
       "filename": "errorcode-drag-event.md",
       "title": "拖拽事件错误码",
+      "category": "17-error-code"
+    },
+    {
+      "id": "doc_0579",
+      "path": "17-error-code/errorcode-drawable-descriptor.md",
+      "filename": "errorcode-drawable-descriptor.md",
+      "title": "DrawableDescriptor错误码",
+      "category": "17-error-code"
+    },
+    {
+      "id": "doc_0580",
+      "path": "17-error-code/errorcode-env.md",
+      "filename": "errorcode-env.md",
+      "title": "环境变量错误码",
       "category": "17-error-code"
     },
     {
@@ -3624,6 +3653,13 @@
       "path": "17-error-code/errorcode-promptAction.md",
       "filename": "errorcode-promptAction.md",
       "title": "弹窗错误码",
+      "category": "17-error-code"
+    },
+    {
+      "id": "doc_0581",
+      "path": "17-error-code/errorcode-rendering-control.md",
+      "filename": "errorcode-rendering-control.md",
+      "title": "逻辑组件错误码",
       "category": "17-error-code"
     },
     {
@@ -3709,6 +3745,55 @@
       "filename": "errorcode-xcomponent.md",
       "title": "XComponent组件错误码",
       "category": "17-error-code"
+    },
+    {
+      "id": "doc_0577",
+      "path": "18-arkts-rules/arkts-focus-rules.md",
+      "filename": "arkts-focus-rules.md",
+      "title": "HarmonyOS 焦点事件规则指南",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0578",
+      "path": "18-arkts-rules/arkts-interaction-rules.md",
+      "filename": "arkts-interaction-rules.md",
+      "title": "HarmonyOS 基本手势及手势响应规则指南",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0579",
+      "path": "18-arkts-rules/arkts-ui-basic-rules.md",
+      "filename": "arkts-ui-basic-rules.md",
+      "title": "ArkTS 自定义组件规则要求",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0580",
+      "path": "18-arkts-rules/arkts-ui-extension.md",
+      "filename": "arkts-ui-extension.md",
+      "title": "@Builder/@LocalBuilder/@BuilderParam UI 复用装饰器约束",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0581",
+      "path": "18-arkts-rules/arkts-ui-freeze-rules.md",
+      "filename": "arkts-ui-freeze-rules.md",
+      "title": "ArkTS 自定义组件冻结规则要求",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0582",
+      "path": "18-arkts-rules/arkts-ui-reuse-rules.md",
+      "filename": "arkts-ui-reuse-rules.md",
+      "title": "ArkTS 自定义组件复用规则要求",
+      "category": "18-arkts-rules"
+    },
+    {
+      "id": "doc_0583",
+      "path": "18-arkts-rules/arkts-ui-styles-rules.md",
+      "filename": "arkts-ui-styles-rules.md",
+      "title": "ArkUI 样式扩展装饰器（@Styles / @Extend / @AnimatableExtend）",
+      "category": "18-arkts-rules"
     }
   ],
   "keywords": {},
@@ -3863,11 +3948,33 @@
       "arkts-create-custom-components.md"
     ],
     "Builder": [
-      "arkts-builder.md"
+      "arkts-builder.md",
+      "arkts-ui-extension.md"
     ],
     "生命周期": [
       "ts-custom-component-lifecycle.md",
       "arkts-page-custom-components-lifecycle.md"
+    ],
+    "焦点": [
+      "arkts-focus-rules.md"
+    ],
+    "交互": [
+      "arkts-interaction-rules.md"
+    ],
+    "冻结": [
+      "arkts-ui-freeze-rules.md"
+    ],
+    "组件冻结": [
+      "arkts-ui-freeze-rules.md"
+    ],
+    "复用": [
+      "arkts-ui-reuse-rules.md"
+    ],
+    "复用规则": [
+      "arkts-ui-reuse-rules.md"
+    ],
+    "样式": [
+      "arkts-ui-styles-rules.md"
     ]
   },
   "synonym_groups": [

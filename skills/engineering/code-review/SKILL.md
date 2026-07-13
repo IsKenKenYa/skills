@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: 沿两个轴线审查自某个固定点（提交、分支、标签或 merge-base）以来的变更——标准（代码是否遵循本仓库文档化的编码规范？）和规格（代码是否符合原始 issue/PRD 的要求？）。两个审查由并行子代理执行并并排汇报。当用户想审查一个分支、PR、进行中的改动，或要求"自 X 起审查"时使用。
+description: 沿两个轴线审查自某个固定点（提交、分支、标签或 merge-base）以来的变更：标准（代码是否遵循本仓库文档化的编码规范？）和规格（代码是否符合原始 issue/PRD 的要求？）。两个审查由并行子代理执行并并排汇报。当用户想审查一个分支、PR、进行中的改动，或要求“自 X 起审查”时使用。
 ---
 
 Two-axis review of the diff between `HEAD` and a fixed point the user supplies:

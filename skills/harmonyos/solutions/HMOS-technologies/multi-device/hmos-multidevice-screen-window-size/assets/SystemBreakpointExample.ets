@@ -85,38 +85,6 @@ export class SystemBreakpointManager {
   }
 }
 
-/**
- * WidthBreakpoint 枚举值转字符串，用于与 BreakpointType.getValue() 配合
- */
-export function widthBreakpointToStr(bp: WidthBreakpoint): string {
-  switch (bp) {
-    case WidthBreakpoint.WIDTH_XL:
-      return 'xl';
-    case WidthBreakpoint.WIDTH_LG:
-      return 'lg';
-    case WidthBreakpoint.WIDTH_MD:
-      return 'md';
-    case WidthBreakpoint.WIDTH_SM:
-      return 'sm';
-    default:
-      return 'xs';
-  }
-}
-
-/**
- * HeightBreakpoint 枚举值转字符串
- */
-export function heightBreakpointToStr(bp: HeightBreakpoint): string {
-  switch (bp) {
-    case HeightBreakpoint.HEIGHT_LG:
-      return 'lg';
-    case HeightBreakpoint.HEIGHT_MD:
-      return 'md';
-    default:
-      return 'sm';
-  }
-}
-
 // ──────────────────────────────────────────────────────
 // 使用示例（以下为可独立运行的页面组件，可直接复制使用）
 // ──────────────────────────────────────────────────────
@@ -150,7 +118,7 @@ struct SystemBreakpointProductPage {
         .fontWeight(FontWeight.Bold)
         .margin({ bottom: 16 })
 
-      GridRow({ columns: this.columns.getValue(widthBreakpointToStr(this.widthBp)) }) {
+      GridRow({ columns: this.columns.getValue(this.widthBp) }) {
         ForEach(this.products, (item: ProductItem) => {
           GridCol({ span: 1 }) {
             Column() {

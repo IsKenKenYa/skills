@@ -2,7 +2,7 @@
 name: hmos-multidevice-fold-state
 description: HarmonyOS foldable-device adaptation skill for requirements, development, bug-fix, and verification phases. Activate when the task involves fold status detection, hover-mode split-screen layouts, crease avoidance, fold continuity, multi-fold form-factor mapping (e.g. F/M/G), inner/outer screen ratio differences, or fold-related issue remediation.
 metadata:
-  version: 1.0.1
+  version: 1.0.2
   keywords:
     - 折展状态
     - 折叠屏
@@ -48,8 +48,6 @@ metadata:
 - **VAL 阶段路由强制要求**：当验证涉及折叠设备多形态验证、hidumper 模拟、分辨率阶梯验证时，**不得在本 SKILL 内自行执行验证操作**（如直接调用 hdc 截屏、尝试悬浮窗等），必须按以下步骤路由：
   1. 读取 `../hmos-multidevice-scenario-entry/references/multi-device-verification.md`
   2. 按文档中的标准流程执行验证
-- **HDS 组件升级提示**：当 DEV 阶段涉及折叠屏/平板的应用内多窗场景时，应主动提示用户可使用 HDS（UI Design Kit）的 `MultiWindowEntryInAPP` 组件（`SCENE-09`），该组件专为折叠屏展开态和三折叠横屏优化，比手动 `startAbility + StartOptions` 方案代码更少。`HdsSideBar` 也可用于折叠屏展开态的侧边栏导航。详细 API 和示例参见 `../hmos-multidevice-scenario-entry/references/hds-ui-design-kit.md`。设备约束：`MultiWindowEntryInAPP` 仅支持折叠屏展开态、三折叠横屏、平板横屏，其他形态下按钮不可交互。升级建议不构成强制要求，用户明确选择手动方案时以本技能方案为准。
-
 ## 阶段标签
 
 | 标签 | 阶段 | 当前模块关注点 |

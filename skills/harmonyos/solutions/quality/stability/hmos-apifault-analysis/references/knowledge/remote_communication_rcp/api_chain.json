@@ -255,15 +255,15 @@
       {
         "api_name": "ParserAuthChallengeInfo",
         "d_ts_file": "@hms.collaboration.rcp.d.ts",
-        "description": "解析认证挑战信息",
+        "description": "解析认 证挑战信息",
         "napi_func": "ParserAuthChallengeInfo",
         "napi_file": "frameworks/js/napi/rcp/src/collaboration_rcp.cpp:584",
         "impl_func": "CommonUtils::AuthChallenge::ParseAuthHeader",
         "impl_file": "utils/src/rcp_native_common_utils.cpp",
         "call_chain": [
           "ParserAuthChallengeInfo (NAPI)",
-          "CommonUtils::AuthChallenge::ParseAuthHeader (解析认证头)",
-          "NapiAuthChallengeInfo (创建 NAPI 认证对象)"
+          "CommonUtils::AuthChallenge::ParseAuthHeader (解析认 证头)",
+          "NapiAuthChallengeInfo (创建 NAPI 认 证对象)"
         ]
       },
       {

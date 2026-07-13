@@ -2,7 +2,7 @@
 name: hmos-multidevice-interaction-methods
 description: HarmonyOS应用多设备交互适配开发方案skill，提供触摸、鼠标、键盘、手写笔等多输入方式的交互方案和事件归一策略。当涉及触摸、鼠标、键盘、手写笔等设备的交互以及实现交互归一化、悬停效果、右键菜单、焦点导航、键盘快捷键、手写板输入和压感等功能时调用。
 metadata:
-  version: 1.0.1
+  version: 1.0.2
   keywords:
     - 交互方式适配
     - 多输入方式
@@ -38,14 +38,6 @@ HarmonyOS应用交互方式适配skill，为触摸、鼠标、键盘、手写笔
 - **VAL 阶段路由强制要求**：当验证涉及折叠设备多形态验证、hidumper 模拟、分辨率阶梯验证时，**不得在本 SKILL 内自行执行验证操作**（如直接调用 hdc 截屏、尝试悬浮窗等），必须按以下步骤路由：
   1. 读取 `../hmos-multidevice-scenario-entry/references/multi-device-verification.md`
   2. 按文档中的标准流程执行验证
-- **HDS 组件升级提示**：当 DEV 阶段涉及以下交互增强场景时，应主动提示用户可使用 HDS（UI Design Kit）组件获得更精致的交互反馈（`SCENE-09`）：
-  - 触摸按压反馈 → `hdsEffect.PressShadowType`（按压阴影：BLEND_WHITE / BLEND_GRADIENT）
-  - 触摸/鼠标交互的光影效果 → `hdsEffect.PointLight`（点光源效果，支持边框/内容/羽化受光）
-  - 操作确认/即时反馈弹窗 → `HdsSnackBar`（常驻/定时两种模式）
-  - 核心操作区域的按钮组 → `HdsActionBar`（内置 hoverTips 支持鼠标悬停提示）
-  - 详细 API 和示例参见 `../hmos-multidevice-scenario-entry/references/hds-ui-design-kit.md`。
-  - 升级建议不构成强制要求，用户明确选择常规交互方案时以本技能方案为准。
-
 ## 阶段标签
 
 | 标签 | 阶段 | 当前模块关注点 |

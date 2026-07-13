@@ -1,5 +1,3 @@
-
-
 # 常见问题与解决方案
 
 ## 一、编译错误
@@ -419,11 +417,130 @@ const name: string = this.params.name ?? '';
 | EntryAbility           | MainAbility        | EntryAbility       |
 | VideoPlayAbility       | EntryAbility       | VideoPlayAbility   |
 
+### Q18: 运行时错误 冷启动后手动打开应用白屏（@InsightIntentFunctionMethod 特有）
+
+**现象**：通过 `@InsightIntentFunctionMethod` 意图冷启动应用后，用户手动点击图标打开应用，出现白屏或空白页面。
+
+**原因**：
+
+- `@InsightIntentFunctionMethod` 意图以 `background` 模式执行时，Ability 冷启动**不执行 `onWindowStageCreate`**，因此窗口未创建。
+- 关键资源初始化（如播放器 `setContext`、数据库初始化）可能仅在 `onWindowStageCreate` 中执行，冷启动后缺失。
+- 后续用户手动启动应用（`singleton` Ability 已存在），系统调用 `onNewWant` 而非 `onWindowStageCreate`，但应用没有窗口恢复逻辑，导致白屏。
+
+**解决方案**：
+必须同步改造 `EntryAbility.ets`，确保：
+
+1. 关键资源初始化放在 `onCreate` 中（幂等）。
+2. `onNewWant` / `onForeground` 中使用 `window.getLastWindow` 恢复窗口内容（**禁止使用 `createWindow`**）。
+3. 路由操作在窗口就绪后执行。
+
+**✅ 正确兜底代码模板：**
+
+```typescript
+// EntryAbility.ets
+import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import window from '@ohos.window';
+
+const LOG_TAG = 'EntryAbility';
+const MAIN_PAGE = 'pages/Index';
+
+export default class EntryAbility extends UIAbility {
+  private windowContentReady: boolean = false;
+  private pendingIntent?: Want;
+
+  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    // ✅ 改造1：关键资源初始化放在 onCreate
+    this.initCriticalResources();
+    this.handleInsightIntent(want);
+  }
+
+  onWindowStageCreate(windowStage: window.WindowStage): void {
+    this.windowContentReady = true;
+    windowStage.loadContent(MAIN_PAGE, (err) => {
+      if (!err.code && this.pendingIntent) {
+        this.handleNavigation(this.pendingIntent);
+        this.pendingIntent = undefined;
+      }
+    });
+  }
+
+  onWindowStageDestroy(): void {
+    this.windowContentReady = false;
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    this.handleInsightIntent(want);
+    if (!this.windowContentReady) {
+      this.pendingIntent = want;
+      this.ensureWindowContent();
+    } else {
+      this.handleNavigation(want);
+    }
+  }
+
+  onForeground(): void {
+    if (!this.windowContentReady) {
+      this.ensureWindowContent();
+    }
+  }
+
+  // ✅ 改造2：使用 getLastWindow 恢复窗口，禁止 createWindow
+  private ensureWindowContent(): void {
+    if (this.windowContentReady) return;
+
+    window.getLastWindow(this.context)
+      .then((win: window.Window) => {
+        this.initWindowContent(win);
+      })
+      .catch((err: Error) => {
+        hilog.error(0x0000, LOG_TAG, 'getLastWindow failed: %{public}s', err.message);
+      });
+  }
+
+  private initWindowContent(win: window.Window): void {
+    win.setUIContent(MAIN_PAGE, (err) => {
+      if (err.code) {
+        hilog.error(0x0000, LOG_TAG, 'setUIContent failed: %{public}s', err.message);
+        return;
+      }
+      this.windowContentReady = true;
+      win.showWindow().catch((e: Error) => {
+        hilog.error(0x0000, LOG_TAG, 'showWindow failed: %{public}s', e.message);
+      });
+      if (this.pendingIntent) {
+        this.handleNavigation(this.pendingIntent);
+        this.pendingIntent = undefined;
+      }
+    });
+  }
+
+  private handleInsightIntent(want: Want): void {
+    // 解析意图参数，设置路由目标（不执行跳转）
+  }
+
+  private handleNavigation(want: Want): void {
+    // 窗口已就绪，执行页面跳转（如 router.pushUrl 或 AppStorage 信号）
+  }
+
+  private initCriticalResources(): void {
+    // 播放器 setContext、数据库初始化等（幂等）
+  }
+}
+```
+
+**⚠️ 禁止事项**：
+
+- ❌ 禁止使用 `window.createWindow(MAIN_WINDOW_NAME, window.WindowType.TYPE_MAIN, this.context)` — singleton Ability 的主窗口由系统自动创建，再次创建会导致窗口冲突闪退。
+- ❌ 禁止将关键资源初始化仅放在 `onWindowStageCreate` 中。
+
+**相关检查**：详见 [code_exploration.md](code_exploration.md/) 第 3 节和第 5 节。
+
 ------
 
 ## 三、意图未生效
 
-### Q18: 意图未生效
+### Q19: 意图未生效
 
 **原因**：未在 `insight_intent.json` 中注册（仅适用于新增意图文件）。
 
@@ -447,7 +564,7 @@ const name: string = this.params.name ?? '';
 { "insightIntentsSrcEntry": [ { "srcEntry": "./ets/insightintents/myIntentImpl.ets" } ] }
 ```
 
-### Q19: LLM 无法正确调用意图
+### Q20: LLM 无法正确调用意图
 
 **原因**：`llmDescription` 描述不够详细。
 
@@ -461,11 +578,30 @@ llmDescription: '搜索音乐'
 llmDescription: '根据关键词搜索音乐库中的歌曲。支持按歌曲名称、歌手名称进行模糊搜索。返回匹配的歌曲列表，包含歌曲ID、名称、歌手和URL信息。'
 ```
 
+### Q36: 冷启动后 Tab 不切换（@InsightIntentEntry + Tabs 架构）
+
+**现象**：意图触发后应用打开，但 Tab 停留在首页，未切换到目标 Tab。
+
+**原因**：`@StorageLink` 的 `@Watch` 不触发初始值。冷启动时序：
+① 意图写入 AppStorage → ② 组件创建时 `@StorageLink` 读到初始值 → ③ `@Watch` 不触发 → ④ `changeIndex` 未执行。
+
+**解决方案**：在组件的 `aboutToAppear` 中增加冷启动消费：
+
+```typescript
+aboutToAppear(): void {
+  if (this.intentTargetTab >= 0) {
+    this.currentIndex = this.intentTargetTab;
+    this.tabController?.changeIndex(this.currentIndex);
+    AppStorage.setOrCreate('intentTargetTab', -1);
+  }
+}
+```
+
 ------
 
 ## 四、配置错误
 
-### Q20: 编译错误 "PagePath in @InsightIntentPage does not match the actual page path"
+### Q21: 编译错误 "PagePath in @InsightIntentPage does not match the actual page path"
 
 **原因**：`pagePath` 路径格式不正确，使用了 `main_pages.json` 的路径格式而非 `@InsightIntentPage` 要求的格式。
 
@@ -479,7 +615,7 @@ llmDescription: '根据关键词搜索音乐库中的歌曲。支持按歌曲名
 
 **路径转换规则**：在 `main_pages.json` 路径前添加 `./ets/` 前缀，去掉 `.ets` 后缀。
 
-### Q21: 装饰器使用错误的字段名（@InsightIntentEntry）
+### Q22: 装饰器使用错误的字段名（@InsightIntentEntry）
 
 **编译错误**：`'mode' does not exist in type 'EntryIntentDecoratorInfo'`
 
@@ -501,7 +637,7 @@ llmDescription: '根据关键词搜索音乐库中的歌曲。支持按歌曲名
 })
 ```
 
-### Q22: executeMode 不是数组
+### Q23: executeMode 不是数组
 
 **编译错误**：`Type 'ExecuteMode' is not assignable to type 'ExecuteMode[]'`
 
@@ -519,7 +655,7 @@ executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]
 
 ## 五、EntryAbility 中 URI 处理的常见错误
 
-### Q23: 使用索引访问参数
+### Q24: 使用索引访问参数
 
 **错误代码**：
 
@@ -535,7 +671,7 @@ const params: WantParams = want.parameters as WantParams;
 const page = params.page;
 ```
 
-### Q24: router.pushUrl 使用内联对象字面量
+### Q25: router.pushUrl 使用内联对象字面量
 
 **错误代码**：
 
@@ -555,7 +691,7 @@ router.pushUrl(options);
 
 ## 六、@InsightIntentPage 装饰器误用
 
-### Q25: @InsightIntentPage 只能用于 struct
+### Q26: @InsightIntentPage 只能用于 struct
 
 **编译错误**：
 
@@ -585,7 +721,7 @@ struct Index { ... }
 
 ## 七、参数多参数定义问题
 
-### Q26: 多参数时如何定义
+### Q27: 多参数时如何定义
 
 **原因**：参数数量 ≥ 2 时建议使用 `@InsightIntentEntity`。
 
@@ -620,7 +756,7 @@ export default class MyExecutor extends InsightIntentEntryExecutor<string> {
 
 ## 八、其他常见错误
 
-### Q27: onExecute 返回值对象字面量未声明类型
+### Q28: onExecute 返回值对象字面量未声明类型
 
 **错误代码**：
 
@@ -641,13 +777,111 @@ const result: IntentResultTyped = { code: 0, result: '成功', wantParams: wantP
 return Promise.resolve(result as insightIntent.IntentResult<string>);
 ```
 
-### Q28: 多参数时类属性使用联合类型导致类型不匹配
+### Q29: 多参数时类属性使用联合类型导致类型不匹配
 
 已在 Q8 中覆盖。
 
-### Q29: abilityName 与 module.json5 不匹配导致 16000001
+### Q30: abilityName 与 module.json5 不匹配导致 16000001
 
 已在 Q17 中覆盖。
 
+### Q31: @InsightIntentForm 卡片一直显示初始值/空数据
 
+**原因**：`AppStorage`/模块静态变量在 UIAbility 和 FormExtensionAbility 之间不共享。
+`onAddForm` 同步返回时读到的是默认值。
 
+**解决方案**：
+1. 新建 `DataProvider.ets`，使用 `fs.openSync + fs.writeSync + fs.readTextSync + fs.closeSync` 同步文件读写
+2. 主应用在数据变化时调用 `saveXxx()` 写入文件 + `FormRegistry.getAll()` + `formProvider.updateForm()` 推送
+3. FormAbility 的 `onAddForm` 调用 `loadXxx()` 同步读文件；启动 `setTimeout` 轮询（200ms×15次）兜底
+
+### Q32: 卡片显示乱码/中文字符异常
+
+**原因**：手动用 `String.fromCharCode()` 逐字节转换 UTF-8 编码的文件内容，
+多字节中文字符（如"起风了"=9字节）被拆散。
+
+**解决方案**：使用 `fs.readTextSync(path)` 替代手动字节转换，其内置 UTF-8 解码。
+
+### Q33: 编译错误 onAddForm 不能返回 Promise
+
+**错误信息**：
+Property 'onAddForm' in type 'XxxFormAbility' is not assignable to the same property in base type.
+  Type '(want: Want) => Promise<FormBindingData>' is not assignable to type '(want: Want) => FormBindingData'.
+
+**原因**：`FormExtensionAbility` 基类定义 `onAddForm(want: Want): FormBindingData`（同步），
+子类不能通过 `async` 改为返回 `Promise<FormBindingData>`。
+
+**解决方案**：`onAddForm` 保持同步。异步逻辑通过 `setTimeout` 轮询链 + `formProvider.updateForm()` 实现。
+
+### Q34: 热启动同 URL 时相机/传感器不工作（@InsightIntentEntry 页面跳转型）
+
+**现象**：通过意图打开页面（如相册），冷启动正常，但应用已在前台且处于同一页面时再次调用意图，相机/扫描/传感器等功能不工作。
+
+**原因**：`windowStage.loadContent` 热启动同 URL 时，页面实例不重建，`aboutToAppear` 不执行。依赖 `aboutToAppear` 初始化的硬件未被重新初始化。
+
+**解决方案**：
+
+1. 将硬件初始化逻辑从 `aboutToAppear` 提取到独立方法
+2. 在 `onPageShow` 中增加幂等兜底调用
+3. 使用状态标志避免重复初始化
+
+```typescript
+@Entry
+@Component
+struct CameraPage {
+  @State isCameraReady: boolean = false;
+
+  aboutToAppear() {
+    this.initCamera();
+  }
+
+  onPageShow() {
+    // 热启动同 URL 时，aboutToAppear 不执行，此处兜底
+    if (!this.isCameraReady) {
+      this.initCamera();
+    }
+  }
+
+  private initCamera(): void {
+    if (this.isCameraReady) return;  // 幂等
+    // 初始化相机
+    this.isCameraReady = true;
+  }
+}
+```
+
+### Q35: onPageShow 中调用 openCamera 后还是黑屏
+
+**现象**：已在 `onPageShow` 中添加相机初始化兜底，但热启动后依然黑屏。
+
+**原因**：`onPageShow` 在页面显示时触发，但相机初始化可能是异步的，未等待完成就开始预览。或者 `openCamera` 内部有防重复调用机制（如 `if (this.camera) return`），但 `this.camera` 指向已释放的实例。
+
+**解决方案**：
+
+```typescript
+private async initCamera(): Promise<void> {
+  // 1. 先释放旧实例（确保幂等）
+  if (this.camera) {
+    await this.camera.close();
+    this.camera = null;
+  }
+  // 2. 重新创建
+  this.camera = await Camera.create();
+  // 3. 开始预览
+  await this.camera.startPreview();
+}
+
+onPageShow() {
+  // 不依赖状态标志，每次都重新初始化（但内部幂等）
+  this.initCamera();
+}
+```
+
+或使用 `onHidden` 明确释放资源：
+
+```typescript
+onHidden() {
+  // 页面被隐藏时释放相机，确保下次显示时重新初始化
+  this.releaseCamera();
+}
+```

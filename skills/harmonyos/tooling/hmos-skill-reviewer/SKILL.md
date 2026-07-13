@@ -1,6 +1,6 @@
 ---
 name: hmos-skill-reviewer
-description: 审查和验证 Agent Skills 是否符合 Claude Skills 规范。适用于评估 SKILL.md 文件、检查命名规范、验证内容结构或确保技能遵循最佳实践。提供元数据格式、内容组织、渐进式披露以及可操作性与知识性内容的综合分析。
+description: Review and validate Agent Skills for compliance with Claude Skills specification. Use when evaluating SKILL.md files, checking naming conventions, validating content structure, or ensuring skills follow best practices. Provides comprehensive analysis of metadata format, content organization, progressive disclosure, and actionable vs knowledge-based content.
 license: MIT
 metadata:
   author: harmonyos-dev-skills

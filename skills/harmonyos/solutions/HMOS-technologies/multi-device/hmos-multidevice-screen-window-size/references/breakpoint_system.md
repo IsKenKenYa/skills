@@ -305,6 +305,40 @@ onBreakpointChange(): void {
 
 ---
 
+### 前置条件四：断点类型必须与数据源保持一致
+
+`getWindowWidthBreakpoint()` 返回 `WidthBreakpoint` 枚举，`getWindowHeightBreakpoint()` 返回 `HeightBreakpoint` 枚举。写入 `AppStorage` 后，消费侧 `@StorageProp` 的类型和比较方式必须与写入侧保持一致，禁止混用。
+
+```typescript
+// ✅ 正确：写入侧和消费侧都使用 WidthBreakpoint 枚举
+// 写入侧（EntryAbility）
+AppStorage.setOrCreate('currentWidthBreakpoint', uiContext.getWindowWidthBreakpoint())
+
+// 消费侧（组件）
+@StorageProp('currentWidthBreakpoint') widthBp: WidthBreakpoint = WidthBreakpoint.WIDTH_SM
+if (this.widthBp === WidthBreakpoint.WIDTH_LG) { /* ... */ }
+```
+
+```typescript
+// ❌ 错误：写入侧是枚举，消费侧用 string + 字符串字面量比较
+AppStorage.setOrCreate('currentWidthBreakpoint', uiContext.getWindowWidthBreakpoint())
+
+@StorageProp('currentWidthBreakpoint') widthBp: string = 'sm'           // 类型不匹配
+if (this.widthBp === 'lg') { /* ... */ }                                // 枚举值不等于字符串字面量
+```
+
+**禁止行为**：
+
+| # | 禁止模式 | 原因 |
+|---|---------|------|
+| 1 | 写入 `WidthBreakpoint` 枚举，消费侧声明为 `string` 并用字面量 `'sm'` 比较 | 枚举值运行时不等于字符串字面量，判断永远为 false |
+| 2 | 同一 AppStorage key，部分组件用 `WidthBreakpoint` 类型消费，部分用 `string` 类型消费 | 类型不一致导致判断结果混乱，部分组件断点生效、部分不生效 |
+| 3 | `BreakpointType.getValue()` 参数类型与实际传入的断点类型不匹配 | 工具类内部比较逻辑无法匹配，返回错误值 |
+
+**正确做法**：全链路统一使用 `WidthBreakpoint` 枚举类型，比较时使用 `WidthBreakpoint.WIDTH_SM` 等枚举成员。
+
+---
+
 ## 断点回调状态完整性检查
 
 ### 核心原则：双向完整映射

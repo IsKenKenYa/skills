@@ -147,6 +147,35 @@ try {
 - 方法必须是 `static`
 - 返回值必须为 `insightIntent.ExecuteResult`，且 `result` 中包含 `resultDesc`
 
+### 11. `insightIntent.ExecuteResult.result` 的构建方式
+
+`result` 字段类型为 `Record<string, Object>`，不能用接口定义后赋值（接口缺少索引签名）。
+
+❌ **错误**：用接口定义 result 数据，类型不兼容
+
+```typescript
+interface MyResult { code: number; resultDesc: string; }
+const data: MyResult = { code: 0, resultDesc: '成功' };
+// data 不能赋值给 Record<string, Object>，因为 MyResult 没有索引签名
+```
+
+✅ **正确**：声明 `Record<string, Object>` 后逐属性赋值
+
+```typescript
+const resultData: Record<string, Object> = {};
+resultData['code'] = 0;
+resultData['resultDesc'] = '成功';
+resultData['itemCount'] = 3;
+
+const executeResult: insightIntent.ExecuteResult = {
+  code: 0,
+  result: resultData
+};
+return executeResult;
+```
+
+**说明**：此处 `resultData['code']` 的索引访问是允许的，因为 `Record<string, Object>` 本身就是索引签名类型，只能通过索引赋值添加属性。这与"禁止对普通接口/对象使用索引访问"不矛盾——后者针对的是已有明确属性定义的类型。
+
 ## 代码生成检查清单
 
 - 是否使用了 `any` 或 `unknown` 类型？
@@ -161,3 +190,5 @@ try {
 - `@InsightIntentFunctionMethod` 是否同时使用了 `@InsightIntentFunction()`？
 - `@InsightIntentPage` 是否直接在页面 struct 上使用？
 - 装饰器顺序是否正确？
+- **异步存储初始化检查**：存储工具类（RDB、Distributed KV Store、Preferences）是否在模块顶层使用 `getContext(this)`？（会导致冷启动 Context 为 undefined，应改为从全局动态获取）
+- **异步存储 API 等待检查**：存储工具类的 `getKVStore` / `getRdbStore` / `getPreferences` 是否在回调或 `.then()` 中赋值，且外部方法未等待就绪就使用实例？必须改造为 `waitReady()` 模式，意图代码需 `await` 就绪信号。

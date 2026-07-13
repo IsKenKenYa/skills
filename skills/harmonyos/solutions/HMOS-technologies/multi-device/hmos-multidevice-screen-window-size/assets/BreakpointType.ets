@@ -19,13 +19,13 @@ export class BreakpointType<T> {
   /**
    * 根据断点获取对应值
    */
-  getValue(breakpoint: string): T {
+  getValue(breakpoint: WidthBreakpoint): T {
     switch (breakpoint) {
-      case 'xl':
+      case WidthBreakpoint.WIDTH_XL:
         return this.xl ?? this.lg ?? this.md ?? this.sm;
-      case 'lg':
+      case WidthBreakpoint.WIDTH_LG:
         return this.lg ?? this.md ?? this.sm;
-      case 'md':
+      case WidthBreakpoint.WIDTH_MD:
         return this.md ?? this.sm;
       default:
         return this.sm;
@@ -50,18 +50,18 @@ export function breakpointType<T>(
  *
  * // 1. 列数配置
  * const columns = new BreakpointType(4, 8, 12);
- * GridRow({ columns: columns.getValue(this.currentBreakpoint) }) { ... }
+ * GridRow({ columns: columns.getValue(this.widthBp) }) { ... }
  *
  * // 2. 间距配置
  * const gutter = new BreakpointType(12, 16, 24);
- * GridRow({ gutter: { x: gutter.getValue(this.currentBreakpoint) } }) { ... }
+ * GridRow({ gutter: { x: gutter.getValue(this.widthBp) } }) { ... }
  *
  * // 3. 组件可见性
  * const visibility = new BreakpointType(Visibility.None, Visibility.Visible);
  * Text('详情')
- *   .visibility(visibility.getValue(this.currentBreakpoint))
+ *   .visibility(visibility.getValue(this.widthBp))
  *
  * // 4. 布局方向
  * const direction = new BreakpointType(Axis.Vertical, Axis.Horizontal);
- * List({ direction: direction.getValue(this.currentBreakpoint) }) { ... }
+ * List({ direction: direction.getValue(this.widthBp) }) { ... }
  */

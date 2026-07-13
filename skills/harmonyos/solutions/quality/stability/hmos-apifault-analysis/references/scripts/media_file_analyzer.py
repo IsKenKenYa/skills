@@ -1,4 +1,4 @@
-# 
+#
 #  Copyright (c) 2026 Huawei Device Co., Ltd.
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,18 +15,22 @@
 
 #!/usr/bin/env python3
 """
-Media File Format Analyzer for HarmonyOS Media Kit
+Media File Format Analyzer for  Media Kit
 
 Detects media file format via magic bytes, validates container structure,
 checks for truncation and corruption. Only deeply analyzes formats supported
-by HarmonyOS Media Kit; unsupported formats get a direct conclusion.
+by  Media Kit; unsupported formats get a direct conclusion.
 
 Usage:
     python media_file_analyzer.py --file <path> [--json] [--max-read-size 65536]
 
 Output: JSON with format detection, container integrity, truncation check,
         issues list, overall assessment, and error code correlation.
+
+Requires Python 3.7+.
 """
+
+from __future__ import annotations
 
 import argparse
 import json
@@ -825,7 +829,7 @@ class MediaFileAnalyzer:
                 "container_integrity": None,
                 "truncation_check": None,
                 "issues": [_issue("critical", "unsupported_format",
-                                  f"文件格式 {fmt_info['display_name']} 不在 HarmonyOS Media Kit 支持范围内",
+                                  f"文件格式 {fmt_info['display_name']} 不在  Media Kit 支持范围内",
                                   {"supported_formats": sorted(SUPPORTED_FORMATS)})],
                 "overall_assessment": "unsupported_format",
                 "error_code_correlation": _error_code_correlation(fmt, [], False),
@@ -897,7 +901,7 @@ class MediaFileAnalyzer:
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Media File Format Analyzer for HarmonyOS Media Kit")
+    parser = argparse.ArgumentParser(description="Media File Format Analyzer for  Media Kit")
     parser.add_argument("--file", required=True, help="Path to the media file")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--max-read-size", type=int, default=None,

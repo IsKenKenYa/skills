@@ -8,6 +8,11 @@ set -e
 
 ALL_PLATFORMS="claude codex opencode codeagent gemini openclaw custom"
 
+# Whitelist of skill names this entry skill is allowed to fetch.
+# The scenario-entry skill only routes to these six child scenario skills;
+# any other value is rejected before download to avoid loading unintended skills.
+ALLOWED_SKILLS="hmos-multidevice-screen-window-size hmos-multidevice-fold-state hmos-multidevice-avoid-areas hmos-multidevice-interaction-methods hmos-multidevice-natural-orientation hmos-multidevice-hardware-access"
+
 DEFAULT_CACHE_ROOT="${HOME}/.cache/ai-skill-cache"
 
 get_platform_name() {
@@ -42,6 +47,19 @@ is_valid_platform() {
     esac
 }
 
+is_allowed_skill() {
+    # Reject anything that isn't a plain skill identifier first:
+    # no spaces, globs, path separators, or shell metacharacters.
+    case "$1" in
+        ""|*[!A-Za-z0-9._-]*) return 1 ;;
+    esac
+    # Exact literal match against the whitelist (no glob interpretation).
+    for s in $ALLOWED_SKILLS; do
+        [ "$s" = "$1" ] && return 0
+    done
+    return 1
+}
+
 show_usage() {
     cat <<'EOF'
 Usage: $0 <skill-name> [platforms...] [options]
@@ -67,6 +85,15 @@ Cache Strategy:
   Downloaded skills are cached under <cache-root>/matrix/<skill-name>/.
   On subsequent installs the cached copy is reused, avoiding re-download.
   Skills are exposed to target directories via symlink (default) or copy.
+
+Allowed Skills (whitelist):
+  Only the following <skill-name> values are accepted:
+    - hmos-multidevice-screen-window-size
+    - hmos-multidevice-fold-state
+    - hmos-multidevice-avoid-areas
+    - hmos-multidevice-interaction-methods
+    - hmos-multidevice-natural-orientation
+    - hmos-multidevice-hardware-access
 
 Examples:
   $0 my-skill claude
@@ -150,6 +177,16 @@ done
 
 if [ -z "$SKILL_NAME" ]; then
     show_usage
+    exit 1
+fi
+
+# Validate skill name against the whitelist before any download or install
+if ! is_allowed_skill "$SKILL_NAME"; then
+    echo "Error: Skill '${SKILL_NAME}' is not in the allowed whitelist." >&2
+    echo "Only the following skills may be installed by this entry skill:" >&2
+    for s in $ALLOWED_SKILLS; do
+        echo "  - ${s}" >&2
+    done
     exit 1
 fi
 

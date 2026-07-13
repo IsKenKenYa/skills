@@ -2,7 +2,7 @@
 name: hmos-multidevice-screen-window-size
 description: HarmonyOS 多设备屏幕窗口尺寸适配。当任务涉及以下任一场景时必须调用：（1）比价与分屏：比价/比价场景/比价窗口/价格对比/创建新窗口/多窗口并行/双窗口；（2）平行视界与分栏：平行视界/EasyGo/easy_go.json/分栏效果/分栏布局/列表详情分栏/navigationSplit/routerSplit/Navigation分栏；（3）响应式与自适应布局：响应式布局/自适应布局/断点/GridRow/GridCol/WidthBreakpoint/HeightBreakpoint/重复布局/分栏布局/挪移布局/缩进布局；（4）窗口监听：windowSizeChange/窗口尺寸变化/布局未同步更新；（5）组件自适应：layoutWeight/Blank/aspectRatio/displayPriority/FlexWrap/拉伸/均分/隐藏/折行/缩放/占比/百分比宽度；（6）多设备适配：手机/平板/2in1/穿戴/折叠屏/双折/三折/大屏/横竖屏/密度/字体缩放/滚动延伸；（7）布局异常：截断/留白/溢出/遮挡/错位/对齐异常/GridRow不降列/断点不切换/图片变形/压缩。不适用于：FoldStatus、hover、折痕、安全区、与尺寸无关的调整。
 metadata:
-  version: 1.0.1
+  version: 1.0.2
   keywords:
     - 自适应布局
     - 响应式布局
@@ -63,14 +63,6 @@ metadata:
 - **平行视界优先约束**：当用户需求中明确提及「平行视界」「EasyGo」或「easy_go.json」时，**必须优先使用 EasyGo 系统配置方案（SIZE-07）**，禁止使用 Navigation `.mode(NavigationMode.Split)` / `SideBarContainer` 等手动分栏代码替代。EasyGo 方案通过 `easy_go.json` 配置文件 + `module.json5` 声明实现，页面代码保持普通 Stack 导航与 `pushPath`，由系统自动在宽屏设备上接管分栏；禁止在命中 SIZE-07 时同时手写 `NavigationMode.Split` 切换逻辑。
 - **Navigation 分栏简化优先约束**：在非 EasyGo 场景下需要实现 Navigation 单/双栏切换时，**优先使用 `NavigationMode.Auto`**，系统自动在 ≤600vp 时使用 Stack、>600vp 时使用 Split，无需引入 `WidthBreakpoint`、`@StorageProp` 或 `windowSizeChange` 监听代码。仅在需要自定义断点阈值、运行时动态切换（如聊天场景全屏回退）、或不同断点差异化 `navBarWidth` 时才使用手动断点切换。详见 RESP-02 方案选择表。
 - **SKILL 方案优先约束**：断点、布局、窗口监听相关的 API 和实现方式，**必须仅使用本技能资源（`references/` 和 `assets/` 目录下的文件）中明确记录的方案**。禁止使用训练数据中记忆但未在本技能资源中出现的 API（例如 `GridRow.onBreakpointChange` 未出现在任何 reference 或 asset 文件中，不得使用）。当训练知识与技能文档方案冲突时，以技能文档为准。输出代码前，应先对照已读取的资源文件确认所用 API 是否有文档依据。
-- **HDS 组件升级提示**：当 DEV 阶段涉及以下常规 ArkUI 组件的多设备布局时，应主动提示用户可考虑使用 HDS（UI Design Kit）增强组件以获得更好的跨设备体验和更少的适配代码：
-  - `SideBarContainer` / `Navigation` 分栏 → `HdsSideBar`（内置 embed/overlay 双模式，自动安全区处理）
-  - `Tabs` 底部页签 → `HdsTabs`（内置悬浮样式 `barFloatingStyle` 支持三断点响应式宽度、迷你栏、沉浸光感）
-  - `List` / `ListItem` → `HdsListItem` / `HdsListItemCard`（内置横滑操作和卡片样式）
-  - `MultiWindowEntry` 应用内分屏（非 HDS 版）→ `MultiWindowEntryInAPP`（专为折叠/平板大屏优化）
-  - HDS 组件详细 API 和示例参见 `../hmos-multidevice-scenario-entry/references/hds-ui-design-kit.md`，路由入口为 `SCENE-09`。
-  - **升级建议不构成强制要求**；用户明确选择常规组件时，仍以本技能方案为准。
-
 ## 阶段标签
 
 | 标签 | 阶段 | 当前模块关注点 |

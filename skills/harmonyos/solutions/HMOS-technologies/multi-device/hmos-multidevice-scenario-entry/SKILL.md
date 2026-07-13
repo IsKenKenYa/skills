@@ -1,8 +1,8 @@
 ---
 name: hmos-multidevice-scenario-entry
-description: HarmonyOS 多设备适配的入口技能。当任务广泛涉及 HarmonyOS 多设备适配、折叠屏验证或目标场景尚不明确时使用。该技能按阶段和场景类型对请求进行分类，然后路由到屏幕窗口尺寸、折叠状态、避让区、交互方式、自然方向、硬件访问或 HDS（UI Design Kit）增强组件等场景文件。
+description: Entry skill for HarmonyOS multi-device adaptation. Use when the task broadly concerns HarmonyOS multi-device adaptation, the task involves foldable device verification or when the correct scenario is still unclear. This skill classifies the request by phase and scenario type, then routes to one or more scenario files for screen and window size, fold state, avoid areas, interaction methods, natural orientation, or hardware access.
 metadata:
-  version: 1.0.1
+  version: 1.0.2
   keywords:
     - HarmonyOS多设备适配
     - 鸿蒙多设备适配
@@ -14,10 +14,6 @@ metadata:
     - 多设备问题分类
     - 多设备验证
     - 设备形态适配
-    - HDS
-    - UI Design Kit
-    - 沉浸光感
-    - 高端界面组件
 ---
 
 # 鸿蒙多设备适配总场景入口
@@ -30,7 +26,7 @@ metadata:
 | `skill_name` | `鸿蒙多设备适配总场景入口` |
 | `one_line_purpose` | 先判断当前问题属于哪类多设备适配场景，再把请求引导到对应场景文件。 |
 | `device_scope` | `phone / tablet / tv / 2in1 / wearable` |
-| `problem_scope` | `多设备布局、折展状态、避让区、交互方式、自然方向、硬件能力差异、HDS 高端界面组件` |
+| `problem_scope` | `多设备布局、折展状态、避让区、交互方式、自然方向、硬件能力差异` |
 | `not_in_scope` | `分布式流转、账号体系、网络通信、纯业务功能设计、与多设备无关的常规 UI 微调` |
 | `primary_outputs` | `active_phases`、`primary_phase`、`primary_scene`、`secondary_scenes`、`route_reason`、`next_scene_refs` |
 
@@ -62,15 +58,11 @@ metadata:
 
 ## 字段释义
 
-- `primary_scene`：当前请求最应该先进入的场景。
-- `secondary_scenes`：与主场景联动的次级场景列表，只允许填写 `SCENE-xx` 形式的场景 id，不填写 skill 路径。
+- `primary_scene`：根据用户意图判定的、与当前请求最关联的场景。
+- `secondary_scenes`：根据用户意图动态判定的关联次级场景列表（**场景卡片不内置固定的次级列表**，由路由逻辑按当前请求的信号词实时推导）。只允许填写 `SCENE-xx` 形式的场景 id，不填写 skill 路径。
 - `route_reason`：说明为什么命中当前主场景，而不是其他场景。
-- `next_scene_refs`：下一步应该实际打开的场景文件路径列表。
+- `next_scene_refs`：下一步应该实际打开的场景文件路径列表，包含主场景路径，以及根据 `secondary_scenes` 通过"场景与 Skill 名称映射"解析出的次级场景路径。
 - `primary_scene_ref`：当前场景卡片直接指向的主场景路径，只在场景卡片内部使用。
-- `secondary_scene_refs`：当前场景卡片常见的次级场景路径，只在场景卡片内部使用。
-- `scene_strategy`：当前场景是 `single` 还是 `composite`。
-- `candidate_scenes`：当 `scene_strategy: composite` 时，可作为主次场景的候选 `SCENE-xx` 列表。
-- `candidate_scene_refs`：当 `scene_strategy: composite` 时，可进一步展开的候选场景文件路径列表。
 - 这个总场景入口不输出 `device_constraints`；`device_constraints` 属于场景文件的 `REQ` 字段，由对应场景在展开分析时产出。
 
 ## 强制路由执行流程
@@ -111,16 +103,17 @@ metadata:
   - 开发、实现、怎么写、代码接线，归入 `DEV`
   - 修复、bug、异常、错位、崩溃，归入 `FIX`
   - 验证、测试、验收、截图证据、回归，归入 `VAL`
-- 再按问题关键词命中主场景，不要一次性读取全部场景文件。
-- 命中单一场景时，只打开对应场景文件。
-- 命中复合场景时，先确定 `primary_scene`，再从 `secondary_scenes` 里补充 1-2 个次级场景，并汇总为最终的 `next_scene_refs`。
-- 若问题只表现为“多设备布局不一致”而未出现更强特征词，默认先走 `SCENE-01`。
+- 再按问题关键词匹配**所有**相关场景，得到候选场景集合；不要一次性读取全部场景文件，只在候选集合内操作。
+- 按**关联程度**对候选场景排序：关联度最高的为 `primary_scene`，其余关联场景取 0-2 个作为 `secondary_scenes`（次级场景由路由逻辑按意图实时判定，**不来自主场景卡片内置的固定列表**）。**所有候选场景（primary + secondary）均为必读项，不得只读 primary 而跳过 secondary。**
+- 候选集合仅 1 个场景时，`secondary_scenes` 留空，`next_scene_refs` 只含主场景路径。
+- 候选集合多于 1 个场景时，将 `primary_scene` 与 `secondary_scenes` 一并通过"场景与 Skill 名称映射"解析为最终的 `next_scene_refs`。
+- 若问题只表现为”多设备布局不一致”而未出现更强特征词，默认先走 `SCENE-01`。
+- **设备形态覆盖 vs 折展状态处理**：当用户表达的是”让布局适配某种设备类型”（如”适配双折叠””适配三折叠””适配平板””从直板机扩展到大屏”），核心是布局扩展而非状态检测，归入 `SCENE-01`。只有当用户明确涉及折展状态切换（`FoldStatus` 变化）、悬停态分屏、折痕避让、开合连续性等动态行为时，才归入 `SCENE-02`。关键词中”双折””三折”作为设备类型名时指向 SCENE-01，作为状态名（如”三折态””G态”）时指向 SCENE-02。
 - 涉及“旋转后布局未更新、窗口变化未同步”但不涉及自然方向语义、`setPreferredOrientation` 或 `rotation` 值解释时，仍优先走 `SCENE-01`。
 - 若请求出现明确系统区域遮挡、折痕、方向语义、输入设备或硬件能力词，则优先使用对应专有场景，不要被布局关键词抢走。
-- 若请求涉及折叠设备验证、hidumper 模拟、多形态分辨率阶梯验证，且当前处于 VAL 阶段，优先走 `SCENE-08`；若同时伴随开发或修复问题，先走对应主场景，再在 VAL 阶段补充 `SCENE-08`。
-- 若请求出现 `Hds` 前缀组件名、`@kit.UIDesignKit`、`hdsEffect`、`hdsMaterial`、`hdsDrawable`、`symbolRegister`、沉浸光感、点光源、流光、核心操作栏、高端界面等信号词，优先走 `SCENE-09`。
-- 若请求同时涉及常规 ArkUI 组件升级（如 Navigation → HdsNavigation、Tabs → HdsTabs、SideBarContainer → HdsSideBar）和布局/避让问题，优先走 `SCENE-09`（HDS 组件通常代码更简洁，内置安全区和响应式能力），同时联动对应布局/避让场景作为约束参考。
-- 若请求仅涉及常规 ArkUI 布局断点/栅格/窗口监听，未提及 HDS 或增强组件，则仍走 `SCENE-01`，但在 DEV 阶段可主动提示 HDS 组件可作为更优替代方案。
+- 若请求涉及折叠设备验证、hidumper 模拟、多形态分辨率阶梯验证，且当前处于 VAL 阶段，优先走 `SCENE-07`；若同时伴随开发或修复问题，先走对应主场景，再在 VAL 阶段补充 `SCENE-07`。
+- 若请求出现 `Hds` 前缀组件名、`@kit.UIDesignKit`、`hdsEffect`、`hdsMaterial`、`hdsDrawable`、`symbolRegister`、沉浸光感、点光源、流光、核心操作栏、高端界面等信号词，或涉及常规 ArkUI 组件升级（如 Navigation → HdsNavigation、Tabs → HdsTabs、SideBarContainer → HdsSideBar），优先走 `SCENE-03`（避让区），该场景内置 HDS 高级组件知识库（`hds-ui-design-kit.md`），HDS 组件内置安全区处理和沉浸光感能力可大幅减少手动避让代码。
+- 若请求仅涉及常规 ArkUI 布局断点/栅格/窗口监听，未提及 HDS 或增强组件，则走 `SCENE-01`。布局场景不主动提示 HDS。
 
 ## Skill 自动加载
 
@@ -144,7 +137,7 @@ metadata:
 ### 约束
 
 - 只有在场景文件确实不存在时才触发安装，不要重复安装已存在的 skill。
-- `SCENE-07`（复合问题联合场景）和 `SCENE-08`（折叠设备多形态验证场景）没有独立的远程 skill，不需要走自动加载流程。
+- `SCENE-07`（折叠设备多形态验证场景）没有独立的远程 skill，不需要走自动加载流程。
 - 安装失败时，应告知用户手动执行脚本或检查网络连接，不要在安装失败后继续读取不存在的文件。
 
 ## 场景簇索引
@@ -169,19 +162,23 @@ intent_signals:
   - 平行视界
   - 分屏
   - 启动页图标
+  - 多设备适配
+  - 适配双折
+  - 适配三折
+  - 适配折叠屏
+  - 适配平板
+  - 适配大屏
+  - 直板机适配
+  - 多形态布局
+  - 设备形态覆盖
 applies_when:
   - 主要问题是断点、结构切换或窗口尺寸变化
   - 问题可以不依赖折叠态、系统避让区、方向语义、输入设备或硬件能力来解释
+  - 用户需要将现有布局扩展到更多设备形态（如从直板机扩展到双折/三折/平板），核心是布局在不同尺寸上的呈现
+  - 用户表达的是"让布局适配某种设备类型"而非处理折展状态切换的动态行为
 not_applies_when:
   - 存在折痕、悬停态、Pura X、键盘遮挡、状态栏遮挡、自然方向语义、`setPreferredOrientation`、`rotation` 值解释、mouse、canIUse 等更强信号
-scene_strategy: single
 primary_scene_ref: ../hmos-multidevice-screen-window-size/SKILL.md
-secondary_scenes:
-  - SCENE-02
-  - SCENE-03
-secondary_scene_refs:
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-avoid-areas/SKILL.md
 ```
 
 #### `SCENE-02` 折展状态与折痕场景
@@ -193,26 +190,26 @@ phase_tags: [REQ, DEV, FIX, VAL]
 priority: P0
 intent_signals:
   - foldStatus
-  - 折叠
-  - 展开
+  - foldStatusChange
+  - foldDisplayModeChange
+  - 折展状态
   - 悬停态
+  - HALF_FOLDED
   - 折痕
-  - tri-fold
+  - 折痕避让
+  - 开合连续性
+  - 内外屏切换
   - G态
   - Pura X
+  - tri-fold state
 applies_when:
-  - 主要问题依赖设备折叠状态、折痕几何或宽折叠形态
-  - 页面在手机和平板正常，但在折叠设备上出现结构或行为异常
+  - 主要问题依赖设备折叠状态变化（FoldStatus 切换）、折痕几何或悬停态分屏
+  - 需要检测折展状态、处理悬停态分屏布局、避让折痕区域或保障开合连续性
+  - 页面在手机和平板正常，但在折叠设备折展状态切换时出现结构或行为异常
 not_applies_when:
   - 问题只与普通横竖屏变化或普通窗口断点有关
-scene_strategy: single
+  - 用户只是要将现有布局扩展到折叠屏设备（如"适配双折叠""适配三折叠""适配平板"），但未提及折展状态切换、悬停态、折痕避让等动态行为 → 归入 SCENE-01
 primary_scene_ref: ../hmos-multidevice-fold-state/SKILL.md
-secondary_scenes:
-  - SCENE-01
-  - SCENE-05
-secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-natural-orientation/SKILL.md
 ```
 
 #### `SCENE-03` 系统区域与键盘避让场景
@@ -236,14 +233,7 @@ applies_when:
   - 需要处理背景延伸和内容避让边界
 not_applies_when:
   - 问题只是普通 margin 或栅格调整
-scene_strategy: single
 primary_scene_ref: ../hmos-multidevice-avoid-areas/SKILL.md
-secondary_scenes:
-  - SCENE-01
-  - SCENE-02
-secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-fold-state/SKILL.md
 ```
 
 #### `SCENE-04` 多输入与焦点交互场景
@@ -267,12 +257,7 @@ applies_when:
   - 需要同时兼容触摸、鼠标、键盘或手写笔
 not_applies_when:
   - 问题只表现为布局变化，没有交互行为变化
-scene_strategy: single
 primary_scene_ref: ../hmos-multidevice-interaction-methods/SKILL.md
-secondary_scenes:
-  - SCENE-01
-secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
 ```
 
 #### `SCENE-05` 自然方向与旋转语义场景
@@ -295,14 +280,7 @@ applies_when:
   - 需要区分屏幕旋转、窗口方向和自然方向
 not_applies_when:
   - 只是宽度断点变化或窗口尺寸同步导致的布局切换
-scene_strategy: single
 primary_scene_ref: ../hmos-multidevice-natural-orientation/SKILL.md
-secondary_scenes:
-  - SCENE-02
-  - SCENE-01
-secondary_scene_refs:
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-screen-window-size/SKILL.md
 ```
 
 #### `SCENE-06` 硬件能力与外设场景
@@ -321,69 +299,27 @@ intent_signals:
   - GPS
   - NFC
   - 蓝牙
-  - 外接设备
-  - 热插拔
 applies_when:
   - 主要问题是硬件能力存在设备差异，或调用前必须先检测能力
   - 行为异常与设备枚举、权限声明、连接切换或降级策略直接相关
 not_applies_when:
   - 问题是纯 UI 布局、方向或避让，不涉及硬件能力差异
-scene_strategy: single
 primary_scene_ref: ../hmos-multidevice-hardware-access/SKILL.md
-secondary_scenes:
-  - SCENE-04
-secondary_scene_refs:
-  - ../hmos-multidevice-interaction-methods/SKILL.md
 ```
 
-#### `SCENE-07` 复合问题联合场景
+#### `SCENE-07` 折叠设备多形态验证场景
 
 ```yaml
 scene_id: SCENE-07
-scene_name: 复合问题联合场景
-phase_tags: [REQ, DEV, FIX, VAL]
-priority: P1
-intent_signals:
-  - 同时出现折叠、键盘、窗口、方向、输入或硬件中的多个信号
-  - 需要解释主问题和连带问题
-  - 单一场景不足以完整覆盖
-applies_when:
-  - 问题必须同时依赖两个以上场景才能解释
-  - 需要先选主场景，再合并次场景
-not_applies_when:
-  - 单一场景已经足够解释问题
-scene_strategy: composite
-candidate_scenes:
-  - SCENE-01
-  - SCENE-02
-  - SCENE-03
-  - SCENE-04
-  - SCENE-05
-  - SCENE-06
-  - SCENE-09
-candidate_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-fold-state/SKILL.md
-  - ../hmos-multidevice-avoid-areas/SKILL.md
-  - ../hmos-multidevice-interaction-methods/SKILL.md
-  - ../hmos-multidevice-natural-orientation/SKILL.md
-  - ../hmos-multidevice-hardware-access/SKILL.md
-  - ./references/hds-ui-design-kit.md
-```
-
-#### `SCENE-08` 折叠设备多形态验证场景
-
-```yaml
-scene_id: SCENE-08
 scene_name: 折叠设备多形态验证场景
 phase_tags: [VAL]
 priority: P1
 intent_signals:
   - hidumper
-  - 折叠态验证
-  - 展开态验证
-  - 悬停态验证
-  - 三屏态验证
+  - 折叠态布局验证
+  - 展开态布局验证
+  - 悬停态布局验证
+  - 三屏态布局验证
   - 分辨率阶梯
   - 多形态验证
   - 模拟折叠
@@ -394,88 +330,13 @@ applies_when:
 not_applies_when:
   - 仅涉及直板机或平板设备验证（无折叠形态）
   - 问题属于开发实现而非验证流程
-scene_strategy: single
 primary_scene_ref: ./references/multi-device-verification.md
 ```
-
-#### `SCENE-09` HDS (UI Design Kit) 高端界面组件场景
-
-```yaml
-scene_id: SCENE-09
-scene_name: HDS (UI Design Kit) 高端界面组件场景
-phase_tags: [REQ, DEV, FIX, VAL]
-priority: P1
-intent_signals:
-  - HDS
-  - UI Design Kit
-  - UIDesignKit
-  - HdsNavigation
-  - HdsTabs
-  - HdsSideBar
-  - HdsSideMenu
-  - HdsSnackBar
-  - HdsActionBar
-  - HdsListItem
-  - MultiWindowEntryInAPP
-  - hdsEffect
-  - hdsMaterial
-  - hdsDrawable
-  - symbolRegister
-  - 沉浸光感
-  - 点光源
-  - 流光效果
-  - 按压阴影
-  - 核心操作栏
-  - 高端界面
-  - barFloatingStyle
-  - dynamicHideTitleBar
-applies_when:
-  - 需要使用 @kit.UIDesignKit 提供的高端增强型组件（导航、页签、侧边栏、操作栏、列表、视效等）
-  - 需要使用 HDS 视效能力（点光源、按压阴影、流光、沉浸光感材质）
-  - 需要处理 HDS 图标资源（分层/单层图标处理、自定义 Symbol 注册）
-  - 用户明确要求使用 HDS 组件替代原生 ArkUI 组件以获得更好视觉效果或更少适配代码
-not_applies_when:
-  - 问题纯属于常规 ArkUI 基础组件的布局或样式微调，无 HDS 组件使用意图
-  - 问题是纯业务逻辑或分布式能力，与 UI 组件增强无关
-scene_strategy: single
-primary_scene_ref: ./references/hds-ui-design-kit.md
-secondary_scenes:
-  - SCENE-01
-  - SCENE-03
-  - SCENE-02
-secondary_scene_refs:
-  - ../hmos-multidevice-screen-window-size/SKILL.md
-  - ../hmos-multidevice-avoid-areas/SKILL.md
-  - ../hmos-multidevice-fold-state/SKILL.md
-```
-
-#### SCENE-09 与其他场景的交叉引流规则
-
-当请求同时命中 SCENE-09 和其他场景时，按以下规则处理：
-
-1. **SCENE-09 + SCENE-01（布局与窗口）**：
-   - 用户想用 `HdsSideBar` 替代 `SideBarContainer` / `Navigation` 分栏 → 主走 SCENE-09，SCENE-01 作为布局约束参考
-   - `HdsTabs` 的 `barFloatingStyle.barWidth` 响应式宽度配置 → 主走 SCENE-09
-   - 用户只关心断点/栅格布局，不涉及 HDS 组件 → 主走 SCENE-01
-
-2. **SCENE-09 + SCENE-03（避让区）**：
-   - `HdsNavigation` 的 `enableComponentSafeArea` 自动处理安全区 → 推荐优先使用 HDS（代码量更少）
-   - `hdsMaterial` 沉浸光感替代手动沉浸式全屏 → 主走 SCENE-09
-   - 纯键盘避让/挖孔区避让，不涉及 HDS → 主走 SCENE-03
-
-3. **SCENE-09 + SCENE-02（折展）**：
-   - `MultiWindowEntryInAPP` 仅在折叠屏/平板横屏生效 → 主走 SCENE-09（组件用法），SCENE-02 作为设备约束参考
-   - 折叠屏悬停态布局不涉及 HDS 组件 → 主走 SCENE-02
-
-4. **SCENE-09 + SCENE-04（交互）**：
-   - `hdsEffect` 按压阴影/点光源增强触摸反馈 → 主走 SCENE-09
-   - `HdsActionBar` 的 hoverTips 支持鼠标悬停 → 主走 SCENE-09（组件用法），SCENE-04 作为交互规范参考
-   - 纯键盘焦点/手写笔/鼠标右键，不涉及 HDS → 主走 SCENE-04
 
 ## 输出约定
 
 - 先输出结构化场景判断，再**实际读取**对应场景文件（见"强制路由执行流程"）。
-- 如果必须联合多个场景，优先输出 `SCENE-07` 的组合策略。
 - 不要把场景和实现混在一起；入口负责定位，场景文件负责展开。
 - 最终输出应尽量保持字段稳定，不要因表达习惯改变字段名。
 - 路由输出后，必须等待场景文件和核心参考文档读取完成，才能进入实现阶段。不允许"路由 → 直接写代码"的两步跳过。
+- 当路由命中多个场景（primary + secondary）时，`next_scene_refs` 中的**所有场景文件必须全部实际读取**，各场景资料并行阅读后再综合输出方案，不得只读 primary 而遗漏 secondary。

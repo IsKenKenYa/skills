@@ -12,7 +12,7 @@
 | 上游 | submodule 路径 | main 下镜像位置 | 翻译策略 |
 |------|---------------|----------------|----------|
 | [mattpocock/skills](https://github.com/mattpocock/skills) | `references/mattpocock-skills` | `skills/{engineering,productivity,misc,personal,in-progress,deprecated}/` | description 译为中文，正文不动 |
-| [HarmonyOS_Skills/harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) | `references/harmonyos-skills` | `skills/harmonyos/{design,solutions,development,test,tools,tooling}/` | 上游原生中文，不翻译；数字前缀目录压平 |
+| [HarmonyOS_Skills/harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) | `references/harmonyos-skills` | `skills/harmonyos/{design,solutions,development,test,launch-and-distribute,tools,tooling}/` | 上游原生中文，不翻译；数字前缀目录压平 |
 | [android/skills](https://github.com/android/skills) | `references/android-skills` | `skills/android/<技术域>/` | description 译为中文，正文不动 |
 
 自建 skill（非上游）：
@@ -56,7 +56,11 @@ git checkout main
 ### HarmonyOS（原生中文上游，不翻译）
 
 - 直接把上游变更原样同步到 main 的 `skills/harmonyos/` 下对应位置。
-- 注意目录映射：上游用数字编号阶段分类（`02-design/`、`04-development/01-application-framework/` 等），main 下压平为 `design/`、`development/application-framework/` 等。同步时按映射表转换路径。
+- 注意目录映射：上游用数字编号阶段分类，main 下压平并去除各层数字前缀。映射如下：
+  - `02-design/` → `design/`，`03-solutions/` → `solutions/`，`04-development/` → `development/`，`05-test/` → `test/`。
+  - `06-lanunch-and-distribute/`（上游目录名保留其拼写）→ `launch-and-distribute/`。
+  - `07-tools/tools/` → `tools/`；其余中间目录如 `01-application-framework/`、`03-media/`、`05-application-services/` 仅去掉数字前缀。
+  - 上游根目录 `.hmos-skill-reviewer/` → `tooling/hmos-skill-reviewer/`。
 - 新增 skill → 同步到对应分类，补 plugin.json 和 README。
 - HarmonyOS 的 `deveco-native-flow/references/` 下子 skill 必须带 `metadata.internal: true`（见下文「内部子 skill」）。上游若新增此类子 skill，同步时要补上该字段。
 
@@ -147,12 +151,18 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 - README 中保留 skill 名、路径、命令、专有名词和外部链接；只本土化说明文字。
 - 不要为了翻译 README 改动 `SKILL.md` 正文。`SKILL.md` 正文仍按上游同步策略处理，避免影响 agent 执行语义。
 
+## Changelog 维护规范
+
+- 顶层 `CHANGELOG.md` 是给中文使用者看的同步记录，按日期使用 `## YYYY-MM-DD` 标题，不使用镜像仓库自造的语义版本号。
+- 每次同步按上游分组记录新增、删除、改名、正文/资源同步，以及本土化、生成工具和维护文档变化；不重复罗列未变化 skill。
+- 每个上游分组注明本次同步到的 commit 短 SHA，确保 changelog 可追溯到 `upstream-refs` 中相同来源的 submodule 指针。
+
 ## 重新生成 plugin.json 和 README 清单
 
 新增/删除 skill 后，两者都要更新。生成脚本逻辑：
 
 - `plugin.json`：扫描 `skills/` 下所有 SKILL.md，**排除 `metadata.internal: true` 的**，收集相对路径。name 字段为 `kenken-skills`。
-- `README.md`：按上游分组（mattpocock 按 6 类、HarmonyOS 按 design/solutions/.../tooling、Android 按技术域、meta），每组列 skill 名 + 中文 description 的表格。
+- `README.md`：按上游分组（mattpocock 按 6 类、HarmonyOS 按 design/solutions/development/test/launch-and-distribute/tools/tooling、Android 按技术域、meta），每组列 skill 名 + 中文 description 的表格。
 
 生成命令：
 

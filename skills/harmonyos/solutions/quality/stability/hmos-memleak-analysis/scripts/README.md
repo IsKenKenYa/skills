@@ -59,7 +59,7 @@ python filter_on.py ./src --json
 ```
 
 ### JSON输出
-使用`--json`参数会生成`memleak_report.json`文件，包含结构化的结果数据，便于其他工具处理。
+使用`--json`参数会直接将结构化的JSON结果打印到标准输出，便于其他工具通过管道读取或重定向到文件（如 `python filter_on.py ./src --json > report.json`）。
 
 ## 技术实现
 

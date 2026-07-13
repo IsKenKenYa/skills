@@ -35,6 +35,7 @@ HARMONY_GROUPS = [
     Group("solutions — 解决方案", None, ("harmonyos/solutions",)),
     Group("development — 开发", None, ("harmonyos/development",)),
     Group("test — 测试", None, ("harmonyos/test",)),
+    Group("launch-and-distribute — 发布与分发", None, ("harmonyos/launch-and-distribute",)),
     Group("tools — DevEco 工具", None, ("harmonyos/tools",)),
     Group("tooling — 审查工具", None, ("harmonyos/tooling",)),
 ]

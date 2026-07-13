@@ -4,17 +4,45 @@
 
 ### 何时需要配置 insight_intent.json
 
-| 场景                                                         | 是否需要配置 | 说明               |
-| ------------------------------------------------------------ | ------------ | ------------------ |
-| 新建意图文件（@InsightIntentEntry、@InsightIntentFunctionMethod 等） | ✅ 需要       | 新文件需要注册路径 |
-| 修改现有文件添加 @InsightIntentPage 装饰器                   | ❌ 无需       | 页面路由已注册     |
-| 修改现有文件添加 @InsightIntentLink 装饰器                   | ❌ 无需       | URI 链接无需注册   |
+| 场景                                                         | 是否需要配置 | 说明                                   |
+| ------------------------------------------------------------ | ------------ | -------------------------------------- |
+| 新建意图文件（@InsightIntentEntry、@InsightIntentFunctionMethod 等） | ✅ 需要       | 新文件需要注册路径                     |
+| 修改现有文件添加 @InsightIntentPage 装饰器                   | ❌ 无需       | 页面路由已注册                         |
+| 修改现有文件添加 @InsightIntentLink 装饰器                   | ❌ 无需       | URI 链接无需注册                       |
+| 新建意图文件（@InsightIntentForm 新增 FormExtensionAbility） | ✅ 需要       | 新文件需要注册路径                     |
+| 修改现有文件添加 @InsightIntentForm 装饰器                   | ❌ 无需       | 已有 FormExtensionAbility 只需加装饰器 |
 
 **核心规则：只有新增文件时才需要配置 insight_intent.json，修改现有文件无需配置。**
+
+---
+
+## 🚨 致命路径约束（必须 100% 遵守）
+
+**`insight_intent.json` 只能写入这一个路径：**
+
+entry/src/main/resources/base/profile/insight_intent.json
+
+> ⚠️ **写入前必须**：
+> 1. 先检查 `entry/src/main/resources/base/profile/` 目录是否存在
+> 2. 若不存在，**必须递归创建该目录**
+> 3. 确认目录存在后再写入文件
+
+**🚫 以下路径均为非法，严禁写入：**
+
+| 错误路径                                                 | 说明                                      |
+| :------------------------------------------------------- | :---------------------------------------- |
+| ❌ `entry/src/main/insight_intent.json`                   | 缺少 `resources/base/profile/` 层级       |
+| ❌ `entry/src/main/resources/rawfile/insight_intent.json` | `rawfile` 不是配置文件目录                |
+| ❌ `entry/src/main/resources/insight_intent.json`         | 缺少 `base/profile/` 层级                 |
+| ❌ `entry/src/main/ets/insight_intent.json`               | `ets` 是源码目录，不是资源配置目录        |
+| ❌ 项目根目录或其他任何位置                               | 必须是模块的 `resources/base/profile/` 下 |
+
+---
 
 ## 🔴 配置格式关键提醒（仅新增文件时）
 
 **写入 insight_intent.json 时，必须严格使用以下格式：**
+
 ```json
 {
   "insightIntentsSrcEntry": [
@@ -29,6 +57,8 @@
 | :--------- | :----- | :---------------------------- |
 | 对象格式   | ✅ 正确 | `{ "srcEntry": "./ets/..." }` |
 | 字符串格式 | ❌ 错误 | `"./ets/..."`                 |
+
+------
 
 ## 询问流程
 
@@ -53,10 +83,28 @@
 1. **创建意图文件**
    - 路径：`entry/src/main/ets/insightintents/{IntentName}Intent.ets`
    - 命名格式：`{IntentName}Intent.ets`（如 `StartRecordingIntent.ets`）
+
 2. **更新 insight_intent.json**
-   - 详细配置说明必须参考 [write_config_file.md](write_config_file.md)
-3. **提示调测方式**
-   - 文件写入完成后，输出调测提示："可通过意图调试工具https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/insight-intent-debug调测意图。
+   - 详细配置说明必须参考 [write_config_file.md](write_config_file.md/)
+   - **路径约束**：必须写入 `entry/src/main/resources/base/profile/insight_intent.json`
+
+3. **form 场景附加步骤（@InsightIntentForm 专用）：**
+
+   （1）创建 `entry/src/main/ets/utils/DataProvider.ets`（同步文件读写）
+
+   （2）创建 `entry/src/main/ets/utils/FormRegistry.ets`（formId 注册表）
+
+   （3）确保 `form_config.json` 已存在或新建（含卡片定义）
+
+   （4）确保 `module.json5` 中 `extensionAbilities` 已添加（type: "form"）
+
+   （5）在主应用数据变化处添加 `saveXxx + FormRegistry.getAll + formProvider.updateForm`
+
+   （6）创建 `entry/src/main/ets/widget/pages/XxxWidget.ets`（卡片 UI）
+
+4. **提示调测方式**
+
+   - 文件写入完成后，输出调测提示："可通过[意图调试工具](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/insight-intent-debug)调测意图。
 
 ### 场景二：代码实现在原文件中
 
@@ -75,13 +123,17 @@
 1. 读取该文件并进行修改
 2. **注意**：修改现有文件时无需更新 insight_intent.json
 3. **提示调测方式**
-   - 文件写入完成后，输出调测提示："可通过意图调试工具https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/insight-intent-debug调测意图。
+   - 文件写入完成后，输出调测提示："可通过[意图调试工具](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/insight-intent-debug)调测意图。
+
+------
 
 ## 注意事项
 
 ### insight_intent.json 配置（仅新增文件时需要）
 
-详细配置说明、路径格式要求和常见错误请参考 [write_config_file.md](https://./write_config_file.md)
+详细配置说明、路径格式要求和常见错误请参考 [write_config_file.md](write_config_file.md/)
+
+------
 
 ## 文件操作规范
 

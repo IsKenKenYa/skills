@@ -4,7 +4,7 @@ description: 提供使用 Jetpack Compose Glimmer UI 工具包为显示眼镜开
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-06-09'
+  last-updated: '2026-07-09'
   keywords:
   - Jetpack Compose Glimmer
   - audio glasses

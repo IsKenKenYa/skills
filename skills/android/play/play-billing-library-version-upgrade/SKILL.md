@@ -4,7 +4,7 @@ description: 当从任意旧版 Google Play Billing Library (PBL) 升级或迁�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-06-02'
+  last-updated: '2026-07-02'
   keywords:
   - android
   - play billing

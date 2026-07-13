@@ -1,6 +1,59 @@
-# 使用@InsightIntentEntry装饰器创建自定义意图
+# 使用 @InsightIntentEntry 装饰器创建自定义意图
 
-使用该装饰器装饰一个继承自InsightIntentEntryExecutor的类，实现意图操作并配置意图依赖的Ability组件，便于AI入口拉起依赖的Ability组件时，执行对应的意图操作。
+使用该装饰器装饰一个继承自 `InsightIntentEntryExecutor` 的类，实现意图操作并配置意图依赖的 Ability 组件，便于 AI 入口拉起依赖的 Ability 组件时，执行对应的意图操作。
+
+------
+
+> 📌 **公共规则**：本文档涉及的 ArkTS 严格模式规则、返回值规范、字段命名规范、导入规范等，统一收录于 **[common_rules.md](common_rules.md/)**。生成代码前请先阅读对应章节。
+
+------
+
+## ⚠️ 冷热启动通用规则（所有 @InsightIntentEntry 必读）
+
+### 规则1：`onExecute` 首行必须同步设置 `intentActive` 信号
+
+**时序风险**：`EntryAbility.onNewWant` 在热启动时可能先于 `onExecute` 执行。若 `onNewWant` 包含无条件路由（如 `router.pushUrl`），会干扰意图导航。
+
+**解决方案**：`onExecute` 的首行（任何 `await` 之前）同步设置 `intentActive` 信号；`onNewWant` 中检测该信号跳过路由。
+
+```typescript
+async onExecute(): Promise<insightIntent.IntentResult<T>> {
+  AppStorage.setOrCreate('intentActive', true);  // ← 首行同步，早于任何 await
+  // ...
+}
+```
+
+```typescript
+// EntryAbility.onNewWant
+onNewWant(want: Want): void {
+  setTimeout(() => {
+    const active: boolean = AppStorage.get<boolean>('intentActive') ?? false;
+    if (active) { AppStorage.setOrCreate('intentActive', false); return; }
+    // 非意图触发的原有路由
+    router.pushUrl({ url: 'pages/Playnow' });
+  }, 200);
+}
+```
+
+### 规则2：模块顶层 `AppStorage.setOrCreate` 必须加守卫
+
+**时序风险**：模块顶层代码在页面文件首次加载时执行，可能晚于 `onExecute`。无条件 `setOrCreate` 会覆盖意图已写入的信号值。
+
+```typescript
+// ❌ 错误：无条件覆盖意图信号
+AppStorage.setOrCreate('intentTargetTab', -1);
+
+// ✅ 正确：只在未设置时初始化
+if (AppStorage.get<number>('intentTargetTab') === undefined) {
+  AppStorage.setOrCreate('intentTargetTab', -1);
+}
+```
+
+### 规则3：Tabs 条件渲染时信号必须提升到容器层
+
+**时序风险**：`TabContent` 中使用 `if (index===N && condition)` 条件渲染时，子组件（如 `main_page`）在其他 Tab 下**不存在**，其 `aboutToAppear`/`@Watch` 无法消费信号。
+
+**解决方案**：信号消费点必须提升到 Tabs 容器组件（`mainpage.ets` 的 `struct main`），通过 `@StorageProp` + `@Watch` 在容器层统一处理。
 
 ---
 
@@ -26,13 +79,13 @@ import { InsightIntentEntryExecutor, insightIntent } from '@kit.AbilityKit';
 @InsightIntentEntry({...})  // 编译失败：Cannot find name 'InsightIntentEntry'
 ```
 
-> 💡 **提示**：其他装饰器（Page、Link、Function 等）的导入模板请参考 SKILL.md 中的速查表。
+> 💡 **提示**：其他装饰器（Page、Link、Function 等）的导入模板请参阅 [common_rules.md#5](common_rules.md/#5)。
 
----
+------
 
 ## Quick Start
 
-### 快速上手
+### 快速上手（纯函数型示例）
 
 ```typescript
 import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor } from '@kit.AbilityKit';
@@ -65,28 +118,115 @@ export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string
 
   onExecute(): Promise<insightIntent.IntentResult<string>> {
     hilog.info(0x0000, LOG_TAG, 'Playing song: %{public}s', this.songName);
-    
+
     // 执行播放逻辑
     this.playMusic(this.songName);
-    
+
     const intentResult: insightIntent.IntentResult<string> = {
       code: 0,
       result: '播放成功'
     };
-    
     return Promise.resolve(intentResult);
   }
-  
+
   private playMusic(songName: string): void {
     // 实现播放逻辑
   }
 }
 ```
 
+### 标准意图示例（带 schema 字段）
+
+标准意图使用 `schema` 字段引用系统预定义的意图名称，参数和返回值必须与官方文档一致。
+
+```typescript
+import { InsightIntentEntry, InsightIntentEntryExecutor, insightIntent } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+const LOG_TAG: string = 'PlayGameIntent';
+const DOMAIN: number = 0x0000;
+
+interface GameResult {
+  resultDesc: string;
+  entityId: string;
+  gameName: string;
+  status: string;
+}
+
+@InsightIntentEntry({
+  intentName: 'PlayGame',
+  schema: 'PlayGame',              // ← 标准意图标识，必须与官方文档一致
+  domain: 'EntertainmentDomain',   // ← 从官方文档获取
+  intentVersion: '1.0.1',          // ← 从官方文档获取
+  displayName: '玩转游戏',
+  abilityName: 'EntryAbility',
+  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
+  parameters: {                    // ← 参数定义必须与官方文档一致
+    'type': 'object',
+    'properties': {
+      'entityId': {
+        'type': 'string',
+        'description': '意图实体ID，长度不超过64字符',
+        'minLength': 1
+      }
+    },
+    'required': ['entityId']
+  }
+})
+export default class PlayGameExecutor extends InsightIntentEntryExecutor<GameResult> {
+  entityId: string = '';           // ← 属性名与 parameters 中 entityId 对应
+
+  async onExecute(): Promise<insightIntent.IntentResult<GameResult>> {
+    hilog.info(DOMAIN, LOG_TAG, 'PlayGame, entityId: %{public}s', this.entityId);
+
+    try {
+      // 执行游戏启动逻辑
+      // ...
+
+      const result: GameResult = {
+        resultDesc: '已启动游戏',
+        entityId: this.entityId,
+        gameName: '2048',
+        status: 'started'
+      };
+      const intentResult: insightIntent.IntentResult<GameResult> = {
+        code: 0,
+        result: result
+      };
+      return Promise.resolve(intentResult);
+    } catch (error) {
+      const errorResult: GameResult = {
+        resultDesc: '启动游戏失败',
+        entityId: this.entityId,
+        gameName: '',
+        status: 'failed'
+      };
+      const intentResult: insightIntent.IntentResult<GameResult> = {
+        code: -1,
+        result: errorResult
+      };
+      return Promise.resolve(intentResult);
+    }
+  }
+}
+```
+
+**标准意图与自定义意图对比**：
+
+| 对比项 | 自定义意图 | 标准意图 |
+|--------|-----------|----------|
+| `schema` 字段 | 无 | 必填，值为标准意图名称 |
+| `domain` | 自定义（如 `GameDomain`） | 从官方文档获取（如 `EntertainmentDomain`） |
+| `parameters` | 按需求自定义 | 与官方定义完全一致 |
+| 参数名 | 自由命名 | 必须使用官方定义的参数名 |
+| 返回值 | 自由定义 | 匹配官方定义的返回结构 |
+
+> 📌 **页面跳转型意图**：如果意图功能是打开某个页面（而非执行后台逻辑），`onExecute` 中必须使用 `this.windowStage?.loadContent()` 导航，**不可使用 `router.pushUrl`**（冷启动不可用）。详见下方“页面跳转正确方式”。
+
 **⚠️ 严禁使用 `insightIntent.ExecuteResult`**
 
-旧版文档可能提到 `ExecuteResult`，但该类型**已废弃**且会导致编译错误。  
-**必须使用 `insightIntent.IntentResult<T>`**，其中 `T` 是你自定义的结果类（必须包含 `resultDesc` 字段）。  
+旧版文档可能提到 `ExecuteResult`，但该类型**已废弃**且会导致编译错误。
+**必须使用 `insightIntent.IntentResult<T>`**，其中 `T` 是你自定义的结果类（必须包含 `resultDesc` 字段）。
 
 **错误示例（禁止）**：
 
@@ -96,65 +236,461 @@ async onExecute(): Promise<insightIntent.ExecuteResult> { ... }   // ❌ 错误�
 
 **正确示例**：参见上方 Quick Start。
 
-## ⚠️ 页面跳转正确方式（Navigation 架构）
+------
+
+## ⚠️ 页面跳转正确方式
+
+### 关键警告：`loadContent` 与 `router` 互不兼容
+
+**`windowStage.loadContent` 与 `router.pushUrl/replaceUrl` 是两套独立的页面管理机制，不可在同一个 `onExecute` 中混用。**
+
+| 混用方式                             | 后果                                                         |
+| :----------------------------------- | :----------------------------------------------------------- |
+| 先 `loadContent` 再 `router.pushUrl` | 视图栈不一致，页面闪现/混乱，或跳转被静默忽略                |
+| 先 `router.pushUrl` 再 `loadContent` | 路由参数丢失，目标页的 `router.getParams()` 返回 `undefined` |
+
+**正确做法**：
+
+- **Navigation 架构**：只用 `loadContent` + `LocalStorage`
+- **Router 架构**：使用 `loadContent` + `AppStorage`（见下方"Router 架构适配方案"）
+- **Tabs 架构**：使用 `AppStorage.setOrCreate` 信号驱动
+
+❌ **错误示例（禁止）**：
+
+```typescript
+// ❌ 危险：混用两种机制
+this.windowStage?.loadContent('pages/Index', (err) => {
+  router.pushUrl({ url: 'pages/Target', params: { data: 'xxx' } });
+});
+```
+
+------
 
 ### windowStage 属性说明
 
 `InsightIntentEntryExecutor` 提供以下属性用于页面跳转：
 
 | 属性          | 类型                        | 说明           | 适用场景                     |
-| ------------- | --------------------------- | -------------- | ---------------------------- |
+| :------------ | :-------------------------- | :------------- | :--------------------------- |
 | `windowStage` | `window.WindowStage`        | 窗口舞台对象   | `UI_ABILITY_FOREGROUND` 模式 |
 | `executeMode` | `insightIntent.ExecuteMode` | 执行模式       | 所有模式                     |
 | `context`     | `InsightIntentContext`      | 意图执行上下文 | 所有模式                     |
 
+> ⚠️ **windowStage 时序警告**：`onExecute` 执行时 `this.windowStage` **可能为 `undefined`**（框架可能在 `onWindowStageCreate` 之后才将其注入执行器）。因此 `this.windowStage?.loadContent()` 是「尽力而为」方式，**不应作为唯一的导航手段**。必须配合下方的「桥接导航模式」作为兜底，覆盖 `windowStage` 未就绪的场景。
+
 ### 正确的页面加载方式
 
-#### 方式1：使用 windowStage.loadContent（推荐）
+#### 方式1：使用 windowStage.loadContent（推荐，冷热启动均可靠）
 
 ```typescript
 async onExecute(): Promise<insightIntent.IntentResult<string>> {
-  // 创建 LocalStorage 传递参数
   let storage = new LocalStorage();
   storage.setOrCreate('targetTab', 3);
-  
-  // 根据执行模式选择加载方式
+
   if (this.executeMode == insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND) {
     this.windowStage?.loadContent('pages/Index', storage, (err) => {
       if (err.code) {
         hilog.error(DOMAIN, LOG_TAG, '加载失败: %{public}s', JSON.stringify(err));
-      } else {
-        hilog.info(DOMAIN, LOG_TAG, '加载成功');
       }
     });
   }
-  
-  return Promise.resolve({ code: 0, result: '成功' });
+
+  const intentResult: insightIntent.IntentResult<string> = {
+    code: 0,
+    result: '成功'
+  };
+  return Promise.resolve(intentResult);
 }
 ```
 
-#### 方式2：使用 router.pushUrl（传统架构）
+#### 方式2：使用 router.pushUrl（❌ 冷启动不可用）
+
+> ⚠️ **冷启动限制**：
+>
+> 1. `router.pushUrl/replaceUrl` 在冷启动下路由系统未初始化，调用将静默失败（不报错但页面不跳转）
+> 2. **关键细节**：冷启动时不仅跳转失败，**通过 `params` 传入的参数也不会被存储**。因此随后的 `loadContent` 加载目标页后，`router.getParams()` 返回空对象，数据丢失。
+> 3. 热启动场景下参数正常存储和传递。
+>
+> **结论**：仅推荐用于纯热启动场景。如需冷启动支持，请使用方式1或"Router 架构适配方案"。
 
 ```typescript
+// ⚠️ 此方式仅热启动可用，冷启动会导致参数丢失
 async onExecute(): Promise<insightIntent.IntentResult<string>> {
   await router.pushUrl({
     url: 'pages/TargetPage',
-    params: { targetTab: 3 }
+    params: { targetTab: 3 }  // 冷启动时参数不会被存储！
   });
-  
-  return Promise.resolve({ code: 0, result: '成功' });
+
+  const intentResult: insightIntent.IntentResult<string> = {
+    code: 0,
+    result: '成功'
+  };
+  return Promise.resolve(intentResult);
 }
 ```
 
+#### 方式3：Tabs 架构（AppStorage 信号驱动）
+
+适用于应用主界面为 `Tabs` 组件，意图只需切换 Tab 的场景。
+
+```typescript
+async onExecute(): Promise<insightIntent.IntentResult<string>> {
+  AppStorage.setOrCreate('intentTargetTab', 3); // 目标 Tab 索引
+  // 无需 loadContent，TabBar 通过 @StorageLink @Watch 自动响应
+
+  const intentResult: insightIntent.IntentResult<string> = {
+    code: 0,
+    result: '已跳转到目标标签页'
+  };
+  return Promise.resolve(intentResult);
+}
+```
+
+**Tab 页面配套代码**：
+
+```typescript
+@StorageLink('intentTargetTab') @Watch('onTargetChange') intentTargetTab: number = -1;
+
+aboutToAppear(): void {
+  // 冷启动消费：@Watch 不触发 @StorageLink 初始值
+  if (this.intentTargetTab >= 0) {
+    this.currentIndex = this.intentTargetTab;
+    this.tabController?.changeIndex(this.currentIndex);
+    AppStorage.setOrCreate('intentTargetTab', -1);
+  }
+}
+
+onTargetChange(): void {
+  if (this.intentTargetTab >= 0 && this.intentTargetTab < this.tabBarArray.length) {
+    this.currentIndex = this.intentTargetTab;
+    this.tabController?.changeIndex(this.currentIndex);
+  }
+  AppStorage.setOrCreate('intentTargetTab', -1); // 信号消费后清除
+}
+```
+
+#### 方式4：桥接导航模式（推荐兜底，覆盖 windowStage 未就绪场景）
+
+当 `onExecute` 中 `this.windowStage` 为 `undefined` 时，`loadContent` 被静默跳过。桥接模式通过 AppStorage 信号 + 宿主页面的 `@StorageLink` 响应，使导航在任何启动时序下均生效。
+
+**原理**：
+1. EntryAbility 始终 `loadContent` 加载默认页面（如 ListPage/Index）
+2. 意图在 `onExecute` 中设置 AppStorage 导航信号
+3. 默认页面通过 `@StorageLink` + `@Watch` 响应式捕获信号并 `router.replaceUrl` 跳转
+4. `onPageShow` 作为冷启动补充检查
+
+**意图执行器代码**：
+
+```typescript
+async onExecute(): Promise<insightIntent.IntentResult<string>> {
+  // 设置导航目标和参数（AppStorage 跨上下文可靠）
+  AppStorage.setOrCreate('intentTargetPage', 'pages/DetailPage');
+  AppStorage.setOrCreate('intentParamKey', paramValue);
+
+  // 同时尝试直接 loadContent（windowStage 就绪时直接生效）
+  if (this.executeMode === insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND) {
+    this.windowStage?.loadContent('pages/DetailPage', (err) => {
+      if (err.code) { /* 静默 */ }
+    });
+  }
+
+  // ... 返回结果
+}
+```
+
+**宿主页面配套代码（必须）**：
+
+```typescript
+// 在默认页面的 struct 中
+@StorageLink('intentTargetPage') @Watch('onIntentTargetChange') intentTargetPage: string = '';
+
+onIntentTargetChange(): void {
+  const page: string = this.intentTargetPage;
+  if (page) {
+    AppStorage.setOrCreate('intentTargetPage', ''); // 消费后重置
+    let options: router.RouterOptions = { url: page };
+    router.replaceUrl(options).catch((err: Error) => {
+      hilog.error(0x0000, TAG, 'Navigate failed: %{public}s', err.message);
+    });
+  }
+}
+
+// 冷启动兜底：@Watch 不触发初始值，需 onPageShow 补充检查
+onPageShow(): void {
+  const pending: string | undefined = AppStorage.get<string>('intentTargetPage');
+  if (pending) {
+    AppStorage.setOrCreate('intentTargetPage', '');
+    let options: router.RouterOptions = { url: pending };
+    router.replaceUrl(options).catch(/*...*/);
+  }
+}
+```
+
+**冷热启动覆盖矩阵**：
+
+| 场景 | 触发路径 | 说明 |
+|------|----------|------|
+| 冷启动 | `onPageShow` 检查 AppStorage | `@Watch` 不触发初始值 |
+| 热启动（同 URL，页面不重建） | `@StorageLink` + `@Watch` 响应式触发 | 页面不重建也能响应 |
+| 热启动（不同 URL，回宿主页） | `onPageShow` + `consumeIntentSignal` | 回到宿主页时消费 |
+
+适用于应用主界面为 `Tabs` 组件，意图只需切换 Tab 的场景。
+
+```typescript
+async onExecute(): Promise<insightIntent.IntentResult<string>> {
+  AppStorage.setOrCreate('intentTargetTab', 3); // 目标 Tab 索引
+  // 无需 loadContent，TabBar 通过 @StorageLink @Watch 自动响应
+
+  const intentResult: insightIntent.IntentResult<string> = {
+    code: 0,
+    result: '已跳转到目标标签页'
+  };
+  return Promise.resolve(intentResult);
+}
+```
+
+**Tab 页面配套代码（注意：必须使用 `@StorageLink`，热启动页面不重建时 `@StorageProp` 不会更新）**：
+
+```typescript
+@StorageLink('intentTargetTab') @Watch('onTargetChange') intentTargetTab: number = -1;
+
+aboutToAppear(): void {
+  // 冷启动消费：@Watch 不触发 @StorageLink 初始值
+  if (this.intentTargetTab >= 0) {
+    this.currentIndex = this.intentTargetTab;
+    this.tabController?.changeIndex(this.currentIndex);
+    AppStorage.setOrCreate('intentTargetTab', -1);
+  }
+}
+
+onTargetChange(): void {
+  if (this.intentTargetTab >= 0 && this.intentTargetTab < this.tabBarArray.length) {
+    this.currentIndex = this.intentTargetTab;
+    this.tabController?.changeIndex(this.currentIndex);
+  }
+  AppStorage.setOrCreate('intentTargetTab', -1); // 信号消费后清除
+}
+```
+
+> ⚠️ **Tabs 条件渲染陷阱**：若 `TabContent` 内包含 `if (index===N && condition)` 条件渲染，子组件在其他 Tab 下**不存在**，其生命周期方法无法消费信号。必须将消费点提升到 Tabs 容器层 struct。
+
+------
+
+## Router 架构适配方案
+
+当目标页面使用 `router.getParams()` 读取参数时，`@InsightIntentEntry` 的冷启动**无法通过 `router.pushUrl/replaceUrl` 传入参数**（路由系统未初始化，参数不会被存储）。
+
+**⚠️ 核心约束**：`router.pushUrl/replaceUrl` 冷启动时不仅跳转静默失败，**参数也不会被存储**。因此 `router.getParams()` 在随后的 `loadContent` 中也读不到数据。此方案依赖于修改目标页面，别无他法。
+
+### 正确做法
+
+1. **在 `onExecute` 中使用 `AppStorage.setOrCreate` 注入数据**
+2. **使用 `windowStage.loadContent` 加载目标页面**
+3. **最小化修改目标页面**（1-2 行）：在 `aboutToAppear` 中优先从 `AppStorage.get` 读取，兜底 `router.getParams()`
+
+### 完整代码示例
+
+**意图执行器（新增文件，无需修改现有逻辑）**：
+
+```typescript
+// entry/src/main/ets/insightintents/OpenAlbumIntent.ets
+import { InsightIntentEntry, InsightIntentEntryExecutor, insightIntent } from '@kit.AbilityKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+import { AppStorage } from '@kit.ArkUI';
+
+const LOG_TAG = 'OpenAlbumIntent';
+const DOMAIN = 0x0000;
+
+interface OpenAlbumResult {
+  resultDesc: string;
+  success: boolean;
+}
+
+@InsightIntentEntry({
+  intentName: 'OpenAlbum',
+  domain: 'PhotoDomain',
+  intentVersion: '1.0.1',
+  displayName: '打开相册',
+  llmDescription: '打开相册页面，可按分类筛选照片。当用户说"打开相册"、"看照片"、"查看相册"时调用。',
+  keywords: ['相册', '照片', '打开', '查看'],
+  abilityName: 'EntryAbility',
+  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
+  parameters: {
+    'type': 'object',
+    'properties': {
+      'categoryType': {
+        'type': 'string',
+        'description': '相册分类：all / favorite / video / screenshot',
+        'enum': ['all', 'favorite', 'video', 'screenshot'],
+        'default': 'all'
+      }
+    },
+    'required': ['categoryType']
+  }
+})
+export default class OpenAlbumExecutor extends InsightIntentEntryExecutor<OpenAlbumResult> {
+  categoryType: string = 'all';
+
+  async onExecute(): Promise<insightIntent.IntentResult<OpenAlbumResult>> {
+    hilog.info(DOMAIN, LOG_TAG, 'OpenAlbum, categoryType: %{public}s', this.categoryType);
+
+    try {
+      // 1. 数据注入 AppStorage（冷启动唯一可靠的数据通道）
+      AppStorage.setOrCreate('intentAlbumCategory', this.categoryType);
+
+      // 2. 加载目标页面（不传 LocalStorage，因为页面用 router.getParams）
+      if (this.executeMode === insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND) {
+        this.windowStage?.loadContent('pages/AlbumPage', (err) => {
+          if (err.code) {
+            hilog.error(DOMAIN, LOG_TAG, 'loadContent failed: %{public}s', JSON.stringify(err));
+          }
+        });
+      }
+
+      const result: OpenAlbumResult = {
+        resultDesc: `已打开相册，分类：${this.categoryType}`,
+        success: true
+      };
+      return Promise.resolve({ code: 0, result: result });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorResult: OpenAlbumResult = {
+        resultDesc: `打开相册失败: ${errorMsg}`,
+        success: false
+      };
+      return Promise.resolve({ code: -1, result: errorResult });
+    }
+  }
+}
+```
+
+**目标页面修改（最小化修改，保持后向兼容）**：
+
+```typescript
+// pages/AlbumPage.ets — 仅需增加 5 行
+@Entry
+@Component
+struct AlbumPage {
+  @State categoryType: string = 'all';
+
+  aboutToAppear() {
+    // ✅ 新增：优先从 AppStorage 读取意图传递的数据
+    const intentCategory = AppStorage.get<string>('intentAlbumCategory');
+    if (intentCategory) {
+      this.categoryType = intentCategory;
+      AppStorage.delete('intentAlbumCategory'); // 使用后清除
+      return;
+    }
+
+    // ✅ 兜底：原有 router.getParams() 逻辑（热启动/普通跳转保持兼容）
+    try {
+      const params = router.getParams() as Record<string, string>;
+      if (params?.categoryType) {
+        this.categoryType = params.categoryType;
+      }
+    } catch (e) {
+      // 无参数时使用默认值
+    }
+  }
+
+  build() {
+    // 原有 UI 逻辑不变
+  }
+}
+```
+
+> ⚠️ **热启动场景补充**：当宿主页面已在显示且不重建时（热启动同 URL），`aboutToAppear` 不执行，AppStorage 的兜底读取不会触发。此时需确保宿主页面使用 `@StorageLink`（而非 `@StorageProp`）监听意图参数的变化。详见 [common_rules.md#5.5](common_rules.md/#5.5)。
+
+### 方案对比
+| :------------- | :------------------------------------------ | :----------------------------- |
+| 冷启动数据传递 | ❌ router 参数不被存储，`getParams()` 返回空 | ✅ AppStorage 可靠传递          |
+| 热启动兼容     | ✅ 仅热启动可用                              | ✅ 冷热均可用                   |
+| 目标页修改量   | 0                                           | 1-2 行（5 行以内）             |
+| 后向兼容性     | N/A                                         | ✅ 优先 AppStorage，兜底 router |
+
+### 适用范围
+
+- **目标页面使用 `router.getParams()` 读取参数** → 必须使用本方案
+- **目标页面使用 `@LocalStorageProp`** → 使用 `loadContent` + `LocalStorage`（Navigation 架构）
+- **目标页面使用 Tabs** → 使用 `AppStorage` 信号驱动
+
+> ⚠️ **loadContent 加载页面的字段初始化约束**
+> 当使用 `loadContent` 加载目标页时，目标页的**字段初始化器不能依赖 `router.getParams()`**（因为 `loadContent` 不会触发路由参数存储，`router.getParams()` 永远返回空对象）。所有参数读取逻辑必须在 `aboutToAppear` 中完成，且字段初始值必须是安全的空值（如 `''`、`0`、`[]`），而非 `undefined`，以避免页面渲染时因字段为 `undefined` 而空白。
+
+> ⚠️ **目标页硬件初始化时序约束**
+> 如果目标页涉及硬件初始化（相机、传感器、播放器等），需额外检查：
+> 1. **`aboutToAppear` 是否标记 `async`** — ArkUI 中 `aboutToAppear` 的 async Promise 被框架忽略，不会阻塞 `build()`。`onLoad`（在 build 中触发）调用的硬件初始化可能在 permission/DB 未就绪时执行。详见 [common_rules.md#6](references/common_rules.md#6)。
+> 2. **`onLoad` + `onPageShow` 是否都调用了硬件初始化** — 两者同时调用可能造成资源竞态。应在 `onPageShow` 中统一处理硬件初始化，`onLoad` 仅设 surfaceId 和回调。
+> 3. **工具类 `release()` 方法是否有防重入保护** — 热启动时两次调用可能互相干扰。详见 [code_exploration.md#第3层](references/code_exploration.md#第3层)。
+
+------
+
 ### 参数传递方式对比
 
-| 方式          | 适用场景         | 优点               | 缺点             |
-| :------------ | :--------------- | :----------------- | :--------------- |
-| LocalStorage  | 意图框架传递参数 | 官方推荐，不会丢失 | 需要页面支持     |
-| AppStorage    | 应用内全局参数   | 简单易用           | 可能被覆盖或丢失 |
-| router params | 传统路由跳转     | 熟悉的方式         | 不适用于意图框架 |
+| 方式           | 适用场景                           | 优点                              | 缺点/注意点                                                  |
+| :------------- | :--------------------------------- | :-------------------------------- | :----------------------------------------------------------- |
+| LocalStorage   | Navigation 架构参数传递            | 官方推荐，不会丢失                | 依赖组件树传播，Tabs 下不可靠                                |
+| AppStorage     | Tabs 架构全局信号驱动              | 跨组件响应可靠                    | 使用后需手动清除信号值                                       |
+| router params  | 传统路由跳转                       | 熟悉的方式                        | 冷启动不可用，不适用于意图框架                               |
+| **静态类持有** | 同进程内任意页面跳转，无需依赖框架 | 简单可靠，无需考虑 Storage 兼容性 | 需确保数据在页面加载后可用，且页面需在 `aboutToAppear` 中从静态类读取 |
 
-### 完整示例（Navigation 架构）
+### 参数传递方式补充说明
+
+#### AppStorage 类型安全提醒
+
+使用 `AppStorage.get<T>(key)` 时，泛型 T 应尽量使用简单类型：
+
+```typescript
+// ✅ 简单类型，类型安全
+const category = AppStorage.get<string>('intentCategory');
+
+// ✅ 简单数组，类型安全
+const ids = AppStorage.get<number[]>('intentIds');
+
+// ⚠️ 复合类型（如 Array<Resource>），先用 Object 接收再转型
+const raw = AppStorage.get<Object>('intentResources');
+const resources = raw as Resource[];  // 需确保写入时类型一致
+```
+
+**写入约束**：`AppStorage.setOrCreate(key, value)` 的 value 必须是 JSON 可序列化的值。Resource 类型（如 `$r('app.media.icon')`）是普通对象，可以存储。
+
+#### loadContent 的 LocalStorage 参数适用范围
+
+`windowStage.loadContent(url, storage)` 中的 `storage`（LocalStorage）**仅对使用 `@LocalStorageProp/@LocalStorageLink` 的页面生效**。
+
+| 目标页面参数读取方式                      | loadContent 传 LocalStorage | 是否生效                           |
+| :---------------------------------------- | :-------------------------- | :--------------------------------- |
+| `@LocalStorageProp` / `@LocalStorageLink` | ✅ 传入                      | ✅ 生效                             |
+| `router.getParams()`                      | ✅ 传入                      | ❌ **无效**，需使用 AppStorage 注入 |
+| `AppStorage.get()`                        | 不传                        | ✅ 生效（独立于 loadContent）       |
+| 无参数                                    | 不传                        | N/A                                |
+
+**结论**：如果目标页面使用 `router.getParams()`，传给 `loadContent` 的 LocalStorage 无效，必须使用 AppStorage 注入方案（见上方"Router 架构适配方案"）。
+
+### 跳转方式兼容性矩阵
+
+| 跳转方式                                  | 冷启动 | 热启动 | 参数传递              | 适用架构   | 推荐度 |
+| :---------------------------------------- | :----- | :----- | :-------------------- | :--------- | :----- |
+| `loadContent` + LocalStorage              | ✅      | ✅      | `@LocalStorageProp`   | Navigation | ⭐⭐⭐⭐⭐  |
+| `loadContent` + AppStorage（Router 适配） | ✅      | ✅      | `AppStorage.get`      | Router     | ⭐⭐⭐⭐⭐  |
+| `AppStorage.setOrCreate` 信号驱动         | ✅      | ✅      | `@StorageLink/@Watch` | Tabs       | ⭐⭐⭐⭐⭐  |
+| `router.pushUrl` 仅热启动                 | ❌      | ✅      | `router.getParams`    | Router     | ⭐⭐     |
+| `loadContent` + `router.pushUrl` 混用     | ❌      | ❌      | 混乱/丢失             | 任何       | ⛔ 禁止 |
+
+**决策路径**：
+
+```text
+目标页面读取参数的方式？
+  ├─ @LocalStorageProp → loadContent + LocalStorage
+  ├─ router.getParams() → loadContent + AppStorage（需修改目标页 1-2 行）
+  ├─ 静态类持有 → loadContent + 静态类（无需修改目标页，但需确保数据在 aboutToAppear 前就绪）
+  ├─ Tabs + @Watch → AppStorage.setOrCreate 信号驱动
+  └─ 无参数 → loadContent 不传参
+```
+
+------
+
+### 完整示例（Navigation 架构，遵循 ArkTS 严格模式）
 
 ```typescript
 import { InsightIntentEntry, InsightIntentEntryExecutor, insightIntent } from '@kit.AbilityKit';
@@ -176,33 +712,31 @@ const DOMAIN: number = 0x0000;
 export default class OpenMinePageExecutor extends InsightIntentEntryExecutor<string> {
   async onExecute(): Promise<insightIntent.IntentResult<string>> {
     hilog.info(DOMAIN, LOG_TAG, 'onExecute');
-    
+
     try {
-      // ✅ 正确：使用 LocalStorage 传递参数
       let storage = new LocalStorage();
       storage.setOrCreate('intentTargetTab', 3);
-      
-      // ✅ 正确：使用 windowStage 加载页面
+
       if (this.executeMode == insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND) {
         this.windowStage?.loadContent('pages/Index', storage, (err) => {
           if (err.code) {
             hilog.error(DOMAIN, LOG_TAG, '加载失败: %{public}s', JSON.stringify(err));
-          } else {
-            hilog.info(DOMAIN, LOG_TAG, '加载成功');
           }
         });
       }
-      
-      return Promise.resolve({
+
+      const intentResult: insightIntent.IntentResult<string> = {
         code: 0,
         result: '已跳转到"我的"页面'
-      } as insightIntent.IntentResult<string>);
+      };
+      return Promise.resolve(intentResult);
     } catch (error) {
       hilog.error(DOMAIN, LOG_TAG, '跳转失败: %{public}s', JSON.stringify(error));
-      return Promise.resolve({
+      const errorResult: insightIntent.IntentResult<string> = {
         code: -1,
         result: '跳转失败: ' + JSON.stringify(error)
-      } as insightIntent.IntentResult<string>);
+      };
+      return Promise.resolve(errorResult);
     }
   }
 }
@@ -215,6 +749,7 @@ export default class OpenMinePageExecutor extends InsightIntentEntryExecutor<str
 3. **重写 onExecute**：实现业务逻辑
 4. **注册意图**：在 `insight_intent.json` 中添加文件路径
 
+------
 
 ## ⚠️ 常见错误与字段警告
 
@@ -223,12 +758,13 @@ export default class OpenMinePageExecutor extends InsightIntentEntryExecutor<str
 **编译错误**：`'mode' does not exist in type 'EntryIntentDecoratorInfo'`
 
 | 正确字段                    | 错误字段                   | 说明                                                         |
-| --------------------------- | -------------------------- | ------------------------------------------------------------ |
+| :-------------------------- | :------------------------- | :----------------------------------------------------------- |
 | `abilityName`               | `uiAbility`                | @InsightIntentEntry 使用 `abilityName`，@InsightIntentPage 使用 `uiAbility` |
 | `executeMode`               | `mode`                     | 执行模式字段名是 `executeMode`，不是 `mode`                  |
 | `insightIntent.ExecuteMode` | `insightIntent.IntentMode` | 使用 `ExecuteMode` 枚举，不是 `IntentMode`                   |
 
 **错误示例：**
+
 ```typescript
 @InsightIntentEntry({
   intentName: 'QueryHistory',
@@ -236,7 +772,7 @@ export default class OpenMinePageExecutor extends InsightIntentEntryExecutor<str
   intentVersion: '1.0.0',
   displayName: '查询浏览记录',
   uiAbility: 'EntryAbility',  // ❌ 错误：应该是 abilityName
-  mode: insightIntent.IntentMode.UI_ABILITY_BACKGROUND,  // ❌ 错误：应该是 executeMode + ExecuteMode
+  mode: insightIntent.IntentMode.UI_ABILITY_BACKGROUND,  // ❌ 错误
   parameters: { ... }
 })
 ```
@@ -259,14 +795,12 @@ export default class OpenMinePageExecutor extends InsightIntentEntryExecutor<str
 
 **编译错误**：`Type 'XXX' is not assignable to type 'ExecuteMode[]'`
 
-**错误示例：**
 ```typescript
-executeMode: insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND  // ❌ 错误：不是数组
-```
+// ❌ 错误：不是数组
+executeMode: insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND
 
-**正确示例：**
-```typescript
-executeMode: [insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND]  // ✅ 正确：必须是数组
+// ✅ 正确：必须是数组
+executeMode: [insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND]
 ```
 
 ### 错误3：缺少 abilityName 字段
@@ -276,6 +810,7 @@ executeMode: [insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND]  // ✅ 正确：
 **原因**：`abilityName` 是 @InsightIntentEntry 的必填字段，必须指定绑定的 Ability 名称。
 
 **解决方案：**
+
 1. 读取意图文件所在模块的 `module.json5`
 2. 获取 `module.abilities[0].name` 的值
 3. 使用该值作为 `abilityName`
@@ -284,721 +819,175 @@ executeMode: [insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND]  // ✅ 正确：
 
 **编译错误**：`Object literal must correspond to some explicitly declared class or interface`
 
-**原因**：ArkTS 严格模式要求所有对象字面量必须有对应的接口定义，特别是包含 `wantParams` 的复杂对象。
+**原因**：ArkTS 严格模式要求所有对象字面量必须有对应的接口定义。
 
 **错误示例：**
+
 ```typescript
 async onExecute(): Promise<insightIntent.IntentResult<string>> {
-  try {
-    // 业务逻辑...
-
-    // ❌ 错误：直接使用内联对象字面量
-    return Promise.resolve({
-      code: 0,
-      result: '操作成功',
-      wantParams: {
-        success: true,
-        message: '操作成功',
-        data: 'some data'
-      }
-    });
-  } catch (error) {
-    // ❌ 错误：catch 块中也使用了内联对象字面量
-    return Promise.resolve({
-      code: -1,
-      result: '操作失败',
-      wantParams: {
-        success: false,
-        message: '操作失败',
-        data: ''
-      }
-    });
-  }
+  return Promise.resolve({
+    code: 0,
+    result: '操作成功',
+    wantParams: { success: true, message: '操作成功' }
+  });
 }
 ```
 
 **正确示例：**
-```typescript
-// 1. 定义 wantParams 接口
-interface IntentWantParams {
-  success: boolean;
-  message: string;
-  data: string;
-}
 
-// 2. 定义意图结果接口
-interface IntentResultTyped {
-  code: number;
-  result: string;
-  wantParams: IntentWantParams;
-}
+```typescript
+interface IntentWantParams { success: boolean; message: string; }
+interface IntentResultTyped { code: number; result: string; wantParams: IntentWantParams; }
 
 async onExecute(): Promise<insightIntent.IntentResult<string>> {
-  try {
-    // 业务逻辑...
-
-    // ✅ 正确：先定义显式类型的对象
-    const successWantParams: IntentWantParams = {
-      success: true,
-      message: '操作成功',
-      data: 'some data'
-    };
-
-    const successResult: IntentResultTyped = {
-      code: 0,
-      result: '操作成功',
-      wantParams: successWantParams
-    };
-
-    return Promise.resolve(successResult as insightIntent.IntentResult<string>);
-
-  } catch (error) {
-    const errorWantParams: IntentWantParams = {
-      success: false,
-      message: '操作失败',
-      data: ''
-    };
-
-    const errorResult: IntentResultTyped = {
-      code: -1,
-      result: '操作失败',
-      wantParams: errorWantParams
-    };
-
-    return Promise.resolve(errorResult as insightIntent.IntentResult<string>);
-  }
+  const wantParams: IntentWantParams = { success: true, message: '操作成功' };
+  const intentResult: insightIntent.IntentResult<string> = {
+    code: 0,
+    result: '操作成功',
+    wantParams: wantParams
+  };
+  return Promise.resolve(intentResult);
 }
 ```
 
-**关键要点：**
-1. 为 `wantParams` 定义专门的接口
-2. 为整个 `IntentResult` 定义接口
-3. 先创建显式类型的对象，再使用类型断言转换
-4. 在 try 和 catch 块中分别使用相同的模式
-
-### 错误8：throw 语句使用任意类型
+### 错误5：throw 语句使用任意类型
 
 **编译错误**：`"throw" statements cannot accept values of arbitrary types`
 
-**原因**：ArkTS 严格模式要求 throw 语句只能抛出 Error 对象或其子类。
-
-**错误示例：**
 ```typescript
-private async doSomething(): Promise<void> {
-  try {
-    await riskyOperation();
-  } catch (error) {
-    // ❌ 错误：直接 throw error 变量
-    throw error;
-  }
+// ❌ 错误
+catch (error) { throw error; }
+
+// ✅ 正确
+catch (error) {
+  throw new Error(`操作失败: ${JSON.stringify(error)}`);
 }
 ```
-
-**正确示例：**
-```typescript
-private async doSomething(): Promise<void> {
-  try {
-    await riskyOperation();
-  } catch (error) {
-    // ✅ 正确：创建新的 Error 对象
-    throw new Error(`操作失败: ${JSON.stringify(error)}`);
-
-    // 或者
-    const errorMsg: string = error instanceof Error ? error.message : String(error);
-    throw new Error(`操作失败: ${errorMsg}`);
-  }
-}
-```
-
-**常见场景：**
-- 路由跳转失败
-- 网络请求失败
-- 文件操作失败
-- 权限检查失败
 
 ### 错误6：方法返回类型使用对象字面量声明
 
-**编译错误**：`Object literals cannot be used as type declarations (arkts-no-obj-literals-as-types)`
+**编译错误**：`Object literals cannot be used as type declarations`
 
-**原因**：ArkTS 严格模式禁止在返回类型位置直接使用对象字面量，必须先定义接口。
-
-**错误示例：**
 ```typescript
-// ❌ 错误：返回类型使用对象字面量
-private validateParams(): { valid: boolean; message: string } {
-  if (!this.name) {
-    return { valid: false, message: '姓名不能为空' };
-  }
-  return { valid: true, message: '' };
-}
+// ❌ 错误
+private validateParams(): { valid: boolean; message: string } { ... }
 
-// ❌ 错误：箭头函数返回类型使用对象字面量
-const getResult = (): { code: number; message: string } => {
-  return { code: 0, message: '成功' };
-};
-```
-
-**正确示例：**
-```typescript
-// ✅ 正确：先定义接口
-interface ValidationResult {
-  valid: boolean;
-  message: string;
-}
-
-private validateParams(): ValidationResult {
-  if (!this.name) {
-    const result: ValidationResult = { valid: false, message: '姓名不能为空' };
-    return result;
-  }
-  const successResult: ValidationResult = { valid: true, message: '' };
-  return successResult;
-}
-
-// ✅ 正确：箭头函数也使用预定义接口
-interface Result {
-  code: number;
-  message: string;
-}
-
-const getResult = (): Result => {
-  const result: Result = { code: 0, message: '成功' };
-  return result;
-};
+// ✅ 正确
+interface ValidationResult { valid: boolean; message: string; }
+private validateParams(): ValidationResult { ... }
 ```
 
 ### 错误7：方法 return 语句直接返回对象字面量
 
-**编译错误**：`Object literal must correspond to some explicitly declared class or interface (arkts-no-untyped-obj-literals)`
+**编译错误**：`Object literal must correspond to some explicitly declared class or interface`
 
-**原因**：ArkTS 严格模式要求所有 return 语句中的对象字面量必须先声明为显式类型的变量，不能直接返回。
+typescript
 
-**错误示例：**
-```typescript
-interface ValidationResult {
-  valid: boolean;
-  message: string;
+```
+// ❌ 错误：即使定义了接口，也不能直接返回对象字面量
+private validateParams(): ValidationResult {
+  return { valid: true, message: '' };
 }
 
-// ❌ 错误：虽然定义了接口，但直接返回对象字面量
+// ✅ 正确：先创建显式类型变量，再返回
 private validateParams(): ValidationResult {
-  if (!this.name) {
-    return { valid: false, message: '姓名不能为空' };  // 编译错误
-  }
-  return { valid: true, message: '' };  // 编译错误
+  const result: ValidationResult = { valid: true, message: '' };
+  return result;
 }
 ```
-
-**正确示例：**
-```typescript
-interface ValidationResult {
-  valid: boolean;
-  message: string;
-}
-
-// ✅ 正确：先创建显式类型的变量，再返回
-private validateParams(): ValidationResult {
-  if (!this.name) {
-    const errorResult: ValidationResult = {
-      valid: false,
-      message: '姓名不能为空'
-    };
-    return errorResult;
-  }
-
-  const successResult: ValidationResult = {
-    valid: true,
-    message: ''
-  };
-  return successResult;
-}
-```
-
-**关键要点：**
-- 即使已经定义了接口类型，return 语句也不能直接返回对象字面量
-- 必须先创建具有显式类型的变量，然后返回该变量
-- 这个规则适用于所有方法，包括 private 方法、public 方法、箭头函数等
 
 ### 错误8：泛型参数与 result 字段类型不匹配
 
-**编译错误**：`Types of property 'result' are incompatible. Type 'string' is not comparable to type 'ContactFullInfo'.`
-
-**原因**：`InsightIntentEntryExecutor<T>` 的泛型参数 `T` 决定了 `IntentResult<T>` 中 `result` 字段的类型。如果泛型参数是自定义类型（如 `ContactFullInfo`），则 `result` 字段必须是该类型，不能是 `string` 或其他基本类型。
+**编译错误**：`Types of property 'result' are incompatible`
 
 **错误示例：**
+
 ```typescript
-interface ContactFullInfo {
-  name: string;
-  telephony?: string;
-  email?: string;
-}
-
-// ❌ 错误：泛型参数是 ContactFullInfo，但 result 字段是 string 类型
+// ❌ 泛型是 ContactFullInfo，但 result 是 string
 export default class QueryContactExecutor extends InsightIntentEntryExecutor<ContactFullInfo> {
-  async onExecute(): Promise<insightIntent.IntentResult<ContactFullInfo>> {
-    const contactInfo: ContactFullInfo = { name: '张三', telephony: '13800000000' };
-
-    // 编译错误：result 字段类型不兼容
-    const result: QueryContactResultTyped = {
-      code: 0,
-      result: '查询成功',  // ❌ string 类型，应该是 ContactFullInfo
-      wantParams: { success: true, message: '查询成功' }
-    };
-    return Promise.resolve(result as insightIntent.IntentResult<ContactFullInfo>);
-  }
-}
-
-interface QueryContactResultTyped {
-  code: number;
-  result: string;  // ❌ 类型不匹配
-  wantParams: { success: boolean; message: string };
+  // result 字段必须是 ContactFullInfo，不能是 string
 }
 ```
 
 **正确示例：**
-```typescript
-interface ContactFullInfo {
-  name: string;
-  telephony?: string;
-  email?: string;
-}
 
-// ✅ 正确：泛型参数是 ContactFullInfo，result 字段也是 ContactFullInfo 类型
+```typescript
+interface ContactFullInfo { name: string; telephony?: string; }
+
 export default class QueryContactExecutor extends InsightIntentEntryExecutor<ContactFullInfo> {
   async onExecute(): Promise<insightIntent.IntentResult<ContactFullInfo>> {
     const contactInfo: ContactFullInfo = { name: '张三', telephony: '13800000000' };
-
-    const result: QueryContactResultTyped = {
+    const intentResult: insightIntent.IntentResult<ContactFullInfo> = {
       code: 0,
-      result: contactInfo,  // ✅ ContactFullInfo 类型，与泛型参数匹配
-      wantParams: { success: true, message: '查询成功' }
+      result: contactInfo  // ✅ ContactFullInfo 类型
     };
-    return Promise.resolve(result as insightIntent.IntentResult<ContactFullInfo>);
+    return Promise.resolve(intentResult);
   }
 }
-
-interface QueryContactResultTyped {
-  code: number;
-  result: ContactFullInfo;  // ✅ 类型匹配
-  wantParams: { success: boolean; message: string };
-}
 ```
-
-**类型对照表：**
-
-| 泛型参数 `T` | `result` 字段类型 | 示例 |
-|-------------|----------------|------|
-| `string` | `string` | 返回简单的文本消息 |
-| `number` | `number` | 返回数值结果 |
-| `ContactFullInfo` | `ContactFullInfo` | 返回复杂的联系人对象 |
-| `UserInfo` | `UserInfo` | 返回用户信息对象 |
-| `CustomDataType` | `CustomDataType` | 返回自定义数据类型 |
-
-**关键要点：**
-1. **类型必须匹配**：`InsightIntentEntryExecutor<T>` 的泛型 `T` 必须与 `IntentResultTyped.result` 的类型一致
-2. **错误处理也要注意**：即使在错误情况下（如未找到数据），`result` 字段也必须是正确的类型，可以创建空对象
-3. **所有分支都要匹配**：try 块和 catch 块中的 `result` 字段类型都必须与泛型参数匹配
-4. **只定义需要的字段**：如果只需要返回简单消息，使用 `string` 作为泛型参数；如果需要返回复杂对象，使用该对象类型作为泛型参数
 
 ### 错误9：装饰器和基类错误使用 namespace 前缀
 
-**编译错误**：
-```
-Property 'InsightIntentEntry' does not exist on type 'typeof insightIntent'
-Property 'InsightIntentEntryExecutor' does not exist on type 'typeof insightIntent'
-```
-
-**原因**：`@InsightIntentEntry` 装饰器和 `InsightIntentEntryExecutor` 基类需要**直接导入和使用**，不能通过 `insightIntent` 命名空间访问。`insightIntent` 命名空间只包含枚举（如 `ExecuteMode`）和类型（如 `IntentResult`），不包含装饰器和基类。
-
-**错误示例**：
-```typescript
-import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor } from '@kit.AbilityKit';
-
-// ❌ 错误：装饰器使用 namespace 前缀
-@insightIntent.InsightIntentEntry({
-  intentName: 'PlayMusic',
-  domain: 'MusicDomain',
-  intentVersion: '1.0.1',
-  displayName: '播放音乐',
-  llmDescription: '播放指定的音乐文件',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]
-})
-
-// ❌ 错误：基类使用 namespace 前缀
-export default class PlayMusicExecutor extends insightIntent.InsightIntentEntryExecutor<string> {
-  async onExecute(): Promise<insightIntent.IntentResult<string>> {
-    // ...
-  }
-}
-```
-
-**正确示例**：
-```typescript
-import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor } from '@kit.AbilityKit';
-
-// ✅ 正确：装饰器直接使用
-@InsightIntentEntry({
-  intentName: 'PlayMusic',
-  domain: 'MusicDomain',
-  intentVersion: '1.0.1',
-  displayName: '播放音乐',
-  llmDescription: '播放指定的音乐文件',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]  // 枚举才需要 namespace 前缀
-})
-
-// ✅ 正确：基类直接使用
-export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
-  async onExecute(): Promise<insightIntent.IntentResult<string>> {  // IntentResult 类型需要 namespace 前缀
-    // ...
-  }
-}
-```
-
-**规则速查表**：
-
-| 类型 | 导入方式 | 使用方式 | 是否需要 namespace 前缀 |
-|------|---------|---------|----------------------|
-| `@InsightIntentEntry` 装饰器 | 直接导入 | `@InsightIntentEntry` | ❌ 否 |
-| `InsightIntentEntryExecutor` 基类 | 直接导入 | `extends InsightIntentEntryExecutor` | ❌ 否 |
-| `ExecuteMode` 枚举 | 从 `insightIntent` 导入 | `insightIntent.ExecuteMode` | ✅ 是 |
-| `IntentResult` 类型 | 从 `insightIntent` 导入 | `insightIntent.IntentResult` | ✅ 是 |
-| `InsightIntentContext` 类型 | 从 `insightIntent` 导入 | `insightIntent.InsightIntentContext` | ✅ 是 |
-
-**记忆口诀**：
-> **"装饰器和基类直接用，枚举类型加前缀"**
-
-- **装饰器**（`@InsightIntentEntry`）和**基类**（`InsightIntentEntryExecutor`）是独立的导出，直接使用
-- **枚举**（`ExecuteMode`、`ReturnMode`）和**类型**（`IntentResult`、`InsightIntentContext`）属于 `insightIntent` 命名空间，需要加前缀
-
-**对比 @InsightIntentFunction 的导入模式**：
+**编译错误**：`Property 'InsightIntentEntry' does not exist on type 'typeof insightIntent'`
 
 ```typescript
-// @InsightIntentFunction 的导入模式（与 @InsightIntentEntry 不同）
-import { InsightIntentFunction, InsightIntentFunctionMethod } from '@kit.AbilityKit';
+// ❌ 错误：使用 namespace 前缀
+@insightIntent.InsightIntentEntry({...})
+class MyExecutor extends insightIntent.InsightIntentEntryExecutor<string> {}
 
-// 装饰器直接使用
-@InsightIntentFunction()
-export class MyFunctions {
-  @InsightIntentFunctionMethod()
-  static myMethod(): string {  // 静态方法，不需要继承基类
-    return 'result';
-  }
-}
+// ✅ 正确：直接使用
+@InsightIntentEntry({...})
+class MyExecutor extends InsightIntentEntryExecutor<string> {}
 ```
 
-**关键区别**：
-- `@InsightIntentEntry` 需要导入 `insightIntent` 命名空间（用于枚举）+ 装饰器 + 基类
-- `@InsightIntentFunction` 只需要导入装饰器，不需要命名空间（没有枚举使用场景）
+**规则速查**：装饰器和基类直接用，枚举和类型加前缀。
 
-
-## 快速参考
-
-### @InsightIntentEntry 必填字段
-
-| 字段 | 类型 | 说明 | 示例 |
-|------|------|------|------|
-| `intentName` | string | 英文PascalCase，动词-名词结构 | `"PlayMusic"`, `"SearchSong"` |
-| `domain` | string | 域标识符，取值范围参见[各垂域的智慧分发特性列表](https://developer.huawei.com/consumer/cn/doc/service/intents-ai-distribution-characteristic-0000001901922213#section2656133582215) | `"MusicDomain"`, `"ToolsDomain"` |
-| `intentVersion` | string | 语义化版本，匹配标准意图的条件之一，默认填写1.0.1 | `"1.0.1"` |
-| `displayName` | string | 中文显示名称 | `"播放音乐"` |
-| `abilityName` | string | 绑定的Ability名称，**必须根据意图文件所在模块读取对应的 `module.json5`（如 `entry/src/main/module.json5`），获取 `module.abilities[0].name` 作为值** | `"EntryAbility"` |
-| `executeMode` | array | 支持的执行模式 | `[insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]` |
-
-### @InsightIntentEntry 可选字段
-
-| 字段 | 类型 | 说明 | 示例 |
-|------|------|------|------|
-| `displayDescription` | string | 详细描述 | `"播放指定音乐文件"` |
-| `schema` | string | 标准意图schema | `"standard:play"` |
-| `icon` | ResourceStr | 图标资源 | `$r('app.media.icon')` |
-| `llmDescription` | string | LLM理解描述 | `"播放指定的音乐文件..."` |
-| `keywords` | string[] | 搜索关键词 | `["播放", "音乐", "歌曲"]` |
-| `parameters` | Record<string, Object> | 意图参数的数据格式声明，用于意图调用时定义入参的数据格式。使用参考[jsonschema_reference.md](./jsonschema_reference.md) | 见下文 |
-| `result` | Record<string, Object> | 意图调用返回结果的数据格式声明，用于定义意图调用返回结果的数据格式。使用参考[jsonschema_reference.md](./jsonschema_reference.md) | 见下文 |
-
-### 执行模式（executeMode）
-
-| 模式 | 值 | 说明 | 适用场景 |
-|------|---|------|----------|
-| `UI_ABILITY_FOREGROUND` | 0 | 前台UI Ability | 需要用户交互的界面 |
-| `UI_ABILITY_BACKGROUND` | 1 | 后台UI Ability | 后台静默任务 |
-| `UI_EXTENSION_ABILITY` | 2 | UI Extension Ability | 卡片、小组件 |
-| `SERVICE_EXTENSION_ABILITY` | 3 | Service Extension Ability | 纯后台服务 |
-
-### 错误代码
-
-| 代码 | 说明 |
-|------|------|
-| `0` | 成功 |
-| `-1` | 通用错误 |
-| `-2` | 参数无效 |
-| `-3` | 网络错误 |
-| `-4` | 权限拒绝 |
-| `-5` | 资源未找到 |
-
-### 常用域
-
-| 域 | 说明 | 示例意图 |
-|----|------|----------|
-| `MusicDomain` | 音乐功能 | PlayMusic, SearchSong |
-| `ToolsDomain` | 通用工具 | ProcessData, DownloadFile |
-| `SystemSettingsDomain` | 系统设置 | OpenSettings, ChangeTheme |
-| `NavigationDomain` | 导航 | NavigateToLocation |
-| `ChatDomain` | 消息 | SendMessage |
-| `HealthDomain` | 健康追踪 | LogWeight, TrackExercise |
-
-## @InsightIntentEntry 装饰器详解
-
-### 基础示例（无参数）
-
-> **返回值建议**：优先使用 `string` 类型返回执行结果信息，便于用户了解意图执行状态。避免使用 `void` 类型。
-
-```typescript
-@InsightIntentEntry({
-  intentName: 'PausePlayback',
-  domain: 'MusicDomain',
-  intentVersion: '1.0.1',
-  displayName: '暂停播放',
-  llmDescription: '暂停当前正在播放的音乐',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]
-})
-export default class PausePlaybackExecutor extends InsightIntentEntryExecutor<string> {
-  async onExecute(): Promise<insightIntent.IntentResult<string>> {
-    try {
-      // 暂停播放逻辑
-      await this.pauseMusic();
-      const successResult: insightIntent.IntentResult<string> = {
-        code: 0,
-        result: '暂停成功：已暂停当前播放'
-      };
-      return Promise.resolve(successResult);
-    } catch (error) {
-      const errorMessage: string = error instanceof Error ? error.message : String(error);
-      const errorResult: insightIntent.IntentResult<string> = {
-        code: -1,
-        result: `暂停失败：${errorMessage}`
-      };
-      return Promise.resolve(errorResult);
-    }
-  }
-
-  private async pauseMusic(): Promise<void> {
-    // 实现暂停逻辑
-  }
-}
-```
-
-### 简单参数示例
-
-```typescript
-@InsightIntentEntry({
-  intentName: 'SearchSong',
-  domain: 'MusicDomain',
-  intentVersion: '1.0.1',
-  displayName: '搜索歌曲',
-  llmDescription: '根据关键词搜索音乐',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
-  parameters: {
-    'type': 'object',
-    'properties': {
-      'query': {
-        'type': 'string',
-        'description': '搜索关键词',
-        'minLength': 1
-      }
-    },
-    'required': ['query']
-  }
-})
-export default class SearchSongExecutor extends InsightIntentEntryExecutor<SearchResult> {
-  query: string = '';
-
-  async onExecute(): Promise<insightIntent.IntentResult<SearchResult>> {
-    const results: SongInfo[] = await this.searchDatabase(this.query);
-    
-    const searchResult: SearchResult = {
-      success: true,
-      results: results
-    };
-    
-    const intentResult: insightIntent.IntentResult<SearchResult> = {
-      code: 0,
-      result: searchResult
-    };
-    
-    return Promise.resolve(intentResult);
-  }
-  
-  private async searchDatabase(query: string): Promise<SongInfo[]> {
-    return [];
-  }
-}
-
-interface SearchResult {
-  success: boolean;
-  results: SongInfo[];
-}
-
-interface SongInfo {
-  id: number;
-  name: string;
-  artist: string;
-  url: string;
-}
-```
-
-### 带返回值Schema示例
-
-```typescript
-@InsightIntentEntry({
-  intentName: 'SearchSong',
-  domain: 'MusicDomain',
-  intentVersion: '1.0.1',
-  displayName: '搜索歌曲',
-  llmDescription: '根据关键词搜索音乐，返回匹配的歌曲列表',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
-  parameters: {
-    'type': 'object',
-    'properties': {
-      'query': {
-        'type': 'string',
-        'description': '搜索关键词'
-      }
-    },
-    'required': ['query']
-  },
-  result: {
-    'type': 'object',
-    'properties': {
-      'success': {
-        'type': 'boolean',
-        'description': '搜索是否成功'
-      },
-      'results' : {
-        'type': 'array',
-        'description': '搜索结果列表',
-        'items': {
-          'type': 'object',
-          'properties': {
-            'id': { 'type': 'number' },
-            'name': { 'type': 'string' },
-            'artist': { 'type': 'string' },
-            'url': { 'type': 'string' }
-          }
-        }
-      }
-    }
-  }
-})
-export default class SearchSongExecutor extends InsightIntentEntryExecutor<SearchResult> {
-  query: string = '';
-
-  async onExecute(): Promise<insightIntent.IntentResult<SearchResult>> {
-    const results: SongInfo[] = await this.searchDatabase(this.query);
-    
-    const searchResult: SearchResult = {
-      success: true,
-      results: results
-    };
-    
-    const intentResult: insightIntent.IntentResult<SearchResult> = {
-      code: 0,
-      result: searchResult
-    };
-    
-    return Promise.resolve(intentResult);
-  }
-  
-  private async searchDatabase(query: string): Promise<SongInfo[]> {
-    return [];
-  }
-}
-```
-
-## InsightIntentEntryExecutor 基类详解
-
-### 属性
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `executeMode` | insightIntent.ExecuteMode | 表示意图执行模式。即拉起绑定的Ability组件时支持的执行模式。 |
-| `context` | InsightIntentContext | 意图执行上下文 |
-| `windowStage` | window.WindowStage? | 表示windowStage实例对象，和onWindowStageCreate接口的windowStage实例是同一个，可用于加载意图执行的页面。仅当executeMode字段取值为UI_ABILITY_FOREGROUND（即意图执行需要将UIAbility显示在前台时），该属性生效。 |
-| `uiExtensionSession` | UIExtensionContentSession? | 表示UIExtensionContentSession实例对象，和onSessionCreate接口的UIExtensionContentSession实例是同一个，可用于加载意图执行的页面。仅当executeMode字段取值为UI_EXTENSION_ABILITY（即意图执行需要拉起UIExtensionAbility时），该属性生效。 |
-
-### 必须重写的方法
-
-```typescript
-async onExecute(): Promise<insightIntent.IntentResult<T>>
-```
-
-### 上下文方法
-
-```typescript
-// 启动Ability，只允许拉该应用的其他Ability
-await this.context.startAbility(want: Want);
-
-// 设置返回模式（只支持UIAbility前台）
-this.context.setReturnModeForUIAbilityForeground(
-  insightIntent.ReturnMode.CALLBACK
-);
-
-// 设置返回模式（只支持UIExtensionAbility）
-this.context.setReturnModeForUIExtensionAbility(
-  insightIntent.ReturnMode.FUNCTION
-);
-```
-
-### 返回模式
-
-| 模式 | 说明 |
-|------|------|
-| `CALLBACK` | 通过 `onExecute()` 回调返回结果 |
-| `FUNCTION` | 通过 `sendExecuteResult()` 方法返回结果 |
-
+------
 
 ## 核心规则
 
 ### 代码输出要求
-- ✅ 不管项目中原有意图使用的是哪种模式，必须使用@IsightIntentEntry 装饰器模式,不允许使用InsightIntentExecutor 基类模式。
-- ✅ 功能实现通过继承 `InsightIntentEntryExecutor` 基类实现
-- ✅ 使用 `export default` 导出继承类
-- ✅ 通过重载 `onExecute` 实现具体功能
-- ✅ 只允许在继承类上添加 `@InsightIntentEntry` 装饰器
-- ✅ 类的属性仅支持ArkTS语法基础类型或意图实体，返回值仅支持基础类型或意图实体。
-- ✅ 当类的属性是对象类型或非ArkTS语法基础类型，必须使用 `@InsightIntentEntity` 装饰器定义意图实体。@InsightIntentEntity详细使用说明请参考：[insight_intent_entity.md](./insight_intent_entity.md)
-- ✅ 新增文件时，在 `insight_intent.json` 的 `insightIntentsSrcEntry` 数组中添加文件路径
-- ✅ 代码生成后需要自验证，修复语法错误
-- ❌ 不允许新增/更新/删除其他任何位置的代码
 
-### parameters 与类属性对应规则（重要）
+- ✅ 必须使用 `@InsightIntentEntry` 装饰器模式，不允许使用 `InsightIntentExecutor` 基类模式。
+- ✅ 功能实现通过继承 `InsightIntentEntryExecutor` 基类实现。
+- ✅ 使用 `export default` 导出继承类。
+- ✅ 通过重载 `onExecute` 实现具体功能。
+- ✅ 只允许在继承类上添加 `@InsightIntentEntry` 装饰器。
+- ✅ 类的属性仅支持 ArkTS 语法基础类型或意图实体。
+- ✅ 当类的属性是对象类型，必须使用 `@InsightIntentEntity` 装饰器定义意图实体。详见 [insight_intent_entity.md](insight_intent_entity.md/)。
+- ✅ 新增文件时，在 `insight_intent.json` 的 `insightIntentsSrcEntry` 数组中添加文件路径。
+- ✅ 代码生成后需要自验证，修复语法错误。
+- ⚠️ **关于修改现有代码**：
+  - 如果目标页面使用 **Navigation 架构**（`@LocalStorageProp`）或 **Tabs 架构**（`@StorageLink`），通常无需修改现有页面代码。
+  - 如果目标页面使用 **Router 架构**（`router.getParams()`），冷启动场景下数据传递需要**最小化修改目标页面**（1-2 行），增加 `AppStorage` 兜底读取（详见"Router 架构适配方案"）。
+  - 修改原则：保持后向兼容（优先 AppStorage → 兜底 router.getParams() → 最终兜底默认值），仅改动目标页面的 `aboutToAppear` 初始化逻辑，不影响其他功能。
+
+### parameters 与类属性对应规则
 
 > **⚠️ 核心原则**：`@InsightIntentEntry` 的 `parameters.properties` 中的属性名必须与执行器类的属性名**一一对应**！
 
-> **⚠️ JSON Schema 类型限制**：parameters 中的 `type` 只支持以下类型：
-> - `string`：字符串
-> - `number`：数字（**注意：不支持 `integer`，整数也使用 `number`**）
-> - `boolean`：布尔值
-> - `array`：数组
-> - `object`：对象
-> 
-> 详细说明请参考 [jsonschema_reference.md](./jsonschema_reference.md)
+> **⚠️ JSON Schema 类型限制**：parameters 中的 `type` 只支持 `string`、`number`、`boolean`、`array`、`object`。不支持 `integer`（使用 `number`）。
+>
+> ⚠️ **`boolean` 类型避坑**：部分 SDK 版本对 `type: 'boolean'` 的参数注入存在兼容性问题，`onExecute` 可能静默不执行（hilog 无输出）。**建议改用 `string` + `enum` 替代**，在 `onExecute` 内转 `boolean`：
+> ```typescript
+> // 装饰器 parameters 定义
+> 'enable': { 'type': 'string', 'enum': ['true', 'false'] }
+> // 类属性
+> enable: string = 'true';
+> // onExecute 中转换
+> const enabled: boolean = this.enable === 'true';
+> ```
 
 #### 规则1：简单类型参数
 
 ```typescript
-// ✅ 正确：parameters 属性名与类属性名一致
+// ✅ 正确：属性名一致
 @InsightIntentEntry({
   parameters: {
     'properties': {
       'songName': { 'type': 'string', 'description': '歌曲名称' }
     },
-    'required': ['songName']  // 必填属性必须标记
+    'required': ['songName']
   }
 })
 export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
@@ -1007,1117 +996,187 @@ export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string
 
 // ❌ 错误：属性名不匹配
 @InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'musicName': { 'type': 'string' }  // 与类属性名不一致
-    }
-  }
+  parameters: { 'properties': { 'musicName': { 'type': 'string' } } }
 })
 export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
   songName: string = '';  // 无法注入
 }
 ```
 
-#### 🔴 规则1.1：类属性类型必须与 JSON Schema 类型严格匹配
-
-**类属性类型必须是 JSON Schema 支持的基础类型，禁止使用联合类型（union type）。**
+#### 规则2：类属性类型禁止联合类型
 
 ```typescript
-// ❌ 错误：类属性使用联合类型，与 JSON Schema 的 string 类型不匹配
+// ❌ 错误：联合类型不匹配 string
 type SourceType = 'file_manager' | 'gallery';
+source: SourceType = 'file_manager';
 
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'source': { 'type': 'string', 'enum': ['file_manager', 'gallery'] }
-    }
-  }
-})
-export default class PlayExecutor extends InsightIntentEntryExecutor<Result> {
-  source: SourceType = 'file_manager';  // ❌ 联合类型不匹配 string
-}
-
-// ✅ 正确：类属性使用与 JSON Schema 一致的基础类型
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'source': { 'type': 'string', 'enum': ['file_manager', 'gallery'] }
-    }
-  }
-})
-export default class PlayExecutor extends InsightIntentEntryExecutor<Result> {
-  source: string = 'file_manager';  // ✅ string 类型匹配
-}
+// ✅ 正确：使用基础类型
+source: string = 'file_manager';
 ```
 
+### 参数默认值与必填性
 
-#### 规则2：使用实体类包装参数
+`@InsightIntentEntry.parameters.required` 数组中的参数，框架在 `onExecute` 调用时保证该类属性已被赋值。但需要理解以下行为：
 
-```typescript
-// ✅ 正确：parameters 定义 params 属性，并嵌套其子属性
-@InsightIntentEntity({
-  entityCategory: 'play song params category',
-  parameters: {
-    'type': 'object',
-    'properties': {
-      'songName': { 'type': 'string', 'description': '歌曲名称' },
-      'artistName': { 'type': 'string', 'description': '歌手名称' }
-    }
-  }
-})
-export class PlaySongParams implements insightIntent.IntentEntity {
-  entityId: string = '0x01';
-  songName: string = '';
-  artistName: string = '';
-}
+| 场景                             | 框架行为           | 类属性值                    |
+| :------------------------------- | :----------------- | :-------------------------- |
+| 大模型传参                       | 注入传入值         | `this.param = 'user_value'` |
+| 大模型未传参（required 中声明）  | 不注入，保留默认值 | `this.param = ''`（默认值） |
+| 大模型未传参（未在 required 中） | 不注入，保留默认值 | `this.param = ''`（默认值） |
 
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'params': {                                    // 类属性名
-        'type': 'object',                            // JSON Schema 只支持基础类型
-        'description': '播放歌曲参数',
-        'properties': {                              // 嵌套定义子属性
-          'songName': { 'type': 'string', 'description': '歌曲名称' },
-          'artistName': { 'type': 'string', 'description': '歌手名称' }
-        }
-      }
-    },
-    'required': ['params']  // 如果 params 必填，必须标记
-  }
-})
-export default class PlaySongExecutor extends InsightIntentEntryExecutor<string> {
-  params: PlaySongParams = new PlaySongParams();  // 类属性名 = parameters 属性名
-}
+**⚠️ 关键结论**：`required` 数组不强制校验参数是否存在，仅用于大模型理解必填性。框架不会因为参数缺失而抛出错误。
 
-// ❌ 错误：直接展开实体属性，缺少外层 params
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'songName': { 'type': 'string' },  // 缺少 params 包装层
-      'artistName': { 'type': 'string' }
-    }
-  }
-})
-export default class PlaySongExecutor extends InsightIntentEntryExecutor<string> {
-  params: PlaySongParams = new PlaySongParams();  // 无法注入
-}
-
-// ❌ 错误：type 使用自定义类型名
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'params': {
-        'type': 'PlaySongParams'  // JSON Schema 不支持自定义类型名
-      }
-    }
-  }
-})
-```
-
-#### 规则3：嵌套对象参数
+**最佳实践**：
 
 ```typescript
-// ✅ 正确：嵌套对象的 properties 需要完整定义
-@InsightIntentEntry({
-  parameters: {
-    'properties': {
-      'artist': {                           // 类属性名
-        'type': 'object',
-        'description': '歌手信息',
-        'properties': {                     // 嵌套定义
-          'name': { 'type': 'string', 'description': '歌手名称' },
-          'country': { 'type': 'string', 'description': '国籍' }
-        },
-        'required': ['name']
-      }
-    },
-    'required': ['artist']
+// ✅ 在 onExecute 中对必填参数做防御性检查
+async onExecute(): Promise<insightIntent.IntentResult<MyResult>> {
+  if (!this.categoryType || this.categoryType === '') {
+    // 返回错误，提示用户补充参数
+    const errorResult: MyResult = {
+      resultDesc: '请指定相册分类（all/favorite/video/screenshot）',
+      success: false
+    };
+    return Promise.resolve({ code: -2, result: errorResult });
   }
-})
-export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
-  artist: ArtistInfo = new ArtistInfo();  // 类属性名 = parameters 属性名
+  // 业务逻辑...
 }
+
+// ✅ 对于可选参数，使用 ?? 提供默认值
+const pageSize: number = this.pageSize ?? 20;
 ```
 
 #### 检查清单
 
-生成代码后，必须验证以下对应关系：
-
-| 检查项 | 说明 |
-|--------|------|
-| 属性名一致 | `parameters.properties` 的每个属性名 = 执行器类的属性名 |
-| 类型一致 | `parameters.properties.xxx.type` = 执行器类属性的类型（**禁止使用联合类型**） |
-| 嵌套定义完整 | 对象类型属性必须在 `properties` 中定义子属性 |
-| 必填标记 | 必填属性必须在 `required` 数组中列出 |
-
-**类型一致示例：**
-- JSON Schema `type: 'string'` → 类属性 `string`（不是 `'a' | 'b'`）
-- JSON Schema `type: 'number'` → 类属性 `number`（不是 `1 | 2`）
-- JSON Schema `type: 'boolean'` → 类属性 `boolean`（不是 `true | false`）
-
-### ArkTS 语法规范（必须严格遵守）
-
-#### 1. 类属性初始化
-
-```typescript
-// ❌ 错误：没有初始化
-export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
-  params: MusicParams;
-  songName: string;
-}
-
-// ✅ 正确：显式初始化
-export default class PlayMusicExecutor extends InsightIntentEntryExecutor<string> {
-  params: MusicParams = new MusicParams();
-  songName: string = '';
-}
-```
-
-#### 2. 禁止解构赋值
-
-```typescript
-// ❌ 错误：不支持解构赋值
-const { songName, artistName } = this.params;
-const { songlist } = await import('../data/music');
-
-// ✅ 正确：直接访问
-const songName: string = this.params.songName || '';
-const artistName: string = this.params.artistName || '';
-
-// ✅ 正确：使用模块对象访问
-const musicModule = await import('../data/music');
-const songlist: songtype[] = musicModule.songlist;
-```
-
-#### 3. 对象字面量类型声明
-
-```typescript
-// ❌ 错误：对象字面量必须对应显式声明的类或接口
-const result = { code: 0, result: '播放成功' };
-const playInfo = { name: song.name, author: song.author };
-
-// ✅ 正确：定义接口并使用显式类型
-interface PlayMusicResult {
-  code: number;
-  result?: string;
-}
-
-interface PlayInfoData {
-  name: string;
-  author: string;
-  img: string;
-  url: string;
-  id: number;
-}
-
-const result: PlayMusicResult = { code: 0, result: '播放成功' };
-const playInfo: PlayInfoData = {
-  name: song.name,
-  author: song.author,
-  img: song.img,
-  url: song.url,
-  id: song.id
-};
-```
-
-#### 4. emitter.emit 数据格式
-
-```typescript
-// ❌ 错误：emitter.emit 需要包含 data 字段
-emitter.emit('playMusic', playInfo);
-
-// ✅ 正确：使用包含 data 字段的对象
-emitter.emit('playMusic', { data: playInfo });
-```
-
-#### 5. 显式类型声明
-
-```typescript
-// ❌ 错误：缺少类型声明
-const message = songName && artistName ? '...' : '...';
-```
-
-#### 6. 错误处理
-
-```typescript
-try {
-  await operation();
-} catch (error) {
-  const errorMessage: string = error instanceof Error ? error.message : String(error);
-  hilog.error(0x0000, LOG_TAG, 'Error: %{public}s', errorMessage);
-}
-```
-
-#### 7. Promise 返回值
-
-```typescript
-// ❌ 错误：reject 用于错误情况
-return Promise.reject(result);
-
-// ✅ 正确：resolve 用于成功结果
-return Promise.resolve(result);
-```
-
-#### 8. 可选类型属性处理
-
-```typescript
-// ❌ 错误：直接将可选类型赋值给非可选类型
-interface ItemInfo {
-  page?: number;      // 可选类型 number | undefined
-  row?: number;
-  column?: number;
-}
-
-const oldPage: number = appItem.page;     // 编译错误：Type 'number | undefined' is not assignable to type 'number'
-const oldRow: number = appItem.row;
-const oldColumn: number = appItem.column;
-
-// ✅ 正确：使用空值合并运算符提供默认值
-const oldPage: number = appItem.page ?? 0;
-const oldRow: number = appItem.row ?? 0;
-const oldColumn: number = appItem.column ?? 0;
-
-// ✅ 正确：使用逻辑或运算符（注意 0 会被视为 falsy）
-const itemPage: number = appItem.page || 0;  // 如果 page 为 0，会使用默认值 0
-
-// ✅ 推荐：使用空值合并运算符 ??（只有 null/undefined 时才使用默认值）
-const itemPage: number = appItem.page ?? -1;  // 如果 page 为 0，保留 0；如果为 undefined，使用 -1
-```
-
-#### 9. 方法返回类型声明（禁止使用对象字面量）
-
-**⚠️ ArkTS 严格模式核心规则：方法返回类型不能使用内联对象字面量声明，必须定义接口！**
-
-**编译错误**：`Object literals cannot be used as type declarations (arkts-no-obj-literals-as-types)`
-
-```typescript
-// ❌ 错误：返回类型使用内联对象字面量声明
-private validateParams(): { valid: boolean; message: string } {
-  // ...
-}
-
-// ❌ 错误：返回类型使用联合的对象字面量
-private getData(): { name: string } | { error: string } {
-  // ...
-}
-
-// ✅ 正确：定义接口并在返回类型中使用
-interface ValidationResult {
-  valid: boolean;
-  message: string;
-}
-
-private validateParams(): ValidationResult {
-  // ...
-}
-
-// ✅ 正确：使用已定义的接口
-interface DataResult {
-  name: string;
-}
-
-interface ErrorResult {
-  error: string;
-}
-
-private getData(): DataResult | ErrorResult {
-  // ...
-}
-```
-
-**关键要点**：
-- 所有方法的返回类型都必须使用预定义的接口或类型
-- 不能在返回类型位置直接写对象字面量 `{ ... }`
-- 即使是简单的对象结构，也必须先定义接口
-
-#### 10. 方法 return 语句禁止直接返回对象字面量
-
-**⚠️ ArkTS 严格模式核心规则：方法中的 return 语句不能直接返回对象字面量，必须先创建显式类型的变量！**
-
-**编译错误**：`Object literal must correspond to some explicitly declared class or interface (arkts-no-untyped-obj-literals)`
-
-```typescript
-// ❌ 错误：直接返回对象字面量
-private validateParams(): ValidationResult {
-  if (!this.name) {
-    return { valid: false, message: '姓名不能为空' };  // 编译错误
-  }
-  return { valid: true, message: '' };  // 编译错误
-}
-
-// ✅ 正确：先创建显式类型的变量，再返回
-private validateParams(): ValidationResult {
-  if (!this.name) {
-    const result: ValidationResult = { valid: false, message: '姓名不能为空' };
-    return result;
-  }
-  const successResult: ValidationResult = { valid: true, message: '' };
-  return successResult;
-}
-
-// ❌ 错误：箭头函数直接返回对象字面量
-const getResult = () => ({ code: 0, message: '成功' });  // 编译错误
-
-// ✅ 正确：先声明变量再返回
-const getResult = (): ResultType => {
-  const result: ResultType = { code: 0, message: '成功' };
-  return result;
-};
-```
-
-**通用模板**：
-
-```typescript
-interface MyResult {
-  success: boolean;
-  message: string;
-  data?: string;
-}
-
-private myMethod(): MyResult {
-  // 处理逻辑...
-
-  // 必须先创建显式类型的变量
-  const result: MyResult = {
-    success: true,
-    message: '操作成功'
-  };
-
-  return result;
-}
-
-private myMethodWithError(): MyResult {
-  // 错误情况也需要显式类型
-  const errorResult: MyResult = {
-    success: false,
-    message: '操作失败'
-  };
-
-  return errorResult;
-}
-```
-
-**关键要点**：
-- 所有 return 语句中的对象字面量都必须先声明为显式类型的变量
-- 即使 return 语句在方法的不同分支中，每个分支都要遵循此规则
-- 这个规则适用于所有方法，包括 private 方法、工具方法等
-
-#### 11. 对象字面量作为返回值（重要）
-
-**⚠️ ArkTS 严格模式核心规则：所有 `Promise.resolve()` 中的对象字面量必须使用显式类型声明！**
-
-```typescript
-// ❌ 错误：Promise.resolve 中的对象字面量没有显式类型声明
-return Promise.resolve({
-  code: 0,
-  result: { success: true, message: '播放成功' }
-});
-
-// ❌ 错误：简单的返回对象也需要类型声明
-return Promise.resolve({ code: -1 });
-
-// ✅ 正确：定义接口并为返回对象添加显式类型声明
-interface PlayMusicResult {
-  success: boolean;
-  message: string;
-  songName?: string;
-  artistName?: string;
-}
-
-// 在方法内部声明 intentResult 变量并指定类型
-const successResult: PlayMusicResult = {
-  success: true,
-  message: '播放成功',
-  songName: '起风了',
-  artistName: '买辣椒也用券'
-};
-
-const intentResult: insightIntent.IntentResult<PlayMusicResult> = {
-  code: 0,
-  result: successResult
-};
-return Promise.resolve(intentResult);
-
-// ✅ 正确：错误返回也需要类型声明
-const errorResult: PlayMusicResult = {
-  success: false,
-  message: '未找到歌曲'
-};
-
-const errorIntentResult: insightIntent.IntentResult<PlayMusicResult> = {
-  code: -5,
-  result: errorResult
-};
-return Promise.resolve(errorIntentResult);
-
-// ✅ 正确：无 result 的简单返回
-const simpleResult: insightIntent.IntentResult<void> = { code: 0 };
-return Promise.resolve(simpleResult);
-```
-
-**通用模板：**
-
-```typescript
-async onExecute(): Promise<insightIntent.IntentResult<TResult>> {
-  try {
-    // 1. 定义返回数据对象
-    const dataResult: TResult = {
-      // ... 属性值
-    };
-    
-    // 2. 定义意图返回对象（必须显式类型声明）
-    const intentResult: insightIntent.IntentResult<TResult> = {
-      code: 0,
-      result: dataResult
-    };
-    
-    return Promise.resolve(intentResult);
-  } catch (error) {
-    const errorMessage: string = error instanceof Error ? error.message : String(error);
-    
-    // 错误返回也需要类型声明
-    const errorResult: TResult = {
-      success: false,
-      message: errorMessage
-    };
-    
-    const errorIntentResult: insightIntent.IntentResult<TResult> = {
-      code: -1,
-      result: errorResult
-    };
-    
-    return Promise.resolve(errorIntentResult);
-  }
-}
-```
-
-#### 12. 外部模块 API 验证
-
-```typescript
-// ❌ 错误：假设 API 存在而未验证
-const gridAppsInfos = cacheManager.getGridAppsInfos();  // 方法可能不存在
-
-// ✅ 正确：使用前先搜索验证 API 是否存在
-// 1. 使用 Grep 工具搜索类定义和可用方法
-// 2. 确认方法名称、参数类型和返回类型
-// 3. 如果方法不存在，查找替代方法
-
-// 示例：LaunchLayoutCacheManager 的正确方法
-const gridLayoutItemList: GridLayoutItemInfo[] = cacheManager.getAllGridLayoutItemList(BusinessType.BUSINESS_BASIC_DESKTOP);
-```
-
-#### 13. 模块导入路径验证
-
-```typescript
-// ❌ 错误：从主模块导入时，某些类型可能被导出为 type 而非 value
-import { GridLayoutItemInfo, LaunchLayoutCacheManager, RdbStoreManager, BusinessType } from '@ohos/launchercommon';
-// 编译错误：'BusinessType' cannot be used as a value because it was exported using 'export type'
-
-// ✅ 正确：分离导入，枚举类型从具体路径导入
-import { GridLayoutItemInfo, LaunchLayoutCacheManager, RdbStoreManager } from '@ohos/launchercommon';
-import { BusinessType } from '@ohos/launchercommon/src/main/ets/constants/CommonConstants';
-
-// 规则：
-// 1. 如果编译器报错 "cannot be used as a value because it was exported using 'export type'"
-// 2. 需要从具体源文件路径导入该类型
-// 3. 使用 Grep 搜索项目中其他文件的导入方式作为参考
-```
-
-## 实战示例
-
-### 场景1：多执行模式处理
-
-```typescript
-import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor, InsightIntentEntity } from '@kit.AbilityKit';
-
-interface DownloadResult {
-  success: boolean;
-  path: string;
-}
-
-@InsightIntentEntity({
-  entityCategory: 'download params category',
-  parameters: {
-    '$id': '/schemas/DownloadParams',
-    'type': 'object',
-    'description': '下载文件参数',
-    'properties': {
-      'url': {
-        'type': 'string',
-        'description': '文件URL',
-        'minLength': 1
-      },
-      'savePath': {
-        'type': 'string',
-        'description': '保存路径',
-        'minLength': 1
-      }
-    },
-    'required': ['url', 'savePath']
-  }
-})
-export class DownloadParams implements insightIntent.IntentEntity {
-  entityId: string = '0x12';
-  url: string = '';
-  savePath:: string = '';
-}
-
-@InsightIntentEntry({
-  intentName: 'DownloadFile',
-  domain: 'ToolsDomain',
-  intentVersion: '1.0.1',
-  displayName: '下载文件',
-  llmDescription: '下载指定URL的文件，支持前台和后台下载',
-  abilityName: 'EntryAbility',
-  executeMode: [
-    insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND,
-    insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND
-  ],
-  parameters: {
-    'type': 'object',
-    'properties': {
-      'params': {
-        'type': 'object',
-        'description': '下载参数',
-        'properties': {
-          'url': {
-            'type': 'string',
-            'description': '文件URL',
-            'minLength': 1
-          },
-          'savePath': {
-            'type': 'string',
-            'description': '保存路径',
-            'minLength': 1
-          }
-        },
-        'required': ['url', 'savePath']
-      }
-    },
-    'required': ['params']
-  }
-})
-export default class DownloadFileExecutor extends InsightIntentEntryExecutor<DownloadResult> {
-  params: DownloadParams = new DownloadParams();
-
-  async onExecute(): Promise<insightIntent.IntentResult<DownloadResult>> {
-    if (this.executeMode === insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND) {
-      return await this.downloadWithUI(this.params);
-    } else if (this.executeMode === insightIntent.ExecuteMode.UI_ABILITY_BACKGROUND) {
-      return await this.downloadInBackground(this.params);
-    }
-    
-    const errorResult: insightIntent.IntentResult<DownloadResult> = { code: -1 };
-    return Promise.resolve(errorResult);
-  }
-  
-  private async downloadWithUI(params: DownloadParams): Promise<insightIntent.IntentResult<DownloadResult>> {
-    // 显示进度UI
-    const downloadResult: DownloadResult = { success: true, path: params.savePath };
-    const intentResult: insightIntent.IntentResult<DownloadResult> = {
-      code: 0,
-      result: downloadResult
-    };
-    return Promise.resolve(intentResult);
-  }
-  
-  private async downloadInBackground(params: DownloadParams): Promise<insightIntent.IntentResult<DownloadResult>> {
-    // 后台下载
-    const downloadResult: DownloadResult = { success: true, path: params.savePath };
-    const intentResult: insightIntent.IntentResult<DownloadResult> = {
-      code: 0,
-      result: downloadResult
-    };
-    return Promise.resolve(intentResult);
-  }
-}
-```
-
-### 场景2：使用Context启动Ability
-
-```typescript
-import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor } from '@kit.AbilityKit';
-import Want from '@ohos.app.ability.Want';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-
-const LOG_TAG: string = 'SettingsIntent';
-
-@InsightIntentEntry({
-  intentName: 'OpenSettings',
-  domain: 'SystemSettingsDomain',
-  intentVersion: '1.0.1',
-  displayName: '打开设置',
-  llmDescription: '打开应用设置页面',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]
-})
-export default class OpenSettingsExecutor extends InsightIntentEntryExecutor<void> {
-  async onExecute(): Promise<insightIntent.IntentResult<void>> {
-    const want: Want = {
-      bundleName: 'com.example.app', // 本应用名称
-      abilityName: 'SettingsAbility',
-      moduleName: 'entry'
-    };
-    
-    try {
-      await this.context.startAbility(want);
-      hilog.info(0x0000, LOG_TAG, 'Settings opened successfully');
-      const successResult: insightIntent.IntentResult<void> = { code: 0 };
-      return Promise.resolve(successResult);
-    } catch (error) {
-      const errorMessage: string = error instanceof Error ? error.message : String(error);
-      hilog.error(0x0000, LOG_TAG, 'Failed to open settings: %{public}s', errorMessage);
-      const errorResult: insightIntent.IntentResult<void> = { code: -1 };
-      return Promise.resolve(errorResult);
-    }
-  }
-}
-```
-
-### 场景3：复杂参数验证
-
-```typescript
-import { insightIntent, InsightIntentEntry, InsightIntentEntryExecutor, InsightIntentEntity } from '@kit.AbilityKit';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-
-const LOG_TAG: string = 'ShareIntent';
-
-@InsightIntentEntity({
-  entityCategory: 'share params category',
-  parameters: {
-    '$id': '/schemas/ShareParams',
-    'type': 'object',
-    'description': '分享参数',
-    'properties': {
-      'content': {
-        'type': 'string',
-        'description': '分享内容',
-        'minLength': 1,
-        'maxLength': 1000
-      },
-      'platform': {
-        'type': 'string',
-        'description': '分享平台',
-        'enum': ['wechat', 'weibo', 'qq', 'twitter']
-      },
-      'imageUrls': {
-        'type': 'array',
-        'description': '图片URL列表',
-        'items': {
-          'type': 'string',
-          'format': 'uri'
-        },
-        'maxItems': 9
-      }
-    },
-    'required': ['content', 'platform']
-  }
-})
-export class ShareParams implements insightIntent.IntentEntity {
-  entityId: string = '0x13';
-  content: string = '';
-  platform: string = '';
-  imageUrls: string[] = [];
-}
-
-@InsightIntentEntry({
-  intentName: 'ShareContent',
-  domain: 'SocialDomain',
-  intentVersion: '1.0.1',
-  displayName: '分享内容',
-  llmDescription: '分享内容到指定社交平台',
-  abilityName: 'EntryAbility',
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
-  parameters: {
-    'type': 'object',
-    'properties': {
-      'params': {
-        'type': 'object',
-        'description': '分享参数',
-        'properties': {
-          'content': {
-            'type': 'string',
-            'description': '分享内容',
-            'minLength': 1,
-            'maxLength': 1000
-          },
-          'platform': {
-            'type': 'string',
-            'description': '分享平台',
-            'enum': ['wechat', 'weibo', 'qq', 'twitter']
-          },
-          'imageUrls': {
-            'type': 'array',
-            'description': '图片URL列表',
-            'items': {
-              'type': 'string',
-              'format': 'uri'
-            },
-            'maxItems': 9
-          }
-        },
-        'required': ['content', 'platform']
-      }
-    },
-    'required': ['params']
-  }
-})
-export default class ShareContentExecutor extends InsightIntentEntryExecutor<ShareResult> {
-  params: ShareParams = new ShareParams();
-
-  async onExecute(): Promise<insightIntent.IntentResult<ShareResult>> {
-    // 参数验证
-    if (!this.validateParams()) {
-      hilog.error(0x0000, LOG_TAG, 'Invalid parameters');
-      const invalidResult: insightIntent.IntentResult<ShareResult> = { code: -2 };
-      return Promise.resolve(invalidResult);
-    }
-    
-    // 执行分享
-    const result: ShareResult = await this.shareToPlatform(this.params);
-    
-    const intentResult: insightIntent.IntentResult<ShareResult> = {
-      code: 0,
-      result: result
-    };
-    return Promise.resolve(intentResult);
-  }
-  
-  private validateParams(): boolean {
-    if (this.params.content.length === 0 || this.params.content.length > 1000) {
-      return false;
-    }
-    
-    const validPlatforms: string[] = ['wechat', 'weibo', 'qq', 'twitter'];
-    if (!validPlatforms.includes(this.params.platform)) {
-      return false;
-    }
-    
-    if (this.params.imageUrls.length > 9) {
-      return false;
-    }
-    
-    return true;
-  }
-  
-  private async shareToPlatform(params: ShareParams): Promise<ShareResult> {
-    // 实现分享逻辑
-    const shareResult: ShareResult = {
-      success: true,
-      platform: params.platform
-    };
-    return shareResult;
-  }
-}
-
-interface ShareResult {
-  success: boolean;
-  platform: string;
-}
-```
-
-### 场景4：意图与页面关联
-
-当使用 `UI_ABILITY_FOREGROUND` 执行模式时，意图执行器可以通过 `LocalStorage` 将参数传递给目标页面。
-
-#### 执行器端：传递参数
-
-```typescript
-@InsightIntentEntry({
-  intentName: 'PlayMusic',
-  // ...
-  executeMode: [insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND],
-})
-export default class PlayMusicExecutor extends InsightIntentEntryExecutor<PlayMusicResult> {
-  songName: string = '';
-  artistName: string = '';
-
-  onExecute(): Promise<insightIntent.IntentResult<PlayMusicResult>> {
-    // 创建 LocalStorage 并存储参数
-    let storage: LocalStorage = new LocalStorage();
-    storage.setOrCreate('songName', this.songName);
-    storage.setOrCreate('artistName', this.artistName);
-    storage.setOrCreate('playMode', 'list'); // 额外参数
-
-    // 加载页面并传递 storage
-    this.windowStage?.loadContent('pages/PlayMusicPage', storage, (err) => {
-      if (err.code) {
-        hilog.error(0x0000, LOG_TAG, 'Failed to load page: %{public}s', err.message);
-      }
-    });
-
-    const playMusicResult: PlayMusicResult = { message: '加载播放页面' };
-    const intentResult: insightIntent.IntentResult<PlayMusicResult> = {
-      code: 0,
-      result: playMusicResult
-    };
-    return Promise.resolve(intentResult);
-  }
-}
-```
-
-#### 页面端：接收参数
-
-```typescript
-@Entry
-@Component
-struct PlayMusicPage {
-  // 使用 @LocalStorageProp 接收参数
-  @LocalStorageProp('songName') songName: string = '';
-  @LocalStorageProp('artistName') artistName: string = '';
-  @LocalStorageProp('playMode') playMode: string = 'list';
-
-  aboutToAppear(): void {
-    hilog.info(0x0000, 'PlayMusicPage', 'songName: %{public}s', this.songName);
-    // 使用参数初始化播放器
-  }
-
-  build() {
-    Column() {
-      Text(`${this.songName} - ${this.artistName}`)
-        .fontSize(20)
-    }
-  }
-}
-```
-
-#### 注意事项
-
-1. **参数类型**：`LocalStorage` 支持基本类型（string、number、boolean）
-2. **默认值**：`@LocalStorageProp` 必须提供默认值
-3. **生命周期**：`LocalStorage` 与页面绑定，页面销毁时自动释放
-
-
-## insight_intent.json 配置
-
-详细配置说明请参考 [write_config_file.md](./write_config_file.md)
+| 检查项       | 说明                                              |
+| :----------- | :------------------------------------------------ |
+| 属性名一致   | `parameters.properties` 的属性名 = 执行器类属性名 |
+| 类型一致     | JSON Schema 类型 = 类属性类型（禁止联合类型）     |
+| 嵌套定义完整 | 对象类型属性必须在 `properties` 中定义子属性      |
+| 必填标记     | 必填属性在 `required` 数组中列出                  |
+
+------
 
 ## 代码生成检查清单
 
-### 🔴 必须检查（会导致编译失败）
+### 🔴 必须检查（导致编译失败）
 
-- [ ] 所有类属性都有初始值（基本类型用默认值，对象类型用 `new ClassName()`）
-- [ ] 没有使用解构赋值语法（包括 `const { x } = obj` 和 `const { x } = await import()`）
-- [ ] 所有变量都有显式类型声明
-- [ ] 对象字面量必须对应显式声明的类或接口
-- [ ] Promise 返回值使用 `resolve()` 而不是 `reject()`
-- [ ] `@InsightIntentEntry` 装饰器所有必填字段都已填写
-- [ ] 执行器类使用 `export default` 导出
-- [ ] emitter.emit 调用时使用包含 `data` 字段的对象
-- [ ] **装饰器和基类直接使用，不使用 namespace 前缀**（`@InsightIntentEntry` ✅，`@insightIntent.InsightIntentEntry` ❌）
-- [ ] **枚举和类型使用 namespace 前缀**（`insightIntent.ExecuteMode` ✅，`ExecuteMode` ❌）
-- [ ] **可选类型属性访问时提供默认值（使用 `??` 或 `||`）**
-- [ ] **方法返回类型不能使用对象字面量声明（必须定义接口）**
-- [ ] **return 语句不能直接返回对象字面量（先创建显式类型变量）**
-- [ ] **Promise.resolve() 中的对象字面量使用显式类型声明**
-- [ ] **外部模块 API 调用前验证方法是否存在**
+- 所有类属性都有初始值
+- 没有使用解构赋值
+- 所有变量都有显式类型声明
+- 对象字面量必须对应显式声明的类或接口
+- Promise 返回值使用 `resolve()` 而不是 `reject()`
+- `@InsightIntentEntry` 所有必填字段已填写
+- 执行器类使用 `export default` 导出
+- 装饰器和基类直接使用，不使用 namespace 前缀
+- 枚举和类型使用 namespace 前缀
+- 方法返回类型不能使用对象字面量
+- return 语句不能直接返回对象字面量
+- `Promise.resolve()` 中的对象字面量使用显式类型声明
 
 ### 🟡 建议检查（可能导致运行时错误）
 
-- [ ] 错误处理中有显式类型转换
-- [ ] 可选属性访问都提供了默认值（使用 `|| ''` 或 `?? ''`）
-- [ ] `onExecute()` 方法返回 `Promise<insightIntent.IntentResult<T>>`
-- [ ] JsonSchema 中的 `required` 字段与实际参数匹配
+- 错误处理中有显式类型转换
+- 可选属性访问都提供了默认值（使用 `??`）
+- `onExecute()` 返回 `Promise<insightIntent.IntentResult<T>>`
+- JsonSchema 中 `required` 与实际参数匹配
+- **页面跳转型意图是否同时实现了 `windowStage.loadContent` + 桥接导航信号（`@StorageLink` + `onPageShow`）双重保障？**
+- **桥接导航的信号名称是否与项目已有 AppStorage 键名冲突？**
+- **`loadContent` 是否包裹在 `if (this.executeMode == insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND)` 条件中？**
+- **`loadContent` 回调中是否处理了 `err.code` 非零的情况？**
+- **目标页字段初始值是否不为 `undefined`**（尤其是使用 `loadContent` 加载的页面，字段应初始化为 `''`、`0`、`[]` 等安全空值）
 
-### 🟢 优化建议（提升代码质量）
+### 🟡 运行时场景检查（页面跳转型）
 
-- [ ] 没有使用 `any` 类型
-- [ ] 所有接口属性都有类型标注
-- [ ] `llmDescription` 描述详细且清晰
-- [ ] 使用了合适的 `domain` 和 `executeMode`
-- [ ] 错误代码使用标准值（0, -1, -2, -3, -4, -5）
+- **冷启动**：应用未运行 → 调用意图 → 页面正确显示 + 功能正常
+- **热启动（同 URL）**：应用在前台且目标页已打开 → 再次调用意图 → 硬件/功能正常（相机/传感器等）
+- **热启动（不同 URL）**：应用在前台 → 调用意图跳转不同页面 → 新页面正确加载
+- **参数必填性**：必填参数缺失时，意图是否返回友好错误提示（而非崩溃）
+- **Router 架构适配**：若目标页使用 `router.getParams()`，是否已增加 `AppStorage` 兜底读取
+- **空白页面检查**：冷启动/热启动下页面是否非空白（`aboutToAppear` 中完成数据初始化，字段初始值安全）
 
-### 自动检查脚本
+### 🟢 优化建议
 
-```typescript
-// 示例：自动检查脚本
-function checkCodeQuality(executorClass: any): void {
-  // 检查类属性初始化
-  const instance: any = new executorClass();
-  for (const key of Object.keys(instance)) {
-    if (instance[key] === undefined) {
-      console.error(`属性 ${key} 未初始化`);
-    }
-  }
-  
-  // 检查是否有 onExecute 方法
-  if (typeof instance.onExecute !== 'function') {
-    console.error('缺少 onExecute 方法');
-  }
-}
-```
+- 没有使用 `any` 类型
+- `llmDescription` 描述详细且清晰
+- 使用了合适的 `domain` 和 `executeMode`
+- 错误代码使用标准值（0, -1, -2, -3, -4, -5）
+
+------
+
+## 快速参考
+
+### @InsightIntentEntry 必填字段
+
+| 字段            | 类型   | 说明                                        | 示例                                                |
+| :-------------- | :----- | :------------------------------------------ | :-------------------------------------------------- |
+| `intentName`    | string | 英文 PascalCase，动词-名词结构              | `"PlayMusic"`                                       |
+| `domain`        | string | 域标识符                                    | `"MusicDomain"`                                     |
+| `intentVersion` | string | 语义化版本，三位数格式                      | `"1.0.1"`                                           |
+| `displayName`   | string | 中文显示名称                                | `"播放音乐"`                                        |
+| `abilityName`   | string | 绑定的 Ability 名称，从 `module.json5` 获取 | `"EntryAbility"`                                    |
+| `executeMode`   | array  | 支持的执行模式，必须是数组                  | `[insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]` |
+
+### @InsightIntentEntry 可选字段
+
+| 字段                 | 类型                   | 说明                           |
+| :------------------- | :--------------------- | :----------------------------- |
+| `displayDescription` | string                 | 详细描述                       |
+| `schema`             | string                 | 标准意图 schema                |
+| `icon`               | ResourceStr            | 图标资源                       |
+| `llmDescription`     | string                 | LLM 理解描述（自定义意图必填） |
+| `keywords`           | string[]               | 搜索关键词（自定义意图必填）   |
+| `parameters`         | Record<string, Object> | 参数 JSON Schema               |
+| `result`             | Record<string, Object> | 返回值 JSON Schema             |
+
+### 执行模式（executeMode）选择指南
+
+| 模式                        | 值   | 说明                      | 适用场景                                                |
+| :-------------------------- | :--- | :------------------------ | :------------------------------------------------------ |
+| `UI_ABILITY_FOREGROUND`     | 0    | 前台 UI Ability，有窗口   | **页面跳转、UI 交互**（必须使用此模式）                 |
+| `UI_ABILITY_BACKGROUND`     | 1    | 后台 UI Ability，无窗口   | 数据查询、后台计算（此时 `windowStage` 为 `undefined`） |
+| `UI_EXTENSION_ABILITY`      | 2    | UI Extension Ability      | 扩展 UI 场景                                            |
+| `SERVICE_EXTENSION_ABILITY` | 3    | Service Extension Ability | 后台服务场景                                            |
+
+> ⚠️ **页面跳转意图必须使用 `UI_ABILITY_FOREGROUND`**，否则 `windowStage` 为 `undefined` 无法加载页面。
+
+### 错误代码
+
+| 代码 | 说明       |
+| :--- | :--------- |
+| `0`  | 成功       |
+| `-1` | 通用错误   |
+| `-2` | 参数无效   |
+| `-3` | 网络错误   |
+| `-4` | 权限拒绝   |
+| `-5` | 资源未找到 |
+
+### 常用域
+
+| 域                     | 说明     | 示例意图                  |
+| :--------------------- | :------- | :------------------------ |
+| `MusicDomain`          | 音乐功能 | PlayMusic, SearchSong     |
+| `ToolsDomain`          | 通用工具 | ProcessData, DownloadFile |
+| `SystemSettingsDomain` | 系统设置 | OpenSettings, ChangeTheme |
+| `NavigationDomain`     | 导航     | NavigateToLocation        |
+| `ChatDomain`           | 消息     | SendMessage               |
+| `HealthDomain`         | 健康追踪 | LogWeight, TrackExercise  |
+
+------
 
 ## 注意事项
 
-1. **参数描述亲和大模型**：工具用于大模型理解和调用，因此生成参数描述时，需要亲和大模型，更容易被大模型理解和调用
-2. **最多输出一个意图结果**：如果用户提供信息无法进行生成，提示用户补充功能描述
-3. **检查参数类型匹配**：意图必须实现所有必选参数且类型匹配
-4. **导出要求**：被 @InsightIntentEntry 装饰的类需要使用 `export default` 导出
+1. **参数描述亲和大模型**：生成参数描述时，需要亲和大模型，更容易被大模型理解和调用。
+2. **最多输出一个意图结果**：如果用户提供信息无法进行生成，提示用户补充功能描述。
+3. **检查参数类型匹配**：意图必须实现所有必选参数且类型匹配。
+4. **导出要求**：被 `@InsightIntentEntry` 装饰的类需要使用 `export default` 导出。
 
-
-## 代码验证 checkList
-
-生成意图代码后，请按以下清单进行验证：
-
-### 必检项
-
-| 检查项 | 检查内容 | 通过条件 |
-|--------|----------|----------|
-| ☐ 装饰器导入 | 是否正确导入装饰器 | `import { InsightIntentEntry, ... } from '@kit.AbilityKit'` |
-| ☐ 装饰器使用 | 装饰器是否直接使用（无namespace前缀） | `@InsightIntentEntry({...})` ✅，`@insightIntent.InsightIntentEntry` ❌ |
-| ☐ 基类继承 | 基类是否直接使用（无namespace前缀） | `extends InsightIntentEntryExecutor<string>` ✅，`extends insightIntent.InsightIntentEntryExecutor<string>` ❌ |
-| ☐ 枚举使用 | 枚举是否使用namespace前缀 | `insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND` ✅ |
-| ☐ 类导出 | 是否使用 `export default` | `export default class XxxExecutor ...` |
-| ☐ 属性初始化 | 所有类属性是否有初始值 | `songName: string = '';` 而非 `songName: string;` |
-| ☐ 返回类型 | `onExecute` 返回值是否正确 | `Promise<insightIntent.IntentResult<T>>` |
-
-### 必填字段检查
-
-| 字段 | 是否必填 | 示例 |
-|------|----------|-------|
-| `intentName` | ✅ 必填 | `'PlayMusic'` (PascalCase) |
-| `domain` | ✅ 必填 | `'MusicDomain'` |
-| `intentVersion` | ✅ 必填 | `'1.0.0'` |
-| `displayName` | ✅ 必填 | `'播放音乐'` |
-| `abilityName` | ✅ 必填 | `'EntryAbility'` |
-| `executeMode` | ✅ 必填 | `[insightIntent.ExecuteMode.UI_ABILITY_FOREGROUND]` |
-| `llmDescription` | 自定义意图必填 | 大模型理解用的描述 |
-| `keywords` | 自定义意图必填 | `['播放', '音乐']` |
-
-### ArkTS 语法检查
-
-```typescript
-// ❌ 错误示例
-const { songName, artistName } = this.params;  // 禁止解构赋值
-const result = { code: 0 };  // 缺少类型声明
-
-// ✅ 正确示例
-const songName: string = this.params.songName ?? '';
-const result: PlayResult = { code: 0 };
-```
-
-### 配置检查
-
-- ☐ `insight_intent.json` 中是否添加了意图文件路径
-- ☐ 文件路径是否正确（相对于项目根目录）
-- ☐ 项目根目录的 `build-profile.json5` 中是否配置 `useNormalizedOHMUrl`
-
-## 最佳实践
-
-### 1. 命名规范
-
-```typescript
-// ✅ 良好的命名
-intentName: 'PlayMusic'           // 动词-名词结构，PascalCase
-class PlayMusicExecutor           // 描述性类名
-domain: 'MusicDomain'             // 相关域
-```
-
-### 2. LLM描述优化
-
-```typescript
-// ❌ 过于简单
-llmDescription: '播放音乐'
-
-// ✅ 详细描述
-llmDescription: '播放指定的音乐文件。支持通过歌曲名称、歌手信息等参数精确匹配音乐。播放成功后返回歌曲信息。'
-```
-
-### 3. 错误处理
-
-```typescript
-async onExecute(): Promise<insightIntent.IntentResult<T>> {
-  try {
-    const result: T = await this.performOperation();
-    return Promise.resolve({ code: 0, result: result });
-  } catch (error) {
-    const errorMessage: string = error instanceof Error ? error.message : String(error);
-    hilog.error(0x0000, LOG_TAG, 'Operation failed: %{public}s', errorMessage);
-    
-    // 根据错误类型返回不同的错误码
-    if (errorMessage.includes('network')) {
-      return Promise.resolve({ code: -3 });
-    } else if (errorMessage.includes('permission')) {
-      return Promise.resolve({ code: -4 });
-    }
-    
-    return Promise.resolve({ code: -1 });
-  }
-}
-```
-
-### 4. 日志记录
-
-```typescript
-const LOG_TAG: string = 'PlayMusicIntent';
-
-async onExecute(): Promise<insightIntent.IntentResult<string>> {
-  hilog.info(0x0000, LOG_TAG, 'Intent execution started');
-  hilog.info(0x0000, LOG_TAG, 'Parameters: %{public}s', JSON.stringify(this));
-  
-  try {
-    const result: string = await this.playMusic();
-    hilog.info(0x0000, LOG_TAG, 'Intent execution succeeded');
-    return Promise.resolve({ code: 0, result: result });
-  } catch (errror) {
-    hilog.error(0x0000, LOG_TAG, 'Intent execution failed');
-    return Promise.resolve({ code: -1 });
-  }
-}
-```
-
-### 5. 参数验证
-
-```typescript
-async onExecute(): Promise<insightIntent.IntentResult<T>> {
-  // 参数验证
-  if (!this.validateParameters()) {
-    hilog.warn(0x0000, LOG_TAG, 'Invalid parameters');
-    return Promise.resolve({ code: -2 });
-  }
-  
-  // 执行逻辑
-  const result: T = await this.executeLogic();
-  return Promise.resolve({ code: 0, result: result });
-}
-
-private validateParameters(): boolean {
-  // 实现参数验证逻辑
-  return true;
-}
-```
-
-### 6. 性能优化
-
-```typescript
-// ✅ 使用缓存
-private cache: Map<string, T> = new Map<string, T>();
-
-async onExecute(): Promise<insightIntent.IntentResult<T>> {
-  const cacheKey: string = this.generateCacheKey();
-  
-  if (this.cache.has(cacheKey)) {
-    return Promise.resolve({ 
-      code: 0, 
-      result: this.cache.get(cacheKey) 
-    });
-  }
-  
-  const result: T = await this.fetchData();
-  this.cache.set(cacheKey, result);
-  
-  return Promise.resolve({ code: 0, result: result });
-}
-```
-
-## 常见问题与解决方案
-
-参考 [troubleshooting.md](./troubleshooting.md)，避免代码出现问题。
+------
 
 ## 相关资源
 
-- [InsightIntentEntry API](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintentdecorator#insightintententry)
-- [InsightIntentEntryExecutor API](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintententryexecutor)
-- [InsightIntentEntity API](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintentdecorator#insightintententity)
-- [JsonSchema 规范](https://json-schema.org/)
+- [InsightIntentEntry API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintentdecorator#insightintententry)
+- [InsightIntentEntryExecutor API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintententryexecutor)
+- [InsightIntentEntity API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-app-ability-insightintentdecorator#insightintententity)
+- [JsonSchema 规范](jsonschema_reference.md/)
+- [common_rules.md](common_rules.md/) - 公共规则

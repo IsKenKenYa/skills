@@ -137,7 +137,7 @@ class EngageWorker(context: Context, workerParams: WorkerParameters) : Coroutine
         return when (publishType) {
             Constants.PUBLISH_TYPE_RECOMMENDATIONS -> publishRecommendations()
             // Constants.PUBLISH_TYPE_FEATURED -> publishFeatured()
-            // Constants.PUBLISH_TYPE_CONTINUATION-> publishContinuation()
+            Constants.PUBLISH_TYPE_CONTINUATION -> publishContinuation()
             Constants.PUBLISH_TYPE_USER_ACCOUNT_MANAGEMENT -> publishUserAccountManagement()
             else -> Result.failure()
         }
@@ -148,6 +148,21 @@ class EngageWorker(context: Context, workerParams: WorkerParameters) : Coroutine
         val publishTask: Task<Void> =
             client.publishRecommendationClusters(
                 clusterRequestFactory.constructRecommendationClustersRequest()
+            )
+        return publishAndProvideResult(publishTask)
+    }
+
+    private suspend fun publishContinuation(): Result {
+        // Empty Continuation Guard: If there is no continuation content,
+        // we must delete the cluster instead of publishing an empty one on the UI.
+        if (getContinuationData().isEmpty()) {
+            val deleteTask = client.deleteContinuationCluster()
+            return publishAndProvideResult(deleteTask)
+        }
+
+        val publishTask: Task<Void> =
+            client.publishContinuationCluster(
+                clusterRequestFactory.constructContinuationClusterRequest()
             )
         return publishAndProvideResult(publishTask)
     }
@@ -178,6 +193,11 @@ class EngageWorker(context: Context, workerParams: WorkerParameters) : Coroutine
 
     private fun isAccountSignedIn(): Boolean {
         // Implement your app's sign-in check logic here.
+        // ...
+    }
+
+    private fun getContinuationData(): List<Any> {
+        // Implement your app's data loading logic here.
         // ...
     }
 
@@ -291,11 +311,28 @@ class ClusterRequestFactory(context: Context) {
 
         val items = appDataRepository.getRecommendations()
         val recommendationCluster = com.google.android.engage.common.datamodel.RecommendationCluster.Builder()
+            .setTitle("Recommended Content") // Required field
+            .setRecommendationClusterType(com.google.android.engage.common.datamodel.RecommendationClusterType.TYPE_TOP_PICKS_FOR_YOU) // Required field
         for (item in items) {
             recommendationCluster.addEntity(ItemToEntityConverter.convert(item))
         }
         return com.google.android.engage.service.PublishRecommendationClustersRequest.Builder()
             .addRecommendationCluster(recommendationCluster.build())
+            .setAccountProfile(accountProfile) // Set the account profile on the request for personalization/sync
+            .build()
+    }
+
+    fun constructContinuationClusterRequest(): com.google.android.engage.service.PublishContinuationClusterRequest {
+        val items = appDataRepository.getContinuationData()
+
+        val continuationCluster = com.google.android.engage.common.datamodel.ContinuationCluster.Builder()
+            .setAccountProfile(accountProfile) // Set the account profile on the request for personalization/sync
+
+        for (item in items) {
+            continuationCluster.addEntity(ItemToEntityConverter.convert(item))
+        }
+        return com.google.android.engage.service.PublishContinuationClusterRequest.Builder()
+            .setContinuationCluster(continuationCluster.build())
             .build()
     }
 
@@ -344,7 +381,7 @@ object Constants {
     const val PUBLISH_TYPE_KEY = "PUBLISH_TYPE"
     const val PUBLISH_TYPE_RECOMMENDATIONS = "RECOMMENDATIONS"
     const val PUBLISH_TYPE_FEATURED = "FEATURED"
-    // const val PUBLISH_TYPE_CONTINUATION = "CONTINUATION"
+    const val PUBLISH_TYPE_CONTINUATION = "CONTINUATION"
     // ...
     const val PUBLISH_TYPE_USER_ACCOUNT_MANAGEMENT = "USER_ACCOUNT_MANAGEMENT"
     // const val PUBLISH_TYPE_FOOD_SHOPPING_CARD = "FOOD_SHOPPING_CARD"

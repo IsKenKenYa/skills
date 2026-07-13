@@ -1,6 +1,6 @@
 ---
 name: hmos-multidevice-hardware-access
-description: 通过声明式场景和资源索引处理 HarmonyOS 硬件能力适配。适用于涉及相机选择、相机旋转/步幅/折叠适配、canIUse 或 SysCap 检查、硬件降级策略、多设备硬件行为差异等任务。
+description: Handle HarmonyOS hardware-capability adaptation through a declarative scene and resource index. Use when the task involves camera selection, camera rotation/stride/foldable adaptation, canIUse or SysCap checks, hardware fallback strategy, or multi-device hardware behavior differences.
 metadata:
   version: 1.0.1
   keywords:

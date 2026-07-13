@@ -4,7 +4,7 @@ description: 为原生 Android 应用分析并制定测试策略——安装测�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-06-02'
+  last-updated: '2026-06-25'
   keywords:
   - android
   - testing

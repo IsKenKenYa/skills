@@ -1,6 +1,18 @@
 ---
 name: hmos-arkui-develop-skill
-description: ArkUI 代码开发助手，面向 HarmonyOS UI 开发，提供基于知识库的UI开发能力。内部调用 hmos-arkui-knowledge-retriever 的检索能力获取 API 证据。包含编码约束规则和最佳实践参考。触发场景：(1) 用户要求生成 ArkUI 页面或组件 (2) 用户在现有 .ets 工程上要求增删改功能 (3) 用户提供报错/截图要求修复 ArkUI 代码 (4) 用户提到 HarmonyOS/ArkUI/ArkTS/.ets (5) 用户提到状态管理、组件、布局等界面相关的开发任务，并且期望得到可运行代码。
+description: |
+  ArkUI 代码开发助手，面向 HarmonyOS UI 开发，提供基于知识库的UI开发能力。内部调用 hmos-arkui-knowledge-retriever 的检索能力获取 API 证据。包含编码约束规则和最佳实践参考。
+  触发场景：
+  (1) 用户要求生成 ArkUI 页面或组件
+  (2) 用户在现有 .ets 工程上要求增删改功能
+  (3) 用户提供报错/截图要求修复 ArkUI 代码
+  (4) 用户提到 HarmonyOS/ArkUI/ArkTS/.ets
+  (5) 用户提到状态管理、组件、布局等界面相关的开发任务，并且期望得到可运行代码
+
+  与 hmos-arkui-mvvm-pattern 的协作：
+  - 当任务涉及架构决策（ViewModel提取、状态归属判断、目录规划、MVVM整改），应先加载 hmos-arkui-mvvm-pattern 获取架构指导，再按其规范进入本 skill 的代码生成流程
+  - 协作方式：mvvm-pattern 产出架构方案（ViewModel清单、状态变量归属表、目录规划），本 skill 按方案检索API并生成代码，最后执行编译验证
+  - 触发优先级：代码生成类任务 → 本 skill 主导，架构复杂时先加载 mvvm-pattern；架构整改类任务 → mvvm-pattern 主导
 ---
 
 # ArkUI Develop Skill
@@ -51,9 +63,15 @@ description: ArkUI 代码开发助手，面向 HarmonyOS UI 开发，提供基�
 
 #### 2.1 设计初始方案
 
-先完成方案设计，遵循以下原则：
+**先调用 `hmos-arkui-scenario-development` 获取场景方案，再据此完成方案设计。**
 
-- 组件选择：纯 UI 片段优先 `@Builder`，有状态/生命周期时才用 `@Component`
+- **什么时候调用**：需求命中 17 大场景之一（瀑布流、父子手势冲突、循环走焦、模态转场、序列帧、响应式断点、垂类 App 骨架、地图导航浮层、自定义绘制签名等）；不确定时按该 skill 场景决策树走一遍，命中即调用，全未命中则跳过本步、直接进入下方通用原则
+- **怎么调用**：加载该 skill，由其完成场景路由（判定 `primary_scene` + `secondary_scenes`、读取命中的 `resource_refs` 含级联 `ROUTE.md`），**参考 skill 运行后输出的场景方案（组件结构 / API 调用 / 回调处理 / 代码骨架）设计本方案**，按需求适配，**不从零重写、不省略简化**
+- **方案选择优先级**：场景方案为第一依据，下方通用原则仅作兜底；冲突时以场景方案为准
+
+完成场景方案采纳后，遵循以下原则：
+
+- 组件选择：纯 UI 片段优先 `@Builder` / `@LocalBuilder`，有状态/生命周期时才用 `@Component`
 - 状态管理决策：会不会变？会不会驱动 UI？只读/不变的不加装饰器；业务数据分离到 ViewModel
 - 布局策略：嵌套尽量 ≤ 3 层，复杂布局优先 `RelativeContainer` / `Grid`
 - 导航架构：单 Page 应用，`Navigation` + `NavDestination` + `navPathStack`

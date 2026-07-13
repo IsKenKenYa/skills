@@ -1,8 +1,8 @@
 ---
 name: hmos-multidevice-avoid-areas
-description: 通过声明式场景和资源索引处理 HarmonyOS 避让区适配。适用于涉及安全区扩展、状态栏或导航栏避让、挖孔/刘海处理、沉浸式全屏布局、软键盘遮挡处理等任务。
+description: Handle HarmonyOS avoid-area adaptation through a declarative scene and resource index. Use when the task involves safe area expansion, status bar or navigation bar avoidance, notch or cutout handling, immersive full-screen layouts, or soft keyboard overlap handling.
 metadata:
-  version: 1.0.1
+  version: 1.0.2
   keywords:
     - 避让区
     - 安全区
@@ -18,6 +18,15 @@ metadata:
     - 软键盘遮挡
     - 键盘顶起
     - keyboard overlap
+    - HDS
+    - HDS沉浸式
+    - 高级组件
+    - HdsNavigation
+    - dynamicHideTitleBar
+    - hdsMaterial
+    - 沉浸光感
+    - systemMaterialEffect
+    - 滚动模糊
 ---
 
 # 设备避让区适配
@@ -46,21 +55,25 @@ metadata:
   1. 读取 `../hmos-multidevice-scenario-entry/references/multi-device-verification.md`	 
   2. 按文档中的标准流程执行验证
 
-- **HDS 组件升级提示**：当 DEV 阶段涉及以下避让场景时，应主动提示用户可考虑使用 HDS（UI Design Kit）组件以减少手动避让代码：
-  - 手动安全区扩展 + 沉浸式布局 → `HdsNavigation` 的 `enableComponentSafeArea: true` 自动处理标题栏安全区
-  - 手动 `expandSafeArea` + 背景延伸 → `HdsNavigation` 配合 `systemMaterialEffect`（沉浸光感材质）实现自适应沉浸式效果
-  - `dynamicHideTitleBar` 可替代手动实现的滚动隐藏标题栏方案
-  - HDS 组件详细 API 和示例参见 `../hmos-multidevice-scenario-entry/references/hds-ui-design-kit.md`，路由入口为 `SCENE-09`。
-  - **升级建议不构成强制要求**；用户明确选择手动避让方案时，仍以本技能的 AVOID 场景为准。
-  - `hdsMaterial`（沉浸光感）仅支持手机和平板，其他设备需回退到手动方案。
+- **HDS 高级组件推荐提示**：HDS（UI Design Kit）高级组件内置安全区处理、沉浸光感和滚动模糊等避让能力，可大幅减少手动避让代码。当 DEV 阶段命中以下避让场景时，**应主动向用户推荐 HDS 组件方案**，但**不自动替换用户已有的组件**，由用户决定是否采用：
+  - **AVOID-02 安全区扩展**：手动 `expandSafeArea` + padding 避让 → `HdsNavigation` 的 `enableComponentSafeArea: true` 自动处理标题栏安全区，无需手动计算状态栏高度
+  - **AVOID-03 沉浸式全屏**：
+    - 手动 `setWindowLayoutFullScreen` + `setWindowSystemBarProperties` + `expandSafeArea` 沉浸式方案 → `HdsNavigation` 配合 `systemMaterialEffect`（`hdsMaterial.MaterialType.ADAPTIVE`）实现自适应沉浸光感效果
+    - 手动滚动监听隐藏标题栏 → `HdsNavigation` 的 `dynamicHideTitleBar`（`HideMode.SCROLL_UP_TO`）一行配置替代
+    - 手动列表沉浸模糊 → `HdsNavigation` 的 `scrollEffectOpts`（`ScrollEffectType.COMMON_BLUR` / `TRANSITION_BLUR` / `GRADIENT_BLUR`）替代手动滚动偏移计算
+    - 手动浮层 TabBar → `HdsTabs` 的 `barFloatingStyle`（悬浮样式 + `systemMaterialEffect` 沉浸光感）替代手动 offset 跟随
+  - **HDS 组件详细 API 和示例参见 `./references/hds-ui-design-kit.md`。**
+  - **设备约束**：`hdsMaterial`（沉浸光感）仅支持手机和平板，其他设备需回退到手动方案；`HdsNavigation` 最低版本 5.1.0(18)，`hdsMaterial` 最低版本 6.1.0(23)。
+  - 用户未选择 HDS 或设备不支持时，使用本技能 AVOID 场景的手动避让方案。
 
 ### 资源采纳优先级
 
-当用户问题描述与 `RSC_AVOID_06`（scenario-development-cases.md）中的某个场景高度匹配时，必须按以下优先级采纳：
+当用户问题描述与避让场景高度匹配时，按以下优先级采纳：
 
 1. **场景方案（RSC_AVOID_06）为首要实现依据** — 其中的 API 调用、算法逻辑、组件结构、回调处理等细节不得省略或简化。如果场景方案提供了完整代码，必须完整采纳，不得选择性丢弃。
-2. **指南文档（RSC_AVOID_01/02/03/04）为补充参考** — 仅在场景方案未覆盖的边界情况或需要额外解释时查阅，不得用指南文档中的通用描述替代场景方案中的具体实现。
-3. **修复案例（RSC_AVOID_05）用于 FIX 阶段** — 仅在排查已有问题时参考，不用于新功能开发。
+2. **HDS 高级组件为推荐替代方案** — 当避让场景可通过 HDS 组件内置能力解决时（见"HDS 高级组件推荐提示"），主动向用户推荐 HDS 组件方案，但不自动替换。HDS 组件详细 API 参见 `./references/hds-ui-design-kit.md`。
+3. **指南文档（RSC_AVOID_01/02/03/04）为补充参考** — 仅在场景方案未覆盖的边界情况或需要额外解释时查阅，不得用指南文档中的通用描述替代场景方案中的具体实现。
+4. **修复案例（RSC_AVOID_05）用于 FIX 阶段** — 仅在排查已有问题时参考，不用于新功能开发。
 
 判断"高度匹配"的标准：用户描述的 UI 结构、交互行为、避让目标与场景方案的标题或描述基本一致（如"列表滚动隐藏标题栏"匹配场景1，"底部导航栏避让"匹配场景2）。
 
@@ -213,6 +226,8 @@ intent_signals:
   - 背景色铺满状态栏
   - 图片延伸到系统栏
   - 内容保持在安全区
+  - enableComponentSafeArea
+  - HdsNavigation安全区
 applies_when:
   - 背景需要铺满系统区域，但内容仍需保持在安全区内
   - 需要明确顶部和底部内容边界
@@ -265,6 +280,13 @@ intent_signals:
   - 浮层 TabBar
   - 阅读器全屏
   - 视频播放全屏
+  - hdsMaterial
+  - 沉浸光感
+  - dynamicHideTitleBar
+  - scrollEffectOpts
+  - 滚动模糊
+  - systemMaterialEffect
+  - barFloatingStyle
 applies_when:
   - 页面需要背景或媒体内容铺满边缘
   - 当前问题表现为全屏后内容与系统栏重叠
