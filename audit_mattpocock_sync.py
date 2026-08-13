@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-LOCAL_PREFIXES = ("engineering", "productivity", "misc", "personal", "in-progress", "deprecated")
+LOCAL_PREFIXES = ("engineering", "productivity", "misc", "in-progress", "deprecated")
 REMOTE = "https://github.com/mattpocock/skills.git"
 
 

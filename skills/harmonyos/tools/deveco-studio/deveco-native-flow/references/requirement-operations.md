@@ -4,6 +4,8 @@
 
 删除是**不可逆操作**（产出物、工作空间、分支全部丢失），必须按以下步骤执行。
 
+> **安全总则**：本流程中所有涉及 `{id}` 的路径/分支操作，执行前必须先做 ID 白名单校验（`^[A-Za-z0-9_-]+$`），并确认解析后的绝对路径完全位于 `.bundle-flow/` 或 `.bundle-flow-workspace/` 基础目录之内，防止 `../`、空值、特殊字符等构造的路径注入导致误删预期之外的目录。
+
 ### Step 1: 确认删除
 
 先展示待删除需求的完整状态，让用户明确确认：
@@ -64,11 +66,23 @@ git -C "{original_path}" branch -d "bundle-flow/{id}" 2>/dev/null
 
 ### Step 4: 清理目录和 state.json
 
-1. **用 Bash 删除**产出物目录和工作空间：
+1. **校验需求 ID 格式**（防止路径注入）：ID 必须匹配白名单 `^[A-Za-z0-9_-]+$`（仅允许字母、数字、下划线、连字符，禁止路径分隔符 `/`、点号 `.`、空格等），否则拒绝删除并报错：
    ```bash
-   rm -rf .bundle-flow/{id}/ .bundle-flow-workspace/{id}/
+   ID="{requirement_id}"
+   if ! printf '%s' "$ID" | grep -Eq '^[A-Za-z0-9_-]+$'; then
+     echo "错误：需求 ID 格式非法，拒绝删除：$ID" >&2; exit 1
+   fi
    ```
-2. **用 Read + Write 更新** state.json，从 `requirements` 中移除该需求
+2. **用 Bash 删除**产出物目录和工作空间，删除前校验路径完全位于允许的基础目录内：
+   ```bash
+   # 解析为绝对路径，校验必须分别落在 .bundle-flow/ 与 .bundle-flow-workspace/ 之下
+   BASE1="$(cd .bundle-flow && pwd)/";        TARGET1="$BASE1$ID"
+   BASE2="$(cd .bundle-flow-workspace && pwd)/"; TARGET2="$BASE2$ID"
+   case "$TARGET1" in "$BASE1"*) ;; *) echo "错误：路径越界，拒绝删除：$TARGET1" >&2; exit 1 ;; esac
+   case "$TARGET2" in "$BASE2"*) ;; *) echo "错误：路径越界，拒绝删除：$TARGET2" >&2; exit 1 ;; esac
+   rm -rf "$TARGET1" "$TARGET2"
+   ```
+3. **用 Read + Write 更新** state.json，从 `requirements` 中移除该需求
 
 ### Step 5: 处理 active 悬空
 

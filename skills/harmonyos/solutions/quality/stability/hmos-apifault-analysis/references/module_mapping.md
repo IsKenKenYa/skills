@@ -59,7 +59,7 @@
 | —                | CoreFileKit     | filemanagement_filemanagement_cangjie_wrapper | filemanagement_filemanagement_cangjie_wrapper |
 | 140xxx / 238xxx   | MediaLibraryKit | multimedia_media_library                      | multimedia_media_library                      |
 | 121xxx            | AbilityKit      | security_access_token                         | security_access_token                         |
-| 293xxx            | AbilityKit      | security_access_token                         | security_access_token                         |
+| 293xxx            | AbilityKit      | security_access_token（EL5）                  | security_access_token                         |
 | 201 / 202         |                 | 通用权限错误（跨模块）                        | —                                            |
 | 401               |                 | 通用参数错误（跨模块）                        | —                                            |
 
@@ -327,7 +327,7 @@
 | security_access_token                     | https://gitee.com/openharmony/security_access_token                     | zh-cn/application-dev/reference/apis-basic-services-kit/errorcode-accessToken.md       | zh-cn/application-dev/security/               |
 | advertising_ads_framework                 | https://gitee.com/openharmony/advertising_ads_framework                 | zh-cn/application-dev/reference/apis-ads-kit/errorcode-ads.md                          | zh-cn/application-dev/ads/                    |
 | advertising_oaid                          | https://gitee.com/openharmony/advertising_oaid                          | zh-cn/application-dev/reference/apis-ads-kit/errorcode-oaid.md                         | zh-cn/application-dev/ads/                    |
-| hiviewdfx_hicollie                        | https://gitee.com/openharmony/hiviewdfx_hicollie                        | 见hicollie.h                                                                           | zh-cn/application-dev/dfx/                    |
+| hiviewdfx_hicollie                        | https://gitee.com/openharmony/hiviewdfx_hicollie                        |                                                                                        | zh-cn/application-dev/dfx/                    |
 | commonlibrary_ets_utils                   | https://gitee.com/openharmony/commonlibrary_ets_utils                   | zh-cn/application-dev/reference/apis-arkts/errorcode-concurrent.md                     | zh-cn/application-dev/arkts-utils/            |
 
 **WebFetch 兜底策略：**

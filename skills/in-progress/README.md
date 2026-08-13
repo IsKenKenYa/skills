@@ -1,11 +1,10 @@
-# 进行中
+# In Progress（进行中）
 
-仍在开发中的 skills。它们还没有准备好稳定发布，可能有粗糙边角、破坏性变更，甚至后续被放弃。除非已明确纳入本仓库清单，否则请把它们视为实验性内容。
+这些是上游有意公开的 Beta skills，可供试用和反馈，但可能随时变化或消失。与上游插件默认排除该目录的策略不同，本仓库以“完整镜像”为原则，仍会把它们列入顶层清单和生成的插件配置。
 
-- **[claude-handoff](./claude-handoff/SKILL.md)** — 将当前对话交接给一个新的后台代理，并由它立即接手后续工作。
-- **[loop-me](./loop-me/SKILL.md)** — 在多个会话中把自己的重复工作流 grill 成可实现的 workflow 规格说明，并使用当前目录作为有状态工作区。
-- **[setup-ts-deep-modules](./setup-ts-deep-modules/SKILL.md)** — 为 TypeScript 仓库接入 dependency-cruiser，使每个包都成为通过入口文件暴露的小接口深层模块。
-- **[wizard](./wizard/SKILL.md)** — 生成引导人类完成手动流程的交互式 bash 向导。
-- **[writing-beats](./writing-beats/SKILL.md)** — 像选择你自己的冒险一样塑造文章节拍：选择起始节拍，只写这一段，然后转向下一段，直到文章自然收束。
-- **[writing-fragments](./writing-fragments/SKILL.md)** — 一场 grilling 会话，用来从你身上挖掘各种写作片段，并追加到同一个文档中，作为未来文章的原始素材。
-- **[writing-shape](./writing-shape/SKILL.md)** — 把一份 Markdown 原始素材逐段塑造成文章，并在每一步讨论格式选择。
+- **[loop-me](./loop-me/SKILL.md)**：以当前目录为有状态工作区，在多个会话中通过自我追问形成可实施的工作流规格；由用户调用。
+- **[writing-beats](./writing-beats/SKILL.md)**：把文章塑造成一段段旅程式节拍；选择起点、只写当前节拍，再转向下一节拍，直到文章自然结束。
+- **[writing-fragments](./writing-fragments/SKILL.md)**：通过追问挖掘异构的写作片段，并追加到一个文档中，作为未来文章的原材料。
+- **[writing-shape](./writing-shape/SKILL.md)**：把装有原始素材的 Markdown 文件逐段塑造成文章，并在每一步讨论格式选择。
+- **[claude-handoff](./claude-handoff/SKILL.md)**：通过 `claude --bg` 把当前对话交接给新的后台 agent，并用交接摘要让它立即继续工作；由用户调用。
+- **[setup-ts-deep-modules](./setup-ts-deep-modules/SKILL.md)**：把 dependency-cruiser 接入 TypeScript 仓库，使每个 package 成为深层模块：实现隐藏在子目录中，只能通过入口文件访问，测试也通过入口执行；由用户调用。

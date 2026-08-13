@@ -3,7 +3,7 @@ name: hmos-jsleak-analysis
 description: DFX Skills，分析 rawheap / heapsnapshot 聚类后的内存对象数据，识别疑似内存泄漏。当用户提供 .rawheap 文件、.heapsnapshot 文件、堆内存聚类报告、heap_cluster.mjs 输出结果，或询问"哪些对象在泄漏""哪些对象没有释放""分析这份内存报告""帮看下内存泄漏""为什么内存涨这么多"时，必须使用此技能。即使用户只贴出一段包含"引用链 / Retainer Chain / Retained Size / 聚类 / GC Root"的报告或表格，也应立即触发此技能。技能内置 rawheap_translator 与 heap_cluster 聚类脚本，能先把 .rawheap 转成 .heapsnapshot，再处理 .heapsnapshot 原始文件，并按 Detached、全局引用、闭包、异常大小四类规则进行根因定位，输出结构化的泄漏嫌疑清单。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.1.0
 ---
 
 # JSLeak Analysis
@@ -48,7 +48,16 @@ ${SKILL_DIR}/scripts/macos/rawheap_translator_x64 memory_leak/memleak-js-com.exa
 
 ## Step 0 — heapsnapshot 预处理（仅当输入是 .heapsnapshot 文件时）
 
-技能内置聚类脚本：`scripts/windows/heap_cluster.exe`。直接调用它把原始快照转成结构化聚类报告。
+先检查当前平台的 `heap_cluster` 是否存在：
+
+- Windows：`scripts/windows/heap_cluster.exe`
+- Linux：`scripts/linux/heap_cluster`
+- macOS x64：`scripts/macos/heap_cluster_x64`
+- macOS arm64：`scripts/macos/heap_cluster_arm64`
+
+KenKenSkills 镜像不提交这些 93–116MB 的二进制，以避免触发 GitHub 单文件 100MB 限制。若当前平台的文件缺失，从上游 [harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) 的 `03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/` 下载并放回上述同名路径，再继续执行。不要把 Git LFS 指针文本当作可执行文件。
+
+以下以 Windows 为例，把原始快照转成结构化聚类报告：
 
 ```bash
 # 单文件模式

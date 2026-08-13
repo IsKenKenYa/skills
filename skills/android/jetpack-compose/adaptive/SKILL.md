@@ -1,10 +1,16 @@
 ---
 name: adaptive
 description: 提供让应用 UI 适配不同 Android 设备（手机、平板、折叠屏、笔记本、桌面、TV、Auto 和 XR）的说明。涵盖使用 Compose MediaQuery API 处理不同窗口尺寸、指针设备（如鼠标）和文本输入设备（如键盘）；使用 Navigation3 Scenes 实现多窗格布局；使用 Compose Grid 和 FlexBox API 实现随目标尺寸变化的自适应 UI 组件（如按钮）和自适应布局（含导航区——nav rails 和 nav bars）。
+  Android devices including phones, tablets, foldables, laptops, desktop, TV, Auto
+  and XR. It includes how to handle different window sizes, pointing devices (such
+  as mouse) and text entry devices (such as keyboard) using the Compose MediaQuery
+  API. It also covers multi-pane layouts using Navigation3 Scenes, adaptive UI components
+  (such as buttons) with varying target sizes, and adaptive layouts (including navigation
+  areas - nav rails and nav bars) using the Compose Grid and FlexBox APIs.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-07-02'
+  last-updated: '2026-08-06'
   keywords:
   - android
   - ui
@@ -24,8 +30,7 @@ The app must:
 
 ## Workflow to make an app adaptive
 
-To make an app adaptive, follow these steps or a subset of them adapting to the
-task.
+To make an app adaptive, follow these steps or a subset of them adapting to the task.
 
 - Step 1: Verify current UI
 - Step 2: Make the navigation bar adaptive
@@ -35,11 +40,9 @@ task.
 
 ## Step 1. Verify current UI
 
-Ensure that screenshot tests exist to verify the current UI on different form
-factors. If they don't exist, add the [Compose Preview Screenshot Testing
-tool](references/android/develop/ui/compose/tooling/debug.md). Use the following annotation to create previews for all the major form
-factors. For example:
+Ensure that screenshot tests exist to verify the current UI on different form factors. If they don't exist, add the [Compose Preview Screenshot Testing tool](references/android/develop/ui/compose/tooling/debug.md). Use the following annotation to create previews for all the major form factors. For example:
 
+<br />
 
 ```kotlin
 @Preview(name = "Phone", device = Devices.PHONE, showBackground = true)
@@ -58,25 +61,21 @@ fun FeedScreenPreview() {
         }
     }
 }
+   
 ```
 
 <br />
 
 ## Step 2. Make the navigation bar adaptive
 
-Bottom navigation bars are optimized for touch input when the user is holding a
-phone in portrait mode. On larger screen hand-held devices, like tablets and
-unfolded foldables, the navigation area must be accessible from the edge of the
-screen (navigation rail).
+Bottom navigation bars are optimized for touch input when the user is holding a phone in portrait mode. On larger screen hand-held devices, like tablets and unfolded foldables, the navigation area must be accessible from the edge of the screen (navigation rail).
 
-If you need to provide more screen space for the content, hide the
-navigation area. Examples of this include:
+If you need to provide more screen space for the content, hide the navigation area. Examples of this include:
 
 - Hiding the navigation bar when the user scrolls down and showing it again when the user scrolls up. The assumption is that when the user is scrolling down, they are consuming content but when scrolling up they are trying to navigate away from that content.
 - Hiding the navigation area when its content is distracting. For example, in camera previews or when displaying a full-screen photo.
 
-When the detail screen is displayed full-screen on mobile, full-screen mode must
-be deactivated on larger screens.
+When the detail screen is displayed full-screen on mobile, full-screen mode must be deactivated on larger screens.
 
 Steps to migrate:
 
@@ -88,10 +87,7 @@ Steps to migrate:
 
 ### Step 2.1. Control navigation area visibility
 
-If the navigation bar's visibility changes - it is hidden under certain
-scenarios or on certain screens - this behavior must be maintained with the
-adaptive navigation area. This is done using `NavigationSuiteScaffold`'s `state`
-parameter.
+If the navigation bar's visibility changes - it is hidden under certain scenarios or on certain screens - this behavior must be maintained with the adaptive navigation area. This is done using `NavigationSuiteScaffold`'s `state` parameter.
 
 Steps to migrate:
 
@@ -101,6 +97,7 @@ Steps to migrate:
 
 For example:
 
+<br />
 
 ```kotlin
 // Pass this variable to any composable that needs to control the navigation area visibility
@@ -121,33 +118,26 @@ LaunchedEffect(isNavBarVisible){
         scaffoldVisibilityState.hide()
     }
 }
+   
 ```
 
 <br />
 
 ## Step 3. Add multi-pane layouts using Navigation 3 Scenes
 
-Analyze the codebase looking for related screens - tapping on something in one
-screen opens another screen that shows information related to the first. There
-are two canonical screen relationships: list-detail and supporting pane.
+Analyze the codebase looking for related screens - tapping on something in one screen opens another screen that shows information related to the first. There are two canonical screen relationships: list-detail and supporting pane.
 
-IMPORTANT: You must use the Navigation 3 `SceneStrategy` approach to implement
-multi-pane layouts. Do not use `ListDetailPaneScaffold` or
-`SupportingPaneScaffold`.
+IMPORTANT: You must use the Navigation 3 `SceneStrategy` approach to implement multi-pane layouts. Do not use `ListDetailPaneScaffold` or `SupportingPaneScaffold`.
 
 ### Step 3.1. List-detail
 
 #### Identify the list and detail screens
 
-List-detail layouts display a list of items (this is the list screen) and
-clicking on an item opens a new screen that shows more details about that item
-(the detail screen).
+List-detail layouts display a list of items (this is the list screen) and clicking on an item opens a new screen that shows more details about that item (the detail screen).
 
 Typical usage includes productivity apps like email, notes, and messaging.
 
-Unless requested explicitly, avoid this pattern when the detail content requires
-substantial screen space (e.g., images or media that benefits from a full-screen
-presentation).
+Unless requested explicitly, avoid this pattern when the detail content requires substantial screen space (e.g., images or media that benefits from a full-screen presentation).
 
 #### Add a Material list-detail SceneStrategy
 
@@ -157,8 +147,7 @@ presentation).
 
 #### Use metadata to identify the list and detail screens
 
-- Add metadata using `entry(metadata = ...)` or `NavEntry(metadata = ...)` to the list entry using `ListDetailSceneStrategy.listPane(detailPlaceholder = {
-  <placeholder composable> })`.
+- Add metadata using `entry(metadata = ...)` or `NavEntry(metadata = ...)` to the list entry using `ListDetailSceneStrategy.listPane(detailPlaceholder = { <placeholder composable> })`.
 - Use the `detailPlaceholder` parameter to add a placeholder on the detail screen when no list items are selected.
 - Add metadata to the detail entry using `ListDetailSceneStrategy.detailPane()`.
 
@@ -167,14 +156,11 @@ presentation).
 - When a detail screen displays its content full-screen on mobile (content fills the entire screen, bars or rails are hidden), full-screen mode must be deactivated if it's part of a list-detail layout.
 - Detail screens must not show a back arrow when on a list-detail layout.
 
-For a reference implementation, check the [Nav3 **Material** List Detail
-recipe](references/android/guide/navigation/navigation-3/recipes/material-listdetail.md).
+For a reference implementation, check the [Nav3 **Material** List Detail recipe](references/android/guide/navigation/navigation-3/recipes/material-listdetail.md).
 
 ### Step 3.2. Supporting pane
 
-Identify supporting pane screens where a main screen displays a single item, and
-selecting it opens a "supporting screen" with more details. The supporting
-screen complements the main screen and is shown in a supporting pane.
+Identify supporting pane screens where a main screen displays a single item, and selecting it opens a "supporting screen" with more details. The supporting screen complements the main screen and is shown in a supporting pane.
 
 #### Add a Material supporting pane `SceneStrategy`
 
@@ -189,15 +175,13 @@ screen complements the main screen and is shown in a supporting pane.
 
 ### Step 3.3. Run screenshot tests
 
-If you have made changes, record new reference files. Ask the user to visually
-verify that the new layouts are correct.
+If you have made changes, record new reference files. Ask the user to visually verify that the new layouts are correct.
 
 ## Step 4. Make vertical lists adaptive by changing the number of columns
 
 ### Step 4.1. Make lazy lists adaptive
 
-Look for the following vertical list composables: `LazyColumn`,
-`LazyVerticalGrid`, `LazyVerticalStaggeredGrid`.
+Look for the following vertical list composables: `LazyColumn`, `LazyVerticalGrid`, `LazyVerticalStaggeredGrid`.
 
 Steps to migrate:
 
@@ -208,24 +192,16 @@ Steps to migrate:
 
 ### Step 4.2. Migrate non-lazy lists to Grid
 
-WARNING: Grid is an experimental API available from Compose 1.11.0-beta01.
-Confirm with the user that they are happy to use an experimental API in their
-codebase.
+WARNING: Grid is an experimental API available from Compose 1.11.0-beta01. Confirm with the user that they are happy to use an experimental API in their codebase.
 
-Look for any `Column` that contains multiple items of the same type and replace
-it with `Grid`. Do not replace it with `LazyVerticalGrid` or any other lazy
-layout. Do not place `Grid` inside the existing `Column`. Completely replace it.
+Look for any `Column` that contains multiple items of the same type and replace it with `Grid`. Do not replace it with `LazyVerticalGrid` or any other lazy layout. Do not place `Grid` inside the existing `Column`. Completely replace it.
 
-`Grid` is configured by supplying a lambda (an extension function on
-`GridConfigurationScope`) to its `config` parameter. Inside the lambda,
-`constraints` provides the minimum and maximum dimensions of the grid container
-and can be used to change the number of rows and columns based on the available
-size. For example, the following code configures `Grid` such that when the
-available width is:
+`Grid` is configured by supplying a lambda (an extension function on `GridConfigurationScope`) to its `config` parameter. Inside the lambda, `constraints` provides the minimum and maximum dimensions of the grid container and can be used to change the number of rows and columns based on the available size. For example, the following code configures `Grid` such that when the available width is:
 
 - less than 800dp, a 2x4 grid is used
 - 800dp or more, a 4x2 grid is used
 
+<br />
 
 ```kotlin
 Grid(
@@ -244,26 +220,23 @@ Grid(
         gap(gapSizeDp)
     }
 ) { /** items **/ }
+   
 ```
 
 <br />
 
-`Grid` is an experimental API so add the `@OptIn(ExperimentalGridApi::class)`
-annotation to any function that uses it.
+`Grid` is an experimental API so add the `@OptIn(ExperimentalGridApi::class)` annotation to any function that uses it.
 
 ## Step 5: Hide App Bars when scrolling
 
-In an app with multiple top-level destinations, each screen must manage its own
-app bar state independently. There are two main scroll behaviors:
+In an app with multiple top-level destinations, each screen must manage its own app bar state independently. There are two main scroll behaviors:
 
 - `exitUntilCollapsedScrollBehavior`: Hides on scroll down, stays hidden while you scroll up until you reach the very top (0 offset).
 - `enterAlwaysScrollBehavior`: Hides on scroll down, shows immediately on scroll up.
 
 ## Final step: Build and test
 
-Build the app and run the local tests. If the project has screenshot tests, run
-them but DO NOT update the reference images. Prompt the user to do this after
-they have viewed the screenshot diffs.
+Build the app and run the local tests. If the project has screenshot tests, run them but DO NOT update the reference images. Prompt the user to do this after they have viewed the screenshot diffs.
 
 ## Additional documentation for experimental adaptive APIs
 
@@ -280,14 +253,11 @@ Check the FlexBox documentation:
 
 ## MediaQuery
 
-Check the [MediaQuery documentation](references/android/develop/ui/compose/layouts/adaptive/mediaquery/index.md) when you need to query the device's
-screen size, pointer precision, keyboard type, whether it has cameras or
-microphones, and other device capabilities.
+Check the [MediaQuery documentation](references/android/develop/ui/compose/layouts/adaptive/mediaquery/index.md) when you need to query the device's screen size, pointer precision, keyboard type, whether it has cameras or microphones, and other device capabilities.
 
 ## Grid
 
-Check the Grid documentation when you need to display a fixed number of items in
-a grid layout:
+Check the Grid documentation when you need to display a fixed number of items in a grid layout:
 
 - [Overview](references/android/develop/ui/compose/layouts/adaptive/grid/index.md)
 - [Get started - setup](references/android/develop/ui/compose/layouts/adaptive/grid/get-started.md)

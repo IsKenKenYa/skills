@@ -92,38 +92,7 @@ Before generating HarmonyOS/ArkTS code, confirm:
 EOF
 
 # ---------------------------------------------------------------------------
-# 2. .claude/CLAUDE.md — Claude Code 专用
-# ---------------------------------------------------------------------------
-mkdir -p "$PROJECT_ROOT/.claude"
-
-cat > "$PROJECT_ROOT/.claude/CLAUDE.md" << CLAUDE_EOF
-=== DEVECO NATIVE FLOW — MULTI-PLATFORM DEVELOPMENT ===
-
-This project uses deveco-native-flow for three-platform development.
-The skill is self-contained with built-in HarmonyOS ArkTS knowledge routing.
-
-Detected platforms: $PLATFORM_STR
-
-### Skill Paths
-
-| Skill | Path |
-|-------|------|
-| Main pipeline | \`$SKILL_ROOT/SKILL.md\` |
-| HarmonyOS knowledge | \`$SKILL_ROOT/references/<name>/SKILL.md\` |
-
-### HarmonyOS Development Rules
-
-Before coding HarmonyOS/ArkTS:
-1. Read the routing table in the main SKILL.md
-2. Read the relevant references/<name>/SKILL.md for component/Kit knowledge
-3. Follow ArkTS syntax constraints from references/lang-syntax/SKILL.md
-4. Do NOT answer from training data alone for ArkTS questions
-
-===
-CLAUDE_EOF
-
-# ---------------------------------------------------------------------------
-# 3. .cursor/rules/deveco-flow.mdc — Cursor 专用
+# 2. .cursor/rules/deveco-flow.mdc — Cursor 专用
 # ---------------------------------------------------------------------------
 mkdir -p "$PROJECT_ROOT/.cursor/rules"
 
@@ -138,7 +107,7 @@ $(cat "$PROJECT_ROOT/.deveco-flow/rules.md")
 EOF
 
 # ---------------------------------------------------------------------------
-# 4. .windsurfrules — Windsurf 专用
+# 3. .windsurfrules — Windsurf 专用
 # ---------------------------------------------------------------------------
 WINDSURF_FILE="$PROJECT_ROOT/.windsurfrules"
 SENTINEL_START="# === DEVECO NATIVE FLOW START ==="
@@ -159,7 +128,7 @@ fi
 } >> "$WINDSURF_FILE"
 
 # ---------------------------------------------------------------------------
-# 5. opencode.json — OpenCode 专用
+# 4. opencode.json — OpenCode 专用
 # ---------------------------------------------------------------------------
 OPENCODE_FILE="$PROJECT_ROOT/opencode.json"
 
@@ -191,7 +160,6 @@ BANNER
 
 echo "✅ 已生成以下配置文件:"
 echo "   📄 .deveco-flow/rules.md        (通用规则 — 单一事实源)"
-echo "   📄 .claude/CLAUDE.md            (Claude Code)"
 echo "   📄 .cursor/rules/deveco-flow.mdc (Cursor)"
 echo "   📄 .windsurfrules               (Windsurf)"
 echo "   📄 opencode.json                (OpenCode)"

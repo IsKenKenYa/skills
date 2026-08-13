@@ -2,7 +2,6 @@
 
 
 > **组件索引**：`Text`、`Span`、`ImageSpan`、`SymbolSpan / SymbolGlyph`、`TextInput`、`TextArea`、`Button`、`Image`、`Slider`、`Toggle`、`Radio`、`Checkbox`、`CheckboxGroup`、`Progress`、`Rating`、`LoadingProgress`、`Search`、`Select`、`RichEditor`、`overlay`、`其他基础组件速查`
-> **组件索引**：`Text`、`Span`、`ImageSpan`、`SymbolSpan / SymbolGlyph`、`TextInput`、`TextArea`、`Button`、`Image`、`Slider`、`Toggle`、`Radio`、`Checkbox`、`CheckboxGroup`、`Progress`、`Rating`、`LoadingProgress`、`Search`、`Select`、`其他基础组件速查`
 
 ### Text
 
@@ -37,7 +36,7 @@
 | .copyOption | `.copyOption(value: CopyOptions)` | None | API 9+ 复制选项 |
 | .selection | `.selection(start: number, end: number)` | — | API 11+ 选中区域 |
 | .ellipsisMode | `.ellipsisMode(value: EllipsisMode)` | END | API 11+ 省略位置 |
-| .textCase | `.textCase(value: TextCase)` | — | 大小写 |
+| .textCase | `.textCase(value: TextCase)` | - | 大小写。TextCase：Normal(0)/LowerCase(1)/UpperCase(2) |
 | .fontFeature | `.fontFeature(value: string)` | — | API 12+ 文字特性 |
 | .heightAdaptivePolicy | `.heightAdaptivePolicy(value: TextHeightAdaptivePolicy)` | MaxLines | API 10+ 自适应策略 |
 | .textIndent | `.textIndent(value: Length)` | 0 | API 10+ 首行缩进 |
@@ -86,7 +85,7 @@
 | .fontFamily | `.fontFamily(value: ResourceStr)` | — | 字体族 |
 | .decoration | `.decoration(value: DecorationStyleInterface)` | {type:None} | 装饰线 |
 | .letterSpacing | `.letterSpacing(value: number \| string)` | 0 | 字符间距 |
-| .textCase | `.textCase(value: TextCase)` | — | 大小写 |
+| .textCase | `.textCase(value: TextCase)` | - | 大小写。TextCase：Normal(0)/LowerCase(1)/UpperCase(2) |
 | .lineHeight | `.lineHeight(value: Length)` | — | 行高 |
 | .textShadow | `.textShadow(value: TextShadowOptions)` | — | API 10+ 文字阴影 |
 
@@ -171,7 +170,7 @@ SymbolGlyph 额外方法：`.symbolEffect(effect: SymbolEffect, isActive?: boole
 | .style | `.style(value: TextInputStyle \| TextContentStyle)` | Default | API 9+ 输入框风格 |
 | .showUnderline | `.showUnderline(value: boolean)` | false | API 10+ 下划线 |
 | .selectedBackgroundColor | `.selectedBackgroundColor(value: ResourceColor)` | — | API 10+ 选中底板色 |
-| .caretStyle | `.caretStyle(value: CaretStyle)` | — | API 10+ 光标样式 |
+| .caretStyle | `.caretStyle(value: CaretStyle)` | - | API 10+ 光标样式。CaretStyle={width:Length默认2vp, color默认#ff007dff} |
 | .showCounter | `.showCounter(value: boolean)` | false | API 10+ 字数统计 |
 | .counterType | `.counterType(value: InputCounterType)` | — | API 11+ 计数器类型 |
 | .enableKeyboardOnFocus | `.enableKeyboardOnFocus(value: boolean)` | true | API 10+ 聚焦弹键盘 |
@@ -416,6 +415,8 @@ Button()                                                 // 空按钮
 |------|------|------|
 | .onChange | `.onChange(event: (isChecked: boolean) => void)` | 选中变化 |
 
+> **Radio 无 `.selectedColor()`**，设置选中色用 `.radioStyle({ checkedBackgroundColor: Color.Red })`。
+
 ---
 
 ### Checkbox
@@ -437,8 +438,8 @@ Button()                                                 // 空按钮
 | .select | `.select(value: boolean)` | false | 选中状态，支持 $$ |
 | .selectedColor | `.selectedColor(value: ResourceColor)` | — | 选中颜色 |
 | .unselectedColor | `.unselectedColor(value: ResourceColor)` | — | 未选中颜色 |
-| .mark | `.mark(value: MarkStyle)` | — | 勾选样式 |
-| .shape | `.shape(value: CheckBoxShape)` | — | 形状 |
+| .mark | `.mark(value: MarkStyle)` | - | 勾选样式。MarkStyle={strokeColor默认White, size:Length, strokeWidth默认2} |
+| .shape | `.shape(value: CheckBoxShape)` | - | 形状。CheckBoxShape(API 11+)：CIRCLE(0)/ROUNDED_SQUARE(1) |
 
 **事件：**
 
@@ -465,8 +466,8 @@ Button()                                                 // 空按钮
 | .selectAll | `.selectAll(value: boolean)` | false | 全选，支持 $$ |
 | .selectedColor | `.selectedColor(value: ResourceColor)` | — | 选中颜色 |
 | .unselectedColor | `.unselectedColor(value: ResourceColor)` | — | 未选中颜色 |
-| .mark | `.mark(value: MarkStyle)` | — | 勾选样式 |
-| .checkboxShape | `.checkboxShape(value: CheckBoxShape)` | — | 形状 |
+| .mark | `.mark(value: MarkStyle)` | - | 勾选样式。MarkStyle={strokeColor默认White, size:Length, strokeWidth默认2} |
+| .checkboxShape | `.checkboxShape(value: CheckBoxShape)` | - | 形状。CheckBoxShape(API 11+)：CIRCLE(0)/ROUNDED_SQUARE(1) |
 
 **事件：**
 
@@ -560,7 +561,7 @@ Button()                                                 // 空按钮
 
 | 方法 | 签名 | 默认值 | 说明 |
 |------|------|--------|------|
-| .searchButton | `.searchButton(value: ResourceStr, option?)` | — | 搜索按钮 |
+| .searchButton | `.searchButton(value: ResourceStr, option?: { fontSize?: Length, fontColor?: ResourceColor })` | — | 搜索按钮 |
 | .placeholderColor | `.placeholderColor(value: ResourceColor)` | — | 占位符颜色 |
 | .placeholderFont | `.placeholderFont(value?: Font)` | — | 占位符字体 |
 | .textFont | `.textFont(value?: Font)` | — | 文本字体 |
@@ -569,7 +570,7 @@ Button()                                                 // 空按钮
 | .searchIcon | `.searchIcon(value: SearchIconOptions)` | — | 搜索图标样式 |
 | .cancelButton | `.cancelButton(value: CancelButtonOptions)` | — | 取消按钮样式 |
 | .fontColor | `.fontColor(value: ResourceColor)` | — | 字体颜色 |
-| .caretStyle | `.caretStyle(value: CaretStyle)` | — | API 10+ 光标样式 |
+| .caretStyle | `.caretStyle(value: CaretStyle)` | - | API 10+ 光标样式。CaretStyle={width:Length默认2vp, color默认#ff007dff} |
 | .selectedBackgroundColor | `.selectedBackgroundColor(value: ResourceColor)` | — | 选中底板色 |
 
 **事件：**
@@ -580,6 +581,8 @@ Button()                                                 // 空按钮
 | .onChange | `.onChange(event: (value: string) => void)` | 内容变化 |
 | .onCopy | `.onCopy(event: (value: string) => void)` | 复制 |
 | .onCut | `.onCut(event: (value: string) => void)` | 剪切 |
+
+> **Search 常见陷阱**：占位文本走构造器 `Search({ placeholder: '搜索' })`，**无 `.placeholder()` 方法**；无 `.caretColor()`；搜索按钮字体颜色字段是 `fontColor` 非 `color`：`.searchButton('搜索', { fontSize: 14, fontColor: '#FFF' })`
 
 ---
 

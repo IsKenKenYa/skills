@@ -90,8 +90,10 @@ Page 作为入口，创建 ViewModel 实例并传递给 View。Page 不含业务
 
 ## 5. 编译验证
 
-编写完成后必须执行编译，排查引入的错误：
+编写完成后必须执行编译，排查引入的错误。
 
-1. 调用 `check_ets_files` 对修改过的 `.ets` 文件进行静态检查
-2. 如有报错，修复后重新检查，直到全部通过
-3. 必要时调用 `build_project` 做完整构建验证
+> 前置：先 `devecocli --version` 确认已安装；未安装需向用户确认后 `npm install -g @deveco/deveco-cli@latest`（需 Node.js >= 18、DevEco Studio >= 6.1.0）再继续，用户拒绝则走人工走查。
+
+1. 用 `devecocli build` 对修改过的 `.ets` 文件做编译检查（ArkTS 语法/类型检查；多模块工程用 `devecocli build --modules <模块名>`）
+2. 如有报错，修复后重新构建，直到全部通过
+3. 必要时用 `devecocli build` 做完整构建验证（增量结果可疑时先 `devecocli build clean` 再重跑）

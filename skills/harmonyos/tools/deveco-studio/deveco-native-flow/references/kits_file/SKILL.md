@@ -264,39 +264,6 @@ struct ImagePickerPage {
 }
 ```
 
-### 文件下载保存
-
-```typescript
-import fs from '@ohos.file.fs';
-import http from '@ohos.net.http';
-import picker from '@ohos.file.picker';
-
-async function downloadAndSave(url: string): Promise<string> {
-  // 下载文件
-  let httpRequest = http.createHttp();
-  let response = await httpRequest.request(url);
-  let imageData = response.result as ArrayBuffer;
-
-  // 选择保存位置
-  let documentSaveOptions = new picker.DocumentSaveOptions();
-  documentSaveOptions.newFileNames = ['downloaded_file.jpg'];
-
-  let documentPicker = new picker.DocumentViewPicker();
-  let saveResult = await documentPicker.save(documentSaveOptions);
-
-  if (saveResult && saveResult.uriList.length > 0) {
-    // 写入文件
-    let file = fs.openSync(saveResult.uriList[0], fs.OpenMode.WRITE_ONLY);
-    fs.writeSync(file.fd, imageData);
-    fs.closeSync(file);
-    return saveResult.uriList[0];
-  }
-
-  httpRequest.destroy();
-  return '';
-}
-```
-
 ## 权限配置
 
 在 `module.json5` 中声明权限：

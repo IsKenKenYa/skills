@@ -1,13 +1,13 @@
-# 诊断报告模板（阶段 5 输出时读取）
+# 诊断报告模板（阶段 6 输出时读取）
 
-阶段 5「结果输出」读取本文件，按下述模板与要求填充字段，写入 `diagnosis/diagnosis_{timestamp}.md`。
+阶段 6「结果输出」读取本文件，按下述模板与要求填充字段，写入 `diagnosis/diagnosis_{timestamp}.md`。
 
 ## 报告 Markdown 模板
 
 报告必须严格遵循以下 Markdown 模板：
 
 ```markdown
-#  问题诊断报告
+# HarmonyOS 问题诊断报告
 
 > 诊断时间：{YYYY-MM-DD HH:mm:ss} | 诊断深度：{triage 或 deep_dive} | 模块：{module_identified}
 
@@ -19,7 +19,7 @@
 
 ## 项目上下文
 
-{仅在阶段 4 有分析结果时展示本节}
+{仅在阶段 5 有分析结果时展示本节}
 
 - **项目源码分布**：{各类型文件数量}
 - **目标 API 版本**：{从 build-profile.json5 提取}
@@ -79,7 +79,7 @@
 
 ### 候选根因 #{rank}（置信度：{high/medium/low}）
 
-{根因描述，必须追溯到应用侧行为}
+{根因描述，必须追溯到应用侧具体操作}
 
 **证据：**
 
@@ -120,7 +120,7 @@
 - `module_identified` 若阶段 1 未能识别模块，必须为 "未识别"
 - 每个根因候选的证据来源必须标注来源类型（knowledge_base / documentation / code）
 - 修复建议必须具体、可操作
-- **根因必须追溯到应用侧行为**：rank 1 的根因描述中必须包含开发者的具体操作
+- **根因必须追溯到应用侧具体操作**：rank-1 的根因描述中必须包含应用侧具体操作
 - Markdown 必须格式完整、各节标题层级清晰
 - 若 `media_file_analysis` 未执行，省略该小节
 - 若 `project_analysis` 未获取到信息，省略"项目上下文"节

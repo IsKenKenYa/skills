@@ -3,7 +3,7 @@ name: hmos-cppcrash-analysis
 description: DFX Skills，分析 HarmonyOS/OpenHarmony 应用的 CppCrash（Native 层崩溃）故障日志，定位根因并给出修复建议。当用户提供 cppcrash 日志、粘贴 Native 崩溃堆栈、询问 SIGSEGV/SIGABRT/SIGILL/SIGBUS 崩溃原因、或上传含有信号值/寄存器/调用栈的故障日志时，必须使用此技能。即使用户只说"帮我分析这个崩溃日志"、"应用崩溃了是什么原因"、"空指针崩溃怎么排查"，也应立即触发此技能。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.1.0
 ---
 
 # CppCrash 故障分析技能

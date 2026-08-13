@@ -1,6 +1,8 @@
 ---
 name: perfetto-sql
 description: 将自然语言数据意图翻译成语法正确的 Perfetto SQL 查询，并在本地 trace 文件上执行。使用此 skill 通过 trace_processor 从 Android Perfetto trace 中提取 slice、thread 或内存数据。
+  SQL queries and executes them against a local trace file. Use this skill to extract
+  slice, thread, or memory data from Android Perfetto traces using trace_processor.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

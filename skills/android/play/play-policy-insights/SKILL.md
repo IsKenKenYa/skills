@@ -4,7 +4,7 @@ description: 用于核查 Android 应用是否符合 Google Play 政策域的自
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-07-10'
+  last-updated: '2026-07-13'
   keywords:
   - account deletion
   - accessibility api

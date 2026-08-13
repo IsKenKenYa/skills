@@ -51,7 +51,7 @@
 > **枚举名易错提示：**
 > - 属性名是 `.renderMode()`，枚举是 `ImageRenderMode`（不是 ImageRenderingMode）
 > - DataPanelType 是 `Circle/Line`（不是 Close/Ring）
-> - `Sticky.Normal`（不是 StickyStyle.Normal，StickyStyle 枚举不存在）
+> - **`StickyStyle`（List 用）** vs **`Sticky`（ListItem 用）** 是两个不同枚举：`List.sticky(StickyStyle.Header)`、`ListItem.sticky(Sticky.None)`。**别混用**——`StickyStyle` 真实存在（Header=0/Normal=1），勿再误记为"不存在"。
 > - `TextInputStyle` 无 `Normal` 值，不要使用 `.style(TextInputStyle.Normal)`
 > - `GradientDirection` 无 `BottomRight`，可用：Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft
 
@@ -73,11 +73,52 @@
 | FillMode | None(0), Forwards(1), Backwards(2), Both(3) | 7 |
 | Curve | Linear, Ease, EaseIn, EaseOut, EaseInOut, FastOutSlowIn, LinearOutSlowIn, FastOutLinearIn, ExtremeDeceleration, Sharp, Rhythm, Smooth, Friction | 7 |
 
+### 颜色
+
+| 颜色 | 值 | 说明 |
+|------|----|------|
+| Color.Black | `#000000` | 黑色 |
+| Color.Blue | `#0000FF` | 蓝色 |
+| Color.Brown | `#A52A2A` | 棕色 |
+| Color.Gray | `#808080` | 灰色 |
+| Color.Green | `#008000` | 绿色 |
+| Color.Orange | `#FFA500` | 橙色 |
+| Color.Pink | `#FFC0CB` | 粉色 |
+| Color.Red | `#FF0000` | 红色 |
+| Color.White | `#FFFFFF` | 白色 |
+| Color.Yellow | `#FFFF00` | 黄色 |
+| Color.Transparent | `#00000000` | 透明 |
+
+**❌ 不存在的 Color 值（AI 常误用）：**
+
+| 无效名 | 替代 |
+|--------|------|
+| Color.Purple | Color.Pink 或 hex `'#800080'` |
+| Color.Indigo | Color.Brown 或 hex `'#4B0082'` |
+| Color.Spring | 不存在，用 `Color.Green` 或 hex |
+| Color.Cyan | 不存在，用 hex `'#00FFFF'` |
+| Color.Magenta | 不存在，用 hex `'#FF00FF'` |
+| Color.Lime | 不存在，用 hex `'#00FF00'` |
+| Color.Teal | 不存在，用 hex `'#008080'` |
+| Color.Violet | 不存在，用 hex `'#EE82EE'` |
+| Color.Aqua | 不存在，用 hex `'#00FFFF'` |
+| Color.Navy | 不存在，用 hex `'#000080'` |
+| Color.Maroon | 不存在，用 hex `'#800000'` |
+| Color.Silver | 不存在，用 Color.Gray 或 hex |
+| Color.Azure | 不存在，用 hex |
+| Color.Beige | 不存在，用 hex |
+| Color.Coral | 不存在，用 hex |
+| Color.Gold | 不存在，用 hex |
+| Color.Lavender | 不存在，用 hex |
+| Color.Turquoise | 不存在，用 hex |
+
 ### 效果
 
 | 枚举 | 值 | API |
 |------|----|----|
-| BlurStyle | Thin, Regular, Thick, BackgroundThin, BackgroundRegular, BackgroundThick | 9 |
+| BlurStyle | Thin(0), Regular(1), Thick(2), BACKGROUND_THIN(3), BACKGROUND_REGULAR(4), BACKGROUND_THICK(5), BACKGROUND_ULTRA_THICK(6), NONE(7), COMPONENT_ULTRA_THIN(8), COMPONENT_THIN(9), COMPONENT_REGULAR(10), COMPONENT_THICK(11), COMPONENT_ULTRA_THICK(12) | 9 |
+| RefreshStatus | Inactive(0), Drag(1), OverDrag(2), Refresh(3), Done(4) | 8 |
+| ModalTransition | DEFAULT(0), NONE(1), ALPHA(2)（**无 FULL/FULLSCREEN**） | 10 |
 | ImageRepeat | NoRepeat(0), X(1), Y(2), XY(3) | 7 |
 | HoverEffect | Auto, Scale, Highlight, None | 8 |
 | HitTestMode | Default(0), Block(1), Transparent(2), None(3) | 9 |

@@ -129,41 +129,7 @@ Before generating HarmonyOS/ArkTS code, confirm:
 Write-Utf8NoBom -Path (Join-Path $devecoDir "rules.md") -Content $rulesContent
 
 # ---------------------------------------------------------------------------
-# 2. .claude/CLAUDE.md
-# ---------------------------------------------------------------------------
-$claudeDir = Join-Path $ProjectRoot ".claude"
-if (-not (Test-Path $claudeDir)) { New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null }
-
-$claudeContent = @"
-=== DEVECO NATIVE FLOW — MULTI-PLATFORM DEVELOPMENT ===
-
-This project uses deveco-native-flow for three-platform development.
-The skill is self-contained with built-in HarmonyOS ArkTS knowledge routing.
-
-Detected platforms: $PlatformStr
-
-### Skill Paths
-
-| Skill | Path |
-|-------|------|
-| Main pipeline | ``$SkillRootFwd/SKILL.md`` |
-| HarmonyOS knowledge | ``$SkillRootFwd/references/<name>/SKILL.md`` |
-
-### HarmonyOS Development Rules
-
-Before coding HarmonyOS/ArkTS:
-1. Read the routing table in the main SKILL.md
-2. Read the relevant references/<name>/SKILL.md for component/Kit knowledge
-3. Follow ArkTS syntax constraints from references/lang-syntax/SKILL.md
-4. Do NOT answer from training data alone for ArkTS questions
-
-===
-"@
-
-Write-Utf8NoBom -Path (Join-Path $claudeDir "CLAUDE.md") -Content $claudeContent
-
-# ---------------------------------------------------------------------------
-# 3. .cursor/rules/deveco-flow.mdc
+# 2. .cursor/rules/deveco-flow.mdc
 # ---------------------------------------------------------------------------
 $cursorDir = Join-Path (Join-Path $ProjectRoot ".cursor") "rules"
 if (-not (Test-Path $cursorDir)) { New-Item -ItemType Directory -Path $cursorDir -Force | Out-Null }
@@ -181,7 +147,7 @@ $rulesContent
 Write-Utf8NoBom -Path (Join-Path $cursorDir "deveco-flow.mdc") -Content $cursorContent
 
 # ---------------------------------------------------------------------------
-# 4. .windsurfrules
+# 3. .windsurfrules
 # ---------------------------------------------------------------------------
 $windsurfFile = Join-Path $ProjectRoot ".windsurfrules"
 $sentinelStart = "# === DEVECO NATIVE FLOW START ==="
@@ -216,7 +182,7 @@ if (Test-Path $windsurfFile) {
 }
 
 # ---------------------------------------------------------------------------
-# 5. opencode.json
+# 4. opencode.json
 # ---------------------------------------------------------------------------
 $opencodeFile = Join-Path $ProjectRoot "opencode.json"
 
@@ -243,7 +209,6 @@ Write-Host "  ============================================================"
 Write-Host ""
 Write-Host "  Generated config files:"
 Write-Host "    .deveco-flow/rules.md        (common rules)"
-Write-Host "    .claude/CLAUDE.md            (Claude Code)"
 Write-Host "    .cursor/rules/deveco-flow.mdc (Cursor)"
 Write-Host "    .windsurfrules               (Windsurf)"
 Write-Host "    opencode.json                (OpenCode)"

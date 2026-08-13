@@ -9,7 +9,7 @@ description: >
   Binder 通信链路、EventHandler 队列，最终输出唯一根因模块与修复建议。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.1.0
 ---
 
 # Appfreeze Analysis Skill
@@ -30,8 +30,36 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 
 ## 分析工作流
 
+### Step 0 — 前置环境检查
+
+在调用任何脚本前，必须先完成以下环境检查：
+
+1. **Python 可用性检查**
+   ```bash
+   python --version
+   ```
+   - 若命令不可用，先提示用户安装 Python 3。
+   - 若系统同时存在 `python3`，可使用 `python3` 替代后续命令中的 `python`。
+
+2. **脚本路径检查**
+   确认以下脚本存在：
+   - `scripts/freeze/main.py`
+   - `scripts/sample_stack_analyzer.py`
+
+3. **依赖检查**
+   appfreeze Python 脚本仅使用 Python 标准库和本技能内置模块，无需安装第三方 pip 依赖。
+   如脚本执行失败，优先检查：
+   - 当前工作目录是否为 `appfreeze-analysis`
+   - Python 命令是否指向可用解释器
+   - 输入的 faultlog / sample_stacks 文件路径是否存在
+
 ### Step 1 — 提取关键日志
-> 调用 `scripts/macos/reliability_analyze -p {file_path}`，提取关键日志
+> 调用 Python 版关键日志提取脚本，提取关键日志：
+>
+> ```bash
+> python scripts/freeze/main.py -p {file_path}
+> ```
+
 完整的看完提取的关键日志，后面所有的分析必须基于此关键日志
 
 
@@ -130,7 +158,7 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 **调用独立采样栈分析脚本**：
 
 ```
-scripts/macos/sample_stack_analyzer <sample_stacks.txt路径>
+python scripts/sample_stack_analyzer.py <sample_stacks.txt路径>
 ```
 
 这个脚本只会列出采样栈中业务帧的情况，你需要重点关注业务函数分布情况，分析时**必须**给出完整的**函数名称，包含文件位置，行号，列号**。如果脚本结果没有任何信息，不需要列出系统函数。那么你需要直接阅读一下采样栈，

@@ -11,7 +11,7 @@
 
 | 上游 | submodule 路径 | main 下镜像位置 | 翻译策略 |
 |------|---------------|----------------|----------|
-| [mattpocock/skills](https://github.com/mattpocock/skills) | `references/mattpocock-skills` | `skills/{engineering,productivity,misc,personal,in-progress,deprecated}/` | description 译为中文，正文不动 |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | `references/mattpocock-skills` | `skills/{engineering,productivity,misc,in-progress,deprecated}/` | description 译为中文，正文不动 |
 | [HarmonyOS_Skills/harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) | `references/harmonyos-skills` | `skills/harmonyos/{design,solutions,development,test,launch-and-distribute,tools,tooling}/` | 上游原生中文，不翻译；数字前缀目录压平 |
 | [android/skills](https://github.com/android/skills) | `references/android-skills` | `skills/android/<技术域>/` | description 译为中文，正文不动 |
 
@@ -52,6 +52,7 @@ git checkout main
 
 已知上游删除项：
 - `mattpocock/skills` 在 2026-06-17 删除了 `zoom-out`（上游说明：实际使用率低）。本仓库按最新版上游同步，不把 `zoom-out` 当作漏同步项；如果未来要保留历史 skill，先建立明确的 archived/legacy 区域并单独决策。
+- `deprecated/` 当前只保留上游的空分类说明，不在顶层清单中生成空表格；`personal/` 已被上游移除，不再作为固定分类。
 
 ### HarmonyOS（原生中文上游，不翻译）
 
@@ -136,6 +137,20 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 
 同步上游更新时注意：若上游的 heap_cluster 二进制有更新，不要复制进本仓库（会触发 GitHub 大文件拒绝），保持 .gitignore 排除即可，文档指引不变。
 
+## HarmonyOS Git LFS 资源
+
+HarmonyOS 上游部分脚本和二进制使用 Git LFS。同步完整目录时，必须取回真实对象，不能把以下三行的 LFS 指针文本当作文件内容提交：
+
+```text
+version https://git-lfs.github.com/spec/v1
+oid sha256:<对象哈希>
+size <字节数>
+```
+
+- 对本仓库已有的 LFS 文件，可在上游对象未变化时保留本地真实文件。
+- 对新增或已变化对象，应从上游 LFS 存储下载，并核对文件大小与 SHA-256（应等于指针中的 `oid`）。
+- 同步完成后检查 `skills/` 中不存在 LFS 指针；唯一例外仍是上一节明确不入库的 `heap_cluster*`，这些文件应直接缺席，而不是保留指针。
+
 ## description 翻译规范
 
 - **翻译对象**：仅 frontmatter 的 `description` 字段。
@@ -162,7 +177,7 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 新增/删除 skill 后，两者都要更新。生成脚本逻辑：
 
 - `plugin.json`：扫描 `skills/` 下所有 SKILL.md，**排除 `metadata.internal: true` 的**，收集相对路径。name 字段为 `kenken-skills`。
-- `README.md`：按上游分组（mattpocock 按 6 类、HarmonyOS 按 design/solutions/development/test/launch-and-distribute/tools/tooling、Android 按技术域、meta），每组列 skill 名 + 中文 description 的表格。
+- `README.md`：按上游分组（mattpocock 按当前含 skill 的分类、HarmonyOS 按 design/solutions/development/test/launch-and-distribute/tools/tooling、Android 按技术域、meta），每组列 skill 名 + 中文 description 的表格。
 
 生成命令：
 

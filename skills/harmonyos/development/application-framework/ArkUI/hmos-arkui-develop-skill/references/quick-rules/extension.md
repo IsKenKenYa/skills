@@ -1,4 +1,6 @@
-## 12. 扩展能力约束
+# 11. 扩展能力与交互
+
+## 扩展能力
 
 ### DrawModifier
 - **一个实例只能设置给一个组件**，禁止多个组件复用同一个 DrawModifier
@@ -25,3 +27,28 @@
 - 未挂载的节点**不能进行节点操作**（错误码 106203）
 
 ---
+
+## 交互与手势
+
+| 规则 | 说明 |
+|------|------|
+| 长按与拖拽冲突 | 长按手势与拖拽手势同时绑定时可能冲突，需注意优先级 |
+| onDragLeave 限制 | onDragLeave 在某些场景下不触发，不要将核心逻辑挂在其上 |
+| 匿名函数 this 问题 | ArkTS 中**不允许使用匿名函数**绑定事件，必须使用箭头函数 |
+| bind(this) 不推荐 | 成员函数配合 bind(this) 配置事件方法不推荐 |
+| TouchEvent 类型 | 触摸事件参数是 `TouchEvent`/`TouchObject`，**不存在 `TouchInfo`** |
+
+### 事件绑定
+
+```ts
+// ❌ WRONG
+.onClick(function() { this.do() })
+.onClick(this.handler.bind(this))
+
+// ✅ RIGHT
+.onClick(() => { this.handler() })
+```
+
+## 参考
+
+- 错误码：**100021**（声明式 FrameNode 不可修改）、**106203**（未挂载节点操作）

@@ -31,7 +31,7 @@ function Print-Help {
     Write-Host "应用管理:"
     Write-Host "  apps <device>           列出已安装应用"
     Write-Host "  install <device> <hap>  安装应用"
-    Write-Host "  uninstall <device> <bundle>  卸载应用"
+    Write-Host "  uninstall <device> <bundle> [-y]  卸载应用（-y/--force 跳过确认）"
     Write-Host "  launch <device> <bundle>  启动应用"
     Write-Host "  stop <device> <bundle>  停止应用"
     Write-Host ""
@@ -330,7 +330,24 @@ switch ($Command) {
         hdc -t $Args[0] install -r $Args[1]
     }
     "uninstall" {
-        if ($Args.Count -lt 2) { Write-Err "错误: 用法: uninstall <device> <bundle>"; exit 1 }
+        if ($Args.Count -lt 2) { Write-Err "错误: 用法: uninstall <device> <bundle> [-y|--force]"; exit 1 }
+        # -y / --force 跳过确认（用于脚本化/自动化场景）
+        $skipConfirm = $false
+        if ($Args.Count -ge 3 -and $Args[2] -in @("-y", "--force")) {
+            $skipConfirm = $true
+        }
+        if (-not $skipConfirm) {
+            try {
+                $confirm = Read-Host "确认卸载应用 $($Args[1])？此操作不可逆 [y/N]"
+            } catch {
+                Write-Host "已取消（非交互输入）"
+                exit 0
+            }
+            if ($confirm -ne "y" -and $confirm -ne "Y") {
+                Write-Host "已取消"
+                exit 0
+            }
+        }
         hdc -t $Args[0] uninstall $Args[1]
     }
     "launch" {

@@ -147,8 +147,9 @@ let randomBytes = await random.generateRandom(32);
 console.log('Random bytes: ' + Array.from(new Uint8Array(randomBytes.data))
   .map(b => b.toString(16).padStart(2, '0')).join(''));
 
-// 设置种子（可选）
-random.setSeed(new Uint8Array([1, 2, 3, 4, 5]));
+// ⚠️ 切勿调用 random.setSeed() 设置固定种子（如 new Uint8Array([1,2,3,4,5])）：
+//    固定种子会使随机数序列可预测，破坏 RNG 安全性，严禁在生产环境使用。
+//    生产环境直接调用 generateRandom() 即可，其默认使用系统安全熵源。
 ```
 
 ### 用户认证（指纹/人脸）
@@ -174,8 +175,6 @@ authInstance.on('result', {
     // AuthResult: SUCCESS(0), FAIL(1), CANCELED(2)
     if (result.result === userAuth.AuthResult.SUCCESS) {
       console.log('Authentication succeeded!');
-      // token可用于后续操作
-      console.log('Token: ' + result.token);
     }
   }
 });
@@ -555,3 +554,4 @@ let cipher = cryptoFramework.createCipher('AES256|GCM|PKCS7');
 2. 加密操作建议使用HUKS管理密钥
 3. SHA256以上算法用于安全场景
 4. 认证token有时效性，需及时使用
+5. 随机数生成切勿用 `setSeed` 设置固定种子（仅测试可用），生产环境直接用 `generateRandom()` 默认安全熵源

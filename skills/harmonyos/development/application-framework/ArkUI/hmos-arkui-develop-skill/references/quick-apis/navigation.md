@@ -61,4 +61,52 @@
 | getLength | `router.getLength(): number` | 栈大小 |
 | getState | `router.getState(): RouterState` | 当前状态 |
 
----
+### 典型用法
+
+#### 页面生命周期选择
+
+| 回调 | Pop 回来触发 | 前后台切换触发 | 适用场景 |
+|------|:----------:|:-----------:|---------|
+| `onWillShow` | ✅ | ❌ | 页面即将显示前的初始化 |
+| `onShown` | ✅ | ✅ | **前后台刷新、Pop 回来刷新** |
+| `onActive` | ✅ | ❌ | overlay/Sheet 遮挡后恢复 |
+
+> `onPageShow` 是 `@Entry` 根页面回调，感知不到 NavDestination 子页面的 push/pop，从详情页 Pop 返回时不会触发。子页面可见性用 `onShown`。
+
+#### 参数传递与接收
+
+```ts
+// 1. 声明参数类型（禁内联字面量 → 10605038）
+export interface DetailParams { capsuleId: string }
+
+// 2. 跳转
+const p: DetailParams = { capsuleId: '123' }
+stack.pushPath({ name: 'Detail', param: p })
+
+// 3. 目标页面接收
+@Param navPathStack: NavPathStack = new NavPathStack()
+build() {
+  NavDestination()
+    .onReady((ctx: NavDestinationContext) => {
+      const param = ctx.pathInfo.param as DetailParams  // 取参
+    })
+}
+```
+
+#### 编辑页返回确认
+
+```ts
+NavDestination()
+  .onBackPressed(() => {
+    if (this.hasUnsavedChanges) {
+      // 拦截返回，弹出确认
+      this.getUIContext().showAlertDialog({
+        message: '有未保存的修改，确定返回吗？',
+        primaryButton: { value: '取消', action: () => {} },
+        secondaryButton: { value: '确定返回', action: () => this.navStack.pop() }
+      })
+      return true
+    }
+    return false
+  })
+```

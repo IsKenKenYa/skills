@@ -127,16 +127,33 @@ function Cmd-Elements {
     if (-not $DeviceId) { Write-Err "错误: 请指定设备 ID"; exit 1 }
 
     Write-Warn "正在获取页面元素..."
-    hdc -t $DeviceId shell param set persist.ace.testmode.enabled 1 2>$null
 
-    $dump = hdc -t $DeviceId shell hidumper -s WindowManagerService -a -a 2>$null
-    $windowId = ($dump | Select-String 'Highlighted\s+windows:\s*(\d+)').Matches | ForEach-Object { $_.Groups[1].Value }
+    # ⚠️ 警告：即将在设备上启用测试模式（persist.ace.testmode.enabled）
+    # 该参数为持久化系统参数，设备重启后仍生效，非临时变更。
+    # 获取元素树后会自动重置为关闭，但若脚本被中断，测试模式可能在重启后仍保持激活，
+    # 届时需手动执行关闭：hdc -t $DeviceId shell param set persist.ace.testmode.enabled 0
+    Write-Warn "⚠️ 警告: 即将启用测试模式（持久化，重启后仍生效）"
+    Write-Warn "   获取元素后将自动重置；若脚本被中断，请手动执行："
+    Write-Warn "   hdc -t $DeviceId shell param set persist.ace.testmode.enabled 0"
 
-    if (-not $windowId) { Write-Err "错误: 无法获取窗口 ID"; exit 1 }
+    # 开启测试模式；用 try/finally 确保脚本被中断/异常退出时也重置测试模式
+    try {
+        hdc -t $DeviceId shell param set persist.ace.testmode.enabled 1 2>$null
 
-    Write-Ok "窗口 ID: $windowId"
-    Write-Host ""
-    hdc -t $DeviceId shell hidumper -s WindowManagerService -a "-w $windowId -inspector" 2>$null
+        $dump = hdc -t $DeviceId shell hidumper -s WindowManagerService -a -a 2>$null
+        $windowId = ($dump | Select-String 'Highlighted\s+windows:\s*(\d+)').Matches | ForEach-Object { $_.Groups[1].Value }
+
+        if (-not $windowId) { Write-Err "错误: 无法获取窗口 ID"; exit 1 }
+
+        Write-Ok "窗口 ID: $windowId"
+        Write-Host ""
+        hdc -t $DeviceId shell hidumper -s WindowManagerService -a "-w $windowId -inspector" 2>$null
+    }
+    finally {
+        # 清理：重置测试模式（持久化参数，必须显式关闭）
+        hdc -t $DeviceId shell param set persist.ace.testmode.enabled 0 2>$null
+        Write-Ok "已重置测试模式（persist.ace.testmode.enabled = 0）"
+    }
 }
 
 function Cmd-Logs {

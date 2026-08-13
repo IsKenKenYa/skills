@@ -1,6 +1,8 @@
 ---
 name: perfetto-trace-analysis
 description: 分析 Perfetto trace 以找出 Android 应用中延迟、内存或卡顿问题的根因。当用户提供 Perfetto trace 文件并要求分析其内容的任何问题、进行中的排查或开放式请求时使用。
+  jank issues in Android apps. Use when the user provides a Perfetto trace file and
+  asks any question, ongoing investigation, or open-ended request to analyze its contents.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

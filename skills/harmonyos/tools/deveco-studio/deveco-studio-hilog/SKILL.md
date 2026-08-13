@@ -202,6 +202,15 @@ node scripts/analyze_crash_log.js --instance-path "/home/user/Huawei/emulator/de
 
 ## 日志导出（使用 -logZip 参数）
 
+> **⚠️ 注意：日志可能包含敏感数据**
+> 导出/查看的日志（`-logZip` 导出包、`hilog` 查看输出）可能包含**敏感应用程序数据**（如 API 密钥、个人标识符、凭据、令牌等）。共享前请先检查并清理日志内容。**请勿**将导出的日志包上传至公共数据库（如 GitHub Gist/Issue、Pastebin）或与未经授权的第三方共享。
+>
+> **共享前数据清理建议**：
+> 1. 解压日志包，逐文件检索敏感关键词（`token`、`key`、`password`、`secret`、`auth`、手机号/邮箱等）
+> 2. 对命中的敏感片段进行脱敏（打码/替换/删除整行）
+> 3. 仅共享与问题相关的最小日志片段，而非整包
+> 4. 共享前再次确认无残留凭证
+
 ### 导出模拟器日志
 
 使用 `-logZip` 参数从模拟器实例导出完整日志包（包含 .gz 压缩的 SystemLog）。

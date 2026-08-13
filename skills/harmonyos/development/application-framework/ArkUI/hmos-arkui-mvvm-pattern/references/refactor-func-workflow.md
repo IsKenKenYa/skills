@@ -75,10 +75,12 @@ ViewModel 中的代码：
 
 ## 5. 逐页验证
 
-每完成一个页面的整改，立即验证：
+每完成一个页面的整改，立即验证。
 
-1. 调用 `check_ets_files` 对修改过的 `.ets` 文件进行静态检查，修复报错直到通过
-2. 必要时调用 `build_project` 做完整构建验证
+> 前置：先 `devecocli --version` 确认已安装；未安装需向用户确认后 `npm install -g @deveco/deveco-cli@latest`（需 Node.js >= 18、DevEco Studio >= 6.1.0）再继续，用户拒绝则走人工走查。
+
+1. 用 `devecocli build` 对修改过的 `.ets` 文件做编译检查，修复报错直到通过
+2. 必要时用 `devecocli build` 做完整构建验证（增量结果可疑时先 `devecocli build clean` 再重跑）
 3. 逐项检查数据流合规性：
 
 | 验证项 | 方式 |

@@ -11,21 +11,22 @@
 | 正则搜索 | `builtin_grep` | `Grep` | 按正则搜索文件内容，可配合 glob 过滤 |
 | 执行命令 | `builtin_execute_command` | `Bash` | hdc/python/curl 等，**30 秒超时** |
 | 结构化任务 | `builtin_write_todo` | `TaskCreate`/`TaskUpdate` | 创建和管理任务列表 |
-|  文档 RAG | `builtin_web_rag` | **无 → 降级方案 W** | 查官方文档/ArkTS 语法/API 用法 |
+| HarmonyOS 文档 RAG | `builtin_web_rag` | **无 → 降级方案 W** | 查官方文档/ArkTS 语法/API 用法 |
 | 编辑器语法检查 | `builtin_check_editor_errors` | **无 → 降级方案 E** | 检查文件语法错误与代码问题 |
-| 派发子 Agent（阶段 3） | **无 → 主上下文内联执行** | `Agent` | 阶段 3 在终端委派子 Agent 隔离大块原始抓取；CodeGenie 无子 Agent，主上下文顺序执行 3.1→3.6 |
+| 派发子 Agent（阶段 4） | **无 → 主上下文内联执行** | `Agent` | 阶段 4 在终端委派子 Agent 隔离大块原始抓取；CodeGenie 无子 Agent，主上下文顺序执行 4.1→4.5 |
 
 ## 工具选择原则
 
 - 文件读写/搜索 → 优先用 `builtin_*` 工具（终端：Read/Write/Edit/Glob/Grep）
--  文档查询 → `builtin_web_rag`（终端：降级方案 W）
+- HarmonyOS 文档查询 → `builtin_web_rag`（终端：降级方案 W）
 - 系统命令（hdc、python） → `builtin_execute_command`（终端：Bash，注意 30 秒超时）
 - Gitee 代码仓原始文件 → `builtin_execute_command` + `curl`（终端：Bash + curl，web_rag 覆盖不到时）
+- 日志采集（hilog）→ 必须用 `builtin_execute_command`（终端：Bash）跑本 skill 的 `hilog_collector.py` / `hilog -x`；**不得**用 agent 自带的日志采集工具替代。脚本产出结构化 `status`/`parsed_files`，自带工具不兼容（详见 SKILL.md 步骤5）。
 
-## 降级方案 W —  文档查询（终端 Agent，替代 `builtin_web_rag`）
+## 降级方案 W — HarmonyOS 文档查询（终端 Agent，替代 `builtin_web_rag`）
 
 1. `WebSearch` 按错误码 / API 名称 / 功能关键词检索
-2. 复用本 Skill 既有的 Gitee raw 文件 `curl` 兜底（见阶段 2.2 步骤 2 / 3.2 / 3.4）
+2. 复用本 Skill 既有的 Gitee raw 文件 `curl` 兜底（见阶段 3.2 步骤 2 / 4.2 / 4.4）
 3. 命中后用 `WebFetch` 取正文要点
 
 > 召回质量低于 CodeGenie 专属 RAG，在诊断报告「文档参考」处注明"文档来源为通用检索"。

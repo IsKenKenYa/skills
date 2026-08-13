@@ -7,9 +7,9 @@
 
 | 手势 | 构造签名 | 参数 |
 |------|---------|------|
-| **TapGesture** | `TapGesture(value?: number)` | `count?:1` `fingers?:1` |
-| **LongPressGesture** | `LongPressGesture(options?)` | `fingers?:1` `repeat?:true` `duration?:500` |
-| **PanGesture** | `PanGesture(options?)` | `fingers?:1` `distance?:5vp` `direction?:All` |
+| **TapGesture** | `TapGesture(value?: TapGestureParameters)` | `{count?:1, fingers?:1, distanceThreshold?:∞}` **对象参数，非 number**：`TapGesture({count:1, fingers:1})`，`TapGesture(1)` 会报错。事件：`.onAction((event) => {})` ⚠️ 只有 `onAction`，**不存在 `onActionStart`/`onActionUpdate`** |
+| **LongPressGesture** | `LongPressGesture(options?)` | `fingers?:1` `repeat?:true` `duration?:500`。事件：`.onAction((event) => {})` ⚠️ 只有 `onAction`，**不存在 `onActionStart`/`onActionUpdate`** |
+| **PanGesture** | `PanGesture(options?)` | `fingers?:1` `distance?:5vp` `direction?:All`。事件：`.onActionStart((event) => {})` `.onActionUpdate((event) => {})` `.onActionEnd((event) => {})`。⚠️ PanGesture **没有 `onAction`**，用 `onActionUpdate` 获取拖拽中偏移 |
 | **PinchGesture** | `PinchGesture(options?)` | `fingers?:2` `distance?:3vp` |
 | **RotationGesture** | `RotationGesture(options?)` | `fingers?:2` `angle?:1deg` |
 | **SwipeGesture** | `SwipeGesture(options?)` | `fingers?:1` `direction?:All` `speed?:100` |
@@ -55,5 +55,35 @@
 | .onDragLeave | `.onDragLeave((event) => void)` | 离开 |
 | .onDrop | `.onDrop((event) => void)` | 释放 |
 | .onDragEnd | `.onDragEnd((event) => void)` | 结束 |
+
+### 典型用法
+
+#### 手势优先级选择
+
+| 绑定方式 | 子组件 | 父组件 | 适用场景 |
+|---------|:------:|:------:|---------|
+| `.gesture()` | 优先 | 等待 | 默认子优先，如列表项点击 |
+| `.priorityGesture()` | 等待 | 优先 | 父优先，如外层滑动容器 |
+| `.parallelGesture()` | 同时 | 同时 | 父子同时响应 |
+
+#### 长按拖拽（GestureGroup Sequence）
+
+```ts
+GestureGroup(GestureMode.Sequence,
+  LongPressGesture({ duration: 500 }),
+  PanGesture()
+).onAction((event: GestureEvent) => {
+  // 长按后拖拽触发
+})
+```
+
+#### 触摸热区调整
+
+```ts
+Button('小按钮')
+  .responseRegion({ x: -10, y: -10, width: 60, height: 60 })  // 扩大触摸区域
+```
+
+> 触摸事件参数类型是 `TouchEvent`/`TouchObject`，**不存在 `TouchInfo`**。
 
 ---

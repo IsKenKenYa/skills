@@ -1,18 +1,20 @@
-# Productivity
+# Productivity（生产力类）
 
-通用工作流工具，不特定于代码工作。
+不局限于编码的通用工作流工具。
 
 ## 用户调用
 
-只有在你手动输入时才会触发（`disable-model-invocation: true`）。
+仅在你明确输入调用时可用（Claude Code：`disable-model-invocation: true`；Codex：`agents/openai.yaml` 中的 `policy.allow_implicit_invocation: false`）。
 
-- **[grill-me](./grill-me/SKILL.md)** — 围绕一个计划或设计接受高强度访谈，直到决策树上的每个分支都被解决。
-- **[handoff](./handoff/SKILL.md)** — 将当前对话压缩成交接文档，方便另一个 agent 继续接手。
-- **[teach](./teach/SKILL.md)** — 使用当前目录作为有状态教学工作区，在多个会话中教会用户一个新 skill 或概念。
-- **[writing-great-skills](./writing-great-skills/SKILL.md)** — 写好和编辑好 skills 的参考：让 skill 行为可预测所需的词汇与原则。
+- **[grill-me](./grill-me/SKILL.md)**：围绕计划或设计持续追问，直到设计树的每个分支都得到解决。
+- **[handoff](./handoff/SKILL.md)**：把当前对话压缩成交接文档，让另一个 agent 可以继续工作。
+- **[teach](./teach/SKILL.md)**：把当前目录作为有状态的教学工作区，跨多个会话教授新技能或概念。
+- **[to-questionnaire](./to-questionnaire/SKILL.md)**：把你无法独自回答的决策整理成 Markdown 问卷，交给真正掌握答案的人异步填写，或在会议中共同完成。
+- **[wait-what](./wait-what/SKILL.md)**：当某条消息没有讲清楚时立即调用；agent 会补足缺失的上下文，用清晰英语和 `CONTEXT.md` 中的通用语言重新说明。
 
-## 模型/用户调用
+## 模型调用
 
-模型和用户都可以触发（description 中包含足够丰富的触发线索，方便模型主动使用）。
+模型或用户都可调用；description 中包含充分的触发线索，便于模型主动选择。
 
-- **[grilling](./grilling/SKILL.md)** — 围绕一个计划或设计对用户进行高强度访谈，直到决策树上的每个分支都被解决。
+- **[grilling](./grilling/SKILL.md)**：就计划、决策或想法持续追问，直到设计树的每个分支都得到解决。
+- **[writing-for-agents](./writing-for-agents/SKILL.md)**：编写供 agent 使用的文档，包括 skills、`AGENTS.md`、`CLAUDE.md`，以及 agent 通过指针访问的其他文档。

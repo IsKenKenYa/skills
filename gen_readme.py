@@ -25,9 +25,7 @@ MATTPocock_GROUPS = [
     Group("Engineering — 工程类", "日常编码工作", ("engineering",), True),
     Group("Productivity — 生产力类", "日常非编码工作流工具", ("productivity",), True),
     Group("Misc — 杂项", "保留但较少使用", ("misc",), True),
-    Group("Personal — 个人专用", "与原作者个人设置绑定", ("personal",), True),
-    Group("In-progress — 进行中", "尚未定稿的草稿", ("in-progress",), True),
-    Group("Deprecated — 已废弃", "原作者不再使用，保留供参考", ("deprecated",), True),
+    Group("In-progress — 进行中", "上游公开的 Beta skills", ("in-progress",), True),
 ]
 
 HARMONY_GROUPS = [
@@ -129,7 +127,7 @@ def render_group(group: Group, skill_paths: list[Path], include_heading: bool = 
 
 def render_catalog() -> str:
     skills = public_skill_paths()
-    matt_paths = [p for p in skills if p.relative_to(SKILLS_ROOT).parts[0] in {"engineering", "productivity", "misc", "personal", "in-progress", "deprecated"}]
+    matt_paths = [p for p in skills if p.relative_to(SKILLS_ROOT).parts[0] in {"engineering", "productivity", "misc", "in-progress"}]
     harmony_paths = [p for p in skills if p.relative_to(SKILLS_ROOT).parts[0] == "harmonyos"]
     android_paths = [p for p in skills if p.relative_to(SKILLS_ROOT).parts[0] == "android"]
     meta_paths = [p for p in skills if p.relative_to(SKILLS_ROOT).parts[0] == "meta"]

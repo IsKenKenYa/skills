@@ -1,0 +1,64 @@
+{
+  "dstSettings": {
+    "enabled": true,
+    "defaultTimezone": "Europe/London",
+    "supportedTimezones": [
+      "Europe/London",
+      "Europe/Paris",
+      "Europe/Berlin",
+      "America/New_York",
+      "America/Los_Angeles",
+      "America/Chicago",
+      "Asia/Shanghai",
+      "Asia/Tokyo",
+      "Australia/Sydney"
+    ],
+    "displayFormat": {
+      "showDSTIndicator": true,
+      "dstIndicatorText": "夏令时",
+      "standardTimeText": "标准时间",
+      "locale": "zh-CN"
+    },
+    "calculationSettings": {
+      "useUTCForStorage": true,
+      "hourPrecision": 2,
+      "maxCalculationIterations": 100,
+      "enableTransitionDetection": true
+    },
+    "errorHandling": {
+      "invalidTimezoneFallback": "UTC",
+      "calculationErrorFallback": 24,
+      "enableWarnings": true,
+      "logErrors": true
+    }
+  },
+  "timeStorageSettings": {
+    "storageFormat": "UTC_TIMESTAMP",
+    "timestampUnit": "milliseconds",
+    "enableDSTSafeStorage": true,
+    "conversionOnDisplay": true
+  },
+  "transitionRules": {
+    "detectionWindow": {
+      "hoursBeforeTransition": 2,
+      "hoursAfterTransition": 2
+    },
+    "handlingModes": {
+      "timeGap": "SKIP_INVALID",
+      "timeOverlap": "USE_FIRST_INSTANCE",
+      "displayIndicator": "SHOW_DST_STATUS"
+    }
+  },
+  "apiVersions": {
+    "minimumAPIVersion": 7,
+    "getTimeInMillisAPIVersion": 11,
+    "metaServiceAPIVersion": 12,
+    "cardAPIVersion": 11
+  },
+  "performanceSettings": {
+    "cacheCalendarObjects": true,
+    "maxCacheSize": 50,
+    "lazyInitialization": true,
+    "batchCalculation": true
+  }
+}

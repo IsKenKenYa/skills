@@ -11,7 +11,7 @@ description: >
   “ArkTS 报错导致崩溃怎么修”，也应立即触发此技能。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.1.0
 ---
 
 # JS Crash Analysis
