@@ -15,7 +15,7 @@
 # -*- coding: utf-8 -*-
 """appfreeze 关键日志提取工具。
 
-把 HarmonyOS / OpenHarmony 的 appfreeze faultlog 解析成结构化数据，
+把 OpenHarmony 的 appfreeze faultlog 解析成结构化数据，
 并渲染成供大模型分析的"关键日志"文本报告。
 
 处理流程是一条直线管道::

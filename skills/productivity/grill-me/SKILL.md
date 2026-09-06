@@ -1,7 +1,6 @@
 ---
 name: grill-me
-description: 一场无情的访谈，用来打磨计划或设计。
+description: A relentless interview to sharpen a plan or design.
 disable-model-invocation: true
 ---
-
-Run a `/grilling` session.
+Call the Skill tool with "grilling".

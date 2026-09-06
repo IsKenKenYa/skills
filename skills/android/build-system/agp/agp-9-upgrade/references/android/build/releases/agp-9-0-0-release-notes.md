@@ -1,16 +1,25 @@
 <br />
 
-Android Gradle plugin 9.0 is a major release that brings API and behavior changes.
+Android Gradle plugin 9.0 is a major release that brings API and behavior
+changes.
 
-To update to Android Gradle plugin 9.0.1, use the [Android Gradle plugin Upgrade Assistant](https://developer.android.com/build/agp-upgrade-assistant). The AGP upgrade assistant helps preserve existing behaviors when upgrading your project whenever appropriate, so you can upgrade your project to use AGP 9.0 even if you're not ready to adopt all the new defaults in AGP 9.0.
+To update to Android Gradle plugin 9.0.1, use the
+[Android Gradle plugin Upgrade Assistant](https://developer.android.com/build/agp-upgrade-assistant). The AGP upgrade assistant helps
+preserve existing behaviors when upgrading your project whenever appropriate, so
+you can upgrade your project to use AGP 9.0 even if you're not ready to
+adopt all the new defaults in AGP 9.0.
 
-There are also two agent skills available to make the upgrade process easier. For a non-KMP app, try the [AGP 9 upgrade skill](https://github.com/android/skills/tree/main/build/agp/agp-9-upgrade) from the Android skills repository. For a KMP app, try the [AGP 9 upgrade skill](https://github.com/Kotlin/kotlin-agent-skills/tree/main/skills/kotlin-tooling-agp9-migration) from JetBrains. For more information about using skills in Android Studio, see [Extend Agent Mode with skills](https://developer.android.com/studio/gemini/skills).
+There are also two agent skills available to make the upgrade process easier.
+For a non-KMP app, try the [AGP 9 upgrade skill](https://github.com/android/skills/tree/main/build-system/agp/agp-9-upgrade) from the
+Android skills repository. For a KMP app, try the [AGP 9 upgrade
+skill](https://github.com/Kotlin/kotlin-agent-skills/tree/main/skills/kotlin-tooling-agp9-migration) from JetBrains. For more information about using skills
+in Android Studio, see [Extend Agent Mode with skills](https://developer.android.com/studio/gemini/skills).
 
 ## Compatibility
 
-The maximum API level that Android Gradle plugin 9.0 supports is API level 36.1. Here is other compatibility info:
+The maximum API level that Android Gradle plugin 9.0 supports is API level 36.1.
+Here is other compatibility info:
 
-<br />
 
 |   | Minimum version | Default version | Notes |
 |---:|:---:|:---:|:---:|
@@ -23,25 +32,52 @@ The maximum API level that Android Gradle plugin 9.0 supports is API level 36.1.
 
 ## The `android` DSL classes now only implement the new public interfaces
 
-Over the last several years, we have introduced [new interfaces](https://developer.android.com/reference/tools/gradle-api) for our DSL and API in order to better control which APIs are public. AGP versions 7.x and 8.x still used the old DSL types (for example `BaseExtension`) which also implemented the new public interfaces, in order to maintain compatibility as work progressed on the interfaces.
+Over the last several years, we have introduced
+[new interfaces](https://developer.android.com/reference/tools/gradle-api) for our DSL and API in order to
+better control which APIs are public. AGP versions
+7.x and 8.x still used the old DSL types (for example `BaseExtension`) which
+also implemented the new public interfaces, in order to maintain compatibility
+as work progressed on the interfaces.
 
-AGP 9.0 uses our new DSL interfaces exclusively, and the implementations have changed to new types that are fully hidden. This also removes access to the old, deprecated variant API.
+AGP 9.0 uses our new DSL interfaces exclusively,
+and the implementations have changed to new types that are fully hidden. This
+also removes access to the old, deprecated variant API.
 
 To update to AGP 9.0, you might need to do the following:
 
-- **Ensure your project is compatible with [built-in Kotlin](https://developer.android.com/build/releases/agp-9-0-0-release-notes#android-gradle-plugin-built-in-kotlin):** The `org.jetbrains.kotlin.android` plugin is not compatible with the new DSL.
-- **Switch KMP projects to the [Android Gradle Library Plugin for KMP](https://developer.android.com/kotlin/multiplatform/plugin):** Using the `org.jetbrains.kotlin.multiplatform` plugin in the same Gradle subproject as the `com.android.library` and `com.android.application` plugins is not compatible with the new DSL.
+- **Ensure your project is compatible with [built-in
+  Kotlin](https://developer.android.com/build/releases/agp-9-0-0-release-notes#android-gradle-plugin-built-in-kotlin):** The `org.jetbrains.kotlin.android` plugin is not compatible with the new DSL.
+- **Switch KMP projects to the
+  [Android Gradle Library Plugin for KMP](https://developer.android.com/kotlin/multiplatform/plugin):**
+  Using the `org.jetbrains.kotlin.multiplatform` plugin in the same Gradle
+  subproject as the `com.android.library` and `com.android.application` plugins
+  is not compatible with the new DSL.
 
   > [!NOTE]
   > **Note:** The new KMP integration does not support using KMP and the Android Application plugin in the same Gradle subproject. To migrate, extract your Android app to a separate subproject.
 
-- **Update your build files:** While the change of interfaces is meant to keep the DSL as similar as possible, there might be [some small changes](https://developer.android.com/build/releases/agp-9-0-0-release-notes#android-gradle-plugin-changed-dsl).
+- **Update your build files:**
+  While the change of interfaces is meant to keep
+  the DSL as similar as possible, there might be
+  [some small changes](https://developer.android.com/build/releases/agp-9-0-0-release-notes#android-gradle-plugin-changed-dsl).
 
-- **Update your custom build logic to reference the new DSL and API:** Replace any references to the internal DSL with the public DSL interfaces. In most cases this will be a one-to-one replacement. Replace any use of the `applicationVariants` and similar APIs with the new [`androidComponents` API](https://developer.android.com/build/extend-agp#variant-api-artifacts-tasks). This might be more complex, as the `androidComponents` API is designed to be more stable to keep plugins compatible longer. Check our [Gradle Recipes](https://github.com/android/gradle-recipes/tree/agp-9.0) for examples.
+- **Update your custom build logic to reference the new DSL and API:**
+  Replace any references to the internal DSL with the public DSL interfaces.
+  In most cases this will be a one-to-one replacement.
+  Replace any use of the `applicationVariants` and similar APIs with the new
+  [`androidComponents` API](https://developer.android.com/build/extend-agp#variant-api-artifacts-tasks).
+  This might be more complex, as the `androidComponents` API
+  is designed to be more stable to keep plugins compatible longer. Check our
+  [Gradle Recipes](https://github.com/android/gradle-recipes/tree/agp-9.0)
+  for examples.
 
-- **Update third-party plugins:** Some third-party plugins might still depend on interfaces or APIs that are no longer exposed. Migrate to versions of those plugins which are compatible with AGP 9.0.
+- **Update third-party plugins:**
+  Some third-party plugins might still depend on interfaces or APIs that are
+  no longer exposed. Migrate to versions of those plugins which are compatible
+  with AGP 9.0.
 
-The switch to the new DSL interfaces prevents plugins and Gradle build scripts using various deprecated APIs, including:
+The switch to the new DSL interfaces prevents plugins and Gradle build scripts
+using various deprecated APIs, including:
 
 | Deprecated API in the `android` block | Function | Replacement |
 |---|---|---|
@@ -54,43 +90,73 @@ The switch to the new DSL interfaces prevents plugins and Gradle build scripts u
 | `generatePureSplits` | Generate configuration splits for instant apps. | The ability to ship configuration splits is now built in to Android app bundles. |
 | `aidlPackagedList` | AIDL files to package in the AAR to expose it as API for libraries and apps that depend on this library. | This is still exposed on [`LibraryExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/LibraryExtension) but not on the other extension types. |
 
-If you update to AGP 9.0 and see the following error message, it means that your project is still referencing some of the old types:
+If you update to AGP 9.0 and see the following error message, it means that
+your project is still referencing some of the old types:
 
     java.lang.ClassCastException: class com.android.build.gradle.internal.dsl.ApplicationExtensionImpl$AgpDecorated_Decorated
     cannot be cast to class com.android.build.gradle.BaseExtension
 
-If you are blocked by incompatible third-party plugins, you can opt out and get back the old implementations for the DSL, as well as the old variant API. While doing this, the new interfaces are also available, and you can still update your own build logic to the new API. To opt out, include this line in your `gradle.properties` file:
+If you are blocked by incompatible third-party plugins, you can opt out and
+get back the old implementations for the DSL, as well as the old variant API.
+While doing this, the new interfaces are also available, and you can still
+update your own build logic to the new API. To opt out, include this line in
+your `gradle.properties` file:
 
     android.newDsl=false
 
-Alternatively, for a more gradual migration, AGP 9.4 lets you opt out individual modules. To learn how, see [Variant API module opt-out](https://developer.android.com/build/releases/agp-9-4-0-release-notes#new-dsl-opt-out).
+Alternatively, for a more gradual migration, AGP 9.4 lets you opt out individual
+modules. To learn how, see [Variant API module opt-out](https://developer.android.com/build/releases/agp-9-4-0-release-notes#new-dsl-opt-out).
 
-The previous classes are marked as deprecated in AGP 9.0. This means projects that opt out of the `newDsl` flag will see deprecation warnings, including on the `android` block itself.
+The previous classes are marked as deprecated in AGP 9.0. This means projects
+that opt out of the `newDsl` flag will see deprecation warnings, including on
+the `android` block itself.
 
 > [!CAUTION]
 > **Caution:** The ability to opt-out will be removed in AGP 10.0 (mid-2026).
 
-You can also start upgrading to the new APIs before upgrading to AGP 9.0. The new interfaces have been present for many AGP versions and so you can have a mix of new and old. The [AGP API reference docs](https://developer.android.com/reference/tools/gradle-api) show the API surface for each AGP version, and when each class, method and field was added.
+You can also start upgrading to the new APIs before upgrading to AGP 9.0. The
+new interfaces have been present for many AGP versions and so you can have a mix
+of new and old. The [AGP API reference docs](https://developer.android.com/reference/tools/gradle-api) show the API
+surface for each AGP version, and when each class, method and field was
+added.
 
-We're reaching out to the authors of commonly used plugins to help them adapt and release plugins that are fully compatible with the new modes, and will continue to enhance the AGP Upgrade Assistant in Android Studio to guide you through the migration.
+We're reaching out to the authors of commonly used plugins to help them adapt
+and release plugins that are fully compatible with the new modes, and will
+continue to enhance the AGP Upgrade Assistant in Android Studio to guide you
+through the migration.
 
-If you find that the new DSL or Variant API are missing capabilities or features, please file an [issue](https://issuetracker.google.com/issues/new?component=192708&template=840533) as soon as possible.
+If you find that the new DSL or Variant API are missing capabilities or
+features, please file an [issue](https://issuetracker.google.com/issues/new?component=192708&template=840533) as soon as possible.
 
 ## Built-in Kotlin
 
-Android Gradle plugin 9.0 introduces built-in Kotlin support and enables it by default. That means you no longer have to apply the `org.jetbrains.kotlin.android` (or `kotlin-android`) plugin in your build files to compile Kotlin source files. This simplifies the Kotlin integration with AGP, avoids the use of deprecated APIs, and improves performance in some cases.
+Android Gradle plugin 9.0 introduces built-in Kotlin support and enables it
+by default. That means you no longer have to apply the
+`org.jetbrains.kotlin.android` (or `kotlin-android`) plugin in your build files
+to compile Kotlin source files.
+This simplifies the Kotlin integration with AGP, avoids the use of
+deprecated APIs, and improves performance in some cases.
 
-Therefore, when you upgrade your project to AGP 9.0, you need to also [migrate to built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin) or [opt out](https://developer.android.com/build/migrate-to-built-in-kotlin#opt-out-of-built-in-kotlin).
+Therefore, when you upgrade your project to AGP 9.0, you need to also
+[migrate to built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin) or [opt out](https://developer.android.com/build/migrate-to-built-in-kotlin#opt-out-of-built-in-kotlin).
 
-You can also [selectively disable built-in Kotlin support](https://developer.android.com/build/migrate-to-built-in-kotlin#selectively-disable) for Gradle subprojects that don't have Kotlin sources.
+You can also [selectively disable built-in Kotlin support](https://developer.android.com/build/migrate-to-built-in-kotlin#selectively-disable) for Gradle
+subprojects that don't have Kotlin sources.
 
 ## Runtime dependency on Kotlin Gradle plugin
 
-To provide [built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin) support, Android Gradle plugin 9.0 now has a runtime dependency on Kotlin Gradle plugin (KGP) 2.2.10. That means you no longer have to declare a KGP version, and if you use a KGP version lower than 2.2.10, Gradle will automatically upgrade your KGP version to 2.2.10. Likewise, if you use a KSP version lower than 2.2.10-2.0.2, AGP will upgrade it to 2.2.10-2.0.2 to match the KGP version.
+To provide [built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin) support, Android Gradle plugin 9.0 now has a
+runtime dependency on Kotlin Gradle plugin (KGP) 2.2.10.
+That means you no longer have to declare a KGP version, and if you use a KGP
+version lower than 2.2.10, Gradle will automatically upgrade your KGP version to
+2.2.10.
+Likewise, if you use a KSP version lower than 2.2.10-2.0.2, AGP will upgrade it
+to 2.2.10-2.0.2 to match the KGP version.
 
 ### Upgrade to a higher KGP version
 
-To use a higher version of KGP or KSP, add the following to your top-level build file:
+To use a higher version of KGP or KSP, add the following to your top-level build
+file:
 
     buildscript {
         dependencies {
@@ -104,9 +170,13 @@ To use a higher version of KGP or KSP, add the following to your top-level build
 
 ### Downgrade to a lower KGP version
 
-You can only downgrade the KGP version if you've [opted out of built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin#opt-out-of-built-in-kotlin). This is because AGP 9.0 enables built-in Kotlin by default, and built-in Kotlin requires KGP 2.2.10 or higher.
+You can only downgrade the KGP version if you've
+[opted out of built-in Kotlin](https://developer.android.com/build/migrate-to-built-in-kotlin#opt-out-of-built-in-kotlin).
+This is because AGP 9.0 enables built-in Kotlin by default, and built-in Kotlin
+requires KGP 2.2.10 or higher.
 
-To use a lower version of KGP or KSP, declare that version in your top-level build file using a [strict version](https://docs.gradle.org/current/userguide/dependency_versions.html#sec:strict-version) declaration:
+To use a lower version of KGP or KSP, declare that version in your top-level
+build file using a [strict version](https://docs.gradle.org/current/userguide/dependency_versions.html#sec:strict-version) declaration:
 
     buildscript {
         dependencies {
@@ -129,13 +199,17 @@ Note that the minimum KGP version you can downgrade to is 2.0.0.
 
 ## IDE support for test fixtures
 
-AGP 9.0 brings full Android Studio IDE support for [test fixtures](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/TestFixtures).
+AGP 9.0 brings full Android Studio IDE support for
+[test fixtures](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/TestFixtures).
 
 ## Fused Library Plugin
 
-The Fused Library Plugin (Preview) lets you publish multiple libraries as a single Android Library AAR. This can make it easier for your users to depend on your published artifacts.
+The Fused Library Plugin (Preview) lets you publish multiple
+libraries as a single Android Library AAR. This can make it easier for your
+users to depend on your published artifacts.
 
-For information about getting started, see [Publish multiple Android libraries as one with Fused Library](https://developer.android.com/build/publish-library/fused-library).
+For information about getting started, see
+[Publish multiple Android libraries as one with Fused Library](https://developer.android.com/build/publish-library/fused-library).
 
 ## Behavior changes
 
@@ -146,7 +220,8 @@ Android Gradle plugin 9.0 has the following new behaviors:
 | Android Gradle plugin 9.0 uses NDK version `r28c` by default. | Consider specifying the NDK version you want to use explicitly. |
 | Android Gradle plugin 9.0 by default requires consumers of a library to use the same or higher compile SDK version. | Use the same or higher compile SDK when consuming a library. If this is not possible, or you want to give consumers of a library you publish more time to switch, set [`AarMetadata.minCompileSdk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/AarMetadata#minCompileSdk()) explicitly. |
 
-AGP 9.0 includes updates to the following Gradle properties' defaults. This gives you the choice to preserve the AGP 8.13 behavior when upgrading:
+AGP 9.0 includes updates to the following Gradle properties' defaults.
+This gives you the choice to preserve the AGP 8.13 behavior when upgrading:
 
 | Property | Function | Change from AGP 8.13 to AGP 9.0 | Recommendation |
 |---|---|---|---|
@@ -161,7 +236,7 @@ AGP 9.0 includes updates to the following Gradle properties' defaults. This give
 | `android.onlyEnableUnitTestForTheTestedBuildType` | Only creates unit test components for the tested build type. In the default project this results in a single unit test for debug, where the previous behavor was to have unit tests run for debug or release. | `false` → `true` | If your project doesn't require tests to run for both debug and release, no change is required. |
 | `android.proguard.failOnMissingFiles` | Fails the build with an error if any of the keep files specified in the AGP DSL don't exist on disk. Before this change typos in filenames would result in files being silently ignored. | `false` → `true` | Remove any invalid proguard files declarations |
 | `android.r8.optimizedResourceShrinking` | Allows R8 to keep fewer Android resources by considering classes and Android resources together. | `false` → `true` | If your project's keep rules are already complete, no change is required. |
-| `android.r8.strictFullModeForKeepRules` | Allows R8 to keep less by not implicitly keeping the default constructor when a class is kept. That is, `-keep class A` no longer implies `-keep class A { <init>(); }` | `false` → `true` | If your project's keep rules are already complete, no change is required. Replace `-keep class A` with `-keep class A { <init>(); }` in your project's keep rules for any cases where you need the default constructor to be kept. |
+| `android.r8.strictFullModeForKeepRules` | Allows R8 to keep less by not implicitly keeping the default constructor when a class is kept. That is, `-keep class A` no longer implies `-keep class A { <init>(); }` | `false` → `true` | If your project's keep rules are already complete, no change is required. <br /> Replace `-keep class A` with `-keep class A { <init>(); }` in your project's keep rules for any cases where you need the default constructor to be kept. |
 | `android.defaults.buildfeatures.resvalues` | Enables [`resValues`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasAndroidResources#resValues()) in all subprojects | `true` → `false` | Enable `resValues` in only the subprojects that need it by setting the following in those projects' Gradle build files: ``` android { buildFeatures { resValues = true } } ``` |
 | `android.defaults.buildfeatures.shaders` | Enables [shader compilation](https://developer.android.com/ndk/guides/graphics/shader-compilers) in all subprojects | `true` → `false` | Enable shader compilation in only the subprojects that contain shaders to be compiled by setting the following in those projects' Gradle build files: ``` android { buildFeatures { shaders = true } } ``` |
 | `android.r8.proguardAndroidTxt.disallowed` | In AGP 9.0, `getDefaultProguardFile()` will only support `proguard-android-optimize.txt` rather than `proguard-android.txt`. This is to prevent accidental usage of the `­dontoptimize` flag, which is included in `proguard-android.txt`. | `false` → `true` | You can explicitly specify `­dontoptimize` in a custom proguardFile if you want to avoid optimization, alongside using `proguard-android-optimize.txt`. Make sure to remove the `­dontoptimize` flag from this file if possible, as it reduces R8 optimization benefits. If not, opt out by setting `android.r8.globalOptionsInConsumerRules.disallowed=false`. |
@@ -185,9 +260,16 @@ Android Gradle plugin 9.0 has the following breaking DSL changes:
 
 - The parameterization of [`CommonExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/CommonExtension) has been removed.
 
-  In itself, this is only a source-level breaking change to help avoid future source-level breaking changes, but it also means that the block methods need to move from [`CommonExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/CommonExtension) to [`ApplicationExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/ApplicationExtension), [`LibraryExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/LibraryExtension), [`DynamicFeatureExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/DynamicFeatureExtension) and [`TestExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/TestExtension).
+  In itself, this is only a source-level breaking change to help
+  avoid future source-level breaking changes, but it also means that
+  the block methods need to move from [`CommonExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/CommonExtension) to
+  [`ApplicationExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/ApplicationExtension), [`LibraryExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/LibraryExtension),
+  [`DynamicFeatureExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/DynamicFeatureExtension) and [`TestExtension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/TestExtension).
 
-  When upgrading your project to AGP 9.0, refactor Gradle plugin code which uses those parameters or the block methods. For example the following plugin is updated to remove the type parameter and not rely on the removed block methods:
+  When upgrading your project to AGP 9.0, refactor Gradle plugin code
+  which uses those parameters or the block methods. For example the following
+  plugin is updated to remove the type parameter and not rely on the
+  removed block methods:
 
   **AGP 8.13**
 
@@ -213,7 +295,8 @@ Android Gradle plugin 9.0 has the following breaking DSL changes:
           }
       }
 
-  For plugins which target a range of AGP versions, using the getter directly is binary compatible with AGP versions lower than 9.0.
+  For plugins which target a range of AGP versions, using the getter directly
+  is binary compatible with AGP versions lower than 9.0.
 
 ## Removed DSL
 
@@ -221,37 +304,50 @@ Android Gradle plugin 9.0 removes:
 
 - [`AndroidSourceSet.jni`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/AndroidSourceSet#jni(kotlin.Function1)), because it was not functional.
 
-- [`AndroidSourceSet.wearAppConfigurationName`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/AndroidSourceSet#wearAppConfigurationName()), as it relates to the removed embedded Wear OS app support.
+- [`AndroidSourceSet.wearAppConfigurationName`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/AndroidSourceSet#wearAppConfigurationName()), as it relates to the
+  removed embedded Wear OS app support.
 
 - [`BuildType.isRenderscriptDebuggable`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/BuildType#isRenderscriptDebuggable()), because it was not functional.
 
-- [`DependencyVariantSelection`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/DependencyVariantSelection). It is replaced By [`DependencySelection`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/DependencySelection), which is exposed as [`kotlin.android.localDependencySelection`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/KotlinMultiplatformAndroidLibraryExtension#localDependencySelection(kotlin.Function1))
+- [`DependencyVariantSelection`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/DependencyVariantSelection). It is replaced By
+  [`DependencySelection`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/DependencySelection), which is exposed as
+  [`kotlin.android.localDependencySelection`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/KotlinMultiplatformAndroidLibraryExtension#localDependencySelection(kotlin.Function1))
 
-- [`Installation.installOptions(String)`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/Installation#installOptions(kotlin.String)). It is replaced by the mutable property of [`Installation.installOptions`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/Installation#installOptions()).
+- [`Installation.installOptions(String)`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/Installation#installOptions(kotlin.String)). It is replaced by the
+  mutable property of [`Installation.installOptions`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/Installation#installOptions()).
 
 - The experimental, but never stabilized [`PostProcessing`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/PostProcessing) block.
 
-- [`ProductFlavor.setDimension`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/ProductFlavor#setDimension(kotlin.String)), which is replaced by the [`dimension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/ProductFlavor#dimension()) property
+- [`ProductFlavor.setDimension`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/ProductFlavor#setDimension(kotlin.String)), which is replaced by the
+  [`dimension`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/dsl/ProductFlavor#dimension()) property
 
-- `LanguageSplitOptions`, which was only useful for [Google Play Instant](https://developer.android.com/topic/google-play-instant), which is deprecated.
+- `LanguageSplitOptions`, which was only useful for
+  [Google Play Instant](https://developer.android.com/topic/google-play-instant), which is deprecated.
 
-- [`DensitySplit`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/DensitySplit), because the feature is no longer supported. Replacement is to use [App Bundles](https://developer.android.com/guide/app-bundle).
+- [`DensitySplit`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/dsl/DensitySplit), because the feature is no longer supported.
+  Replacement is to use [App Bundles](https://developer.android.com/guide/app-bundle).
 
 ## Removed APIs
 
 Android Gradle plugin 9.0 removes:
 
-- [`AndroidComponentsExtension.finalizeDSl`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/AndroidComponentsExtension#finalizeDSl(org.gradle.api.Action)). It is replaced by [`finalizeDsl`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DslLifecycle#finalizeDsl(kotlin.Function1))
+- [`AndroidComponentsExtension.finalizeDSl`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/AndroidComponentsExtension#finalizeDSl(org.gradle.api.Action)). It is replaced by
+  [`finalizeDsl`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DslLifecycle#finalizeDsl(kotlin.Function1))
 
-- [`Component.transformClassesWith`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Component#transformClassesWith(java.lang.Class,com.android.build.api.instrumentation.InstrumentationScope,kotlin.Function1)). It is replaced by [`Instrumentation.transformClassesWith`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/Instrumentation#transformClassesWith(java.lang.Class,com.android.build.api.instrumentation.InstrumentationScope,kotlin.Function1))
+- [`Component.transformClassesWith`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Component#transformClassesWith(java.lang.Class,com.android.build.api.instrumentation.InstrumentationScope,kotlin.Function1)). It is replaced by
+  [`Instrumentation.transformClassesWith`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/Instrumentation#transformClassesWith(java.lang.Class,com.android.build.api.instrumentation.InstrumentationScope,kotlin.Function1))
 
-- [`Component.setAsmFramesComputationMode`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Component#setAsmFramesComputationMode(com.android.build.api.instrumentation.FramesComputationMode)). It is replaced by [`Instrumentation.setAsmFramesComputationMode`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Instrumentation#setAsmFramesComputationMode(com.android.build.api.instrumentation.FramesComputationMode))
+- [`Component.setAsmFramesComputationMode`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Component#setAsmFramesComputationMode(com.android.build.api.instrumentation.FramesComputationMode)). It is replaced by
+  [`Instrumentation.setAsmFramesComputationMode`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Instrumentation#setAsmFramesComputationMode(com.android.build.api.instrumentation.FramesComputationMode))
 
-- [`ComponentBuilder.enabled`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/ComponentBuilder#enabled()). It is replaced by [`ComponentBuilder.enable`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/ComponentBuilder#enable()).
+- [`ComponentBuilder.enabled`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/ComponentBuilder#enabled()). It is replaced by
+  [`ComponentBuilder.enable`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/ComponentBuilder#enable()).
 
-- [`DependenciesInfoBuilder.includedInApk`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/DependenciesInfoBuilder#includedInApk()). Is is replaced by [`includeInApk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DependenciesInfoBuilder#includeInApk())
+- [`DependenciesInfoBuilder.includedInApk`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/DependenciesInfoBuilder#includedInApk()). Is is replaced by
+  [`includeInApk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DependenciesInfoBuilder#includeInApk())
 
-- [`DependenciesInfoBuilder.includedInBundle`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/DependenciesInfoBuilder#includedInBundle()). Is is replaced by [`includeInBundle`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DependenciesInfoBuilder#includeInBundle())
+- [`DependenciesInfoBuilder.includedInBundle`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/DependenciesInfoBuilder#includedInBundle()). Is is replaced by
+  [`includeInBundle`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/DependenciesInfoBuilder#includeInBundle())
 
 - [`GeneratesApk.targetSdkVersion`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/GeneratesApk#targetSdkVersion()). Is is replaced by [`targetSdk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/GeneratesApk#targetSdk())
 
@@ -261,25 +357,43 @@ Android Gradle plugin 9.0 removes:
 
 - [`Variant.targetSdkVersion`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Variant#targetSdkVersion()). Is is replaced by [`targetSdk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/Variant#targetSdk())
 
-- [`Variant.unitTest`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Variant#unitTest()), as it was not applicable to the [`com.android.test`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/gradle/TestPlugin) plugin. `unitTest` is available on [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes extending [`HasUnitTest`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTest).
+- [`Variant.unitTest`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/Variant#unitTest()), as it was not applicable to the
+  [`com.android.test`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/gradle/TestPlugin) plugin.
+  `unitTest` is available on [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes extending
+  [`HasUnitTest`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTest).
 
-- [`VariantBuilder.targetSdk`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#targetSdk()) and [`targetSdkPreview`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#targetSdkPreview()), as they were not meaningful in libraries. Use [`GeneratesApkBuilder.targetSdk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/GeneratesApkBuilder#targetSdk()) or [`GeneratesApkBuilder.targetSdkPreview`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/GeneratesApkBuilder#targetSdkPreview()) instead.
+- [`VariantBuilder.targetSdk`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#targetSdk()) and [`targetSdkPreview`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#targetSdkPreview()),
+  as they were not meaningful in libraries. Use
+  [`GeneratesApkBuilder.targetSdk`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/GeneratesApkBuilder#targetSdk()) or
+  [`GeneratesApkBuilder.targetSdkPreview`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/GeneratesApkBuilder#targetSdkPreview())
+  instead.
 
-- [`VariantBuilder.enableUnitTest`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#enableUnitTest()), as it was not applicable to the [`com.android.test`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/gradle/TestPlugin) plugin. `enableUnitTest` is available on [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes extending [`HasUnitTestBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder).
+- [`VariantBuilder.enableUnitTest`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#enableUnitTest()), as it was not applicable to the
+  [`com.android.test`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/gradle/TestPlugin) plugin.
+  `enableUnitTest` is available on [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes extending
+  [`HasUnitTestBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder).
 
-- [`VariantBuilder.unitTestEnabled`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#unitTestEnabled()) is removed in favor of the more consistently named [`enableUnitTest`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder#enableUnitTest()) on the [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes extending [`HasUnitTestBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder).
+- [`VariantBuilder.unitTestEnabled`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantBuilder#unitTestEnabled()) is removed in favor of the more
+  consistently
+  named [`enableUnitTest`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder#enableUnitTest()) on the [`VariantBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantBuilder) subtypes
+  extending [`HasUnitTestBuilder`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/HasUnitTestBuilder).
 
 - [`VariantOutput.enable`](https://developer.android.com/reference/tools/gradle-api/8.13/com/android/build/api/variant/VariantOutput#enable()). Is is replaced by [`enabled`](https://developer.android.com/reference/tools/gradle-api/9.0/com/android/build/api/variant/VariantOutput#enabled())
 
 - The deprecated and disabled `FeaturePlugin` and `FeatureExtension`.
 
-- The deprecated and disabled `BaseExtension.registerTransform` APIs, which only remained to allow compiling against the latest AGP version while targeting running on AGP 4.2 or lower.
+- The deprecated and disabled `BaseExtension.registerTransform` APIs, which
+  only remained to allow compiling against the latest AGP version while
+  targeting running on AGP 4.2 or lower.
 
 ## Removed Gradle properties
 
-The following Gradle properties were initially added as ways to globally disable features that were enabled by default.
+The following Gradle properties were initially added as ways to globally
+disable features that were enabled by default.
 
-These features have been disabled by default since AGP 8.0 or lower. Enable these features in only the sub-projects that use them for a more efficient build.
+These features have been disabled by default since AGP 8.0 or lower. Enable
+these features in only the sub-projects that use them for a more efficient
+build.
 
 | Property | Function | Replacement |
 |---|---|---|
@@ -290,7 +404,8 @@ These features have been disabled by default since AGP 8.0 or lower. Enable thes
 
 AGP 9.0 throws an error if you set the following Gradle properties.
 
-The [Android Gradle plugin Upgrade Assistant](https://developer.android.com/build/agp-upgrade-assistant) won't upgrade projects to AGP 9.0 that use these properties.
+The [Android Gradle plugin Upgrade Assistant](https://developer.android.com/build/agp-upgrade-assistant) won't upgrade projects to
+AGP 9.0 that use these properties.
 
 | Property | Function |
 |---|---|
@@ -303,7 +418,11 @@ The following R8 changes are included in AGP 9.0.0.
 
 ### New configuration option `-processkotlinnullchecks`
 
-We've added the new R8 option `-processkotlinnullchecks` to configure R8 for processing Kotlin null checks. The option takes a mandatory argument that must be one of the following three values: `keep`, `remove_message` and `remove`. The option processes the following null checks added by the Kotlin compiler:
+We've added the new R8 option `-processkotlinnullchecks` to configure R8 for
+processing Kotlin null checks. The option takes a mandatory argument that must
+be one of the following three values: `keep`, `remove_message` and `remove`.
+The option processes the following null checks added by the Kotlin
+compiler:
 
     class kotlin.jvm.internal.Intrinsics {
       void checkNotNull(java.lang.Object);
@@ -323,68 +442,108 @@ We've added the new R8 option `-processkotlinnullchecks` to configure R8 for pro
       void checkNotNullParameter(java.lang.Object, java.lang.String);
     }
 
-The option values, ordered from the weakest to the strongest, have the following effect:
+The option values, ordered from the weakest to the strongest, have the
+following effect:
 
 - `keep` doesn't change the checks.
 - `remove_message` rewrites each check method call to a call to `getClass()` on the first argument of the call (effectively keeping the null check, but without any message).
 - `remove` completely removes the checks.
 
-By default R8 uses `remove_message`. Any specification of `-processkotlinnullchecks` will override that. If specified multiple times the strongest value is used.
+By default R8
+uses `remove_message`. Any specification of `-processkotlinnullchecks`
+will override that. If specified multiple times the strongest value is
+used.
 
 ### Stop propagating keep info to companion methods
 
-When keep rules match interface methods that are subject to desugaring, R8 previously internally transferred the *disallow optimization* and *disallow shrinking* bits to the synthesized companion methods.
+When keep rules match interface methods that are subject to desugaring,
+R8 previously internally transferred the *disallow optimization* and *disallow
+shrinking* bits to the synthesized companion methods.
 
-Starting with AGP 9.0, keep rules no longer apply to companion methods. This is consistent with the fact that keep rules are not applicable to other compiler synthesized fields/methods/classes.
+Starting with AGP 9.0, keep rules no longer apply to
+companion methods. This is consistent with the fact that keep rules are
+not applicable to other compiler synthesized fields/methods/classes.
 
-By transferring the *disallow optimization* and *disallow shrinking* bits to the companion methods, the following use case was previously supported:
+By transferring the *disallow optimization* and *disallow shrinking* bits to
+the companion methods, the following use case was previously supported:
 
 1. Compile a library with `default`/`static`/`private` interface methods to DEX with `minSdk` \< 24 and rules that keep the interface methods.
 2. Compile an app with the library on classpath and `-applymapping`.
 3. Merge the app and the library.
 
-Note that this only works with `-applymapping` since the `disallow obfuscation` bit is not transferred to the companion methods---that is, the companion classes generated from step 1 would have obfuscated method names.
+Note that this only works with `-applymapping` since the `disallow
+obfuscation` bit is not transferred to the companion methods---that is, the
+companion classes generated from step 1 would have obfuscated method
+names.
 
-Going forward this use case is no longer supported for `minSdk` \< 24. The workaround is to do the following:
+Going forward this use case is no longer supported for `minSdk` \<
+24. The workaround is to do the following:
 
 1. Desugar the library with `default`/`static`/`private` interface methods to class files with `minSdk` \< 24.
 2. Compile the desugared artifact using R8 and rules that keep the interface methods on the companion classes.
 3. Compile the app with the library on classpath.
 4. Merge the app and the desugared artifact.
 
-Another side effect of this is that it is no longer possible to keep the inner class and enclosing method attributes for anonymous and local classes inside interface companion methods.
+Another side effect of this is that it is no longer possible to keep the
+inner class and enclosing method attributes for anonymous and local classes
+inside interface companion methods.
 
 ### Change the default emitted source file to `r8-map-id-<MAP_ID>`
 
 This change is in AGP starting from 8.12.0.
 
-The default emitted source file attribute for a class changes from `SourceFile` to `r8-map-id-<MAP_ID>` when retracing is required (that is, when either obfuscation or optimization is enabled).
+The default emitted source file attribute for a class changes from
+`SourceFile` to `r8-map-id-<MAP_ID>` when retracing is required (that is,
+when either obfuscation or optimization is enabled).
 
-Given an obfuscated stack trace, the new source file attribute makes it possible to extract the ID of the mapping file that is required for retracing, which can be used to support [automated retracing of stack traces in Logcat](https://developer.android.com/studio/preview/features#logcat-retrace).
+Given an obfuscated stack trace, the new source file attribute makes it
+possible to extract the ID of the mapping file that is required for
+retracing, which can be used to support
+[automated retracing of stack traces in Logcat](https://developer.android.com/studio/preview/features#logcat-retrace).
 
-If a custom source file attribute is used (`-renamesourcefileattribute`) this custom source file attribute continues to take precedence.
+If a custom source file attribute is used (`-renamesourcefileattribute`)
+this custom source file attribute continues to take precedence.
 
-In ProGuard compatibility mode (when `gradle.properties` contains `android.enableR8.fullMode=false`), emitting a source file attribute of `r8-map-id-<MAP_ID>` only takes effect if the `SourceFile` attribute is *not* kept. Apps that use ProGuard compatibility mode and want to include the mapping file ID in their stack traces should remove `-keepattributes SourceFile` (or migrate to R8 full mode).
+In ProGuard compatibility mode (when `gradle.properties` contains
+`android.enableR8.fullMode=false`), emitting a source file attribute of
+`r8-map-id-<MAP_ID>` only takes effect if the `SourceFile`
+attribute is *not* kept. Apps that use ProGuard compatibility mode and want
+to include the mapping file ID in their stack traces should remove
+`-keepattributes SourceFile` (or migrate to R8 full mode).
 
-The map ID used in `r8-map-id-<MAP_ID>` is the full map hash, and not a 7 character prefix of the map hash which was previously used.
+The map ID used in `r8-map-id-<MAP_ID>` is the full map hash, and not a 7
+character prefix of the map hash which was previously used.
 
 ### Enable use of minimized synthetic names in L8 desugaring
 
-The name of synthetic classes generated by D8 normally contains the substring `$$ExternalSynthetic` that tells you that this is a synthetic generated by D8. Moreover, the name of the synthetic also encodes the synthetic kind (for example, `Backport`, `Lambda`). This has a negative impact on the resulting DEX size, since the class names take up more space in the string pool.
+The name of synthetic classes generated by D8 normally contains the substring
+`$$ExternalSynthetic` that tells you that this is a synthetic generated by D8.
+Moreover, the name of the synthetic also encodes the synthetic kind (for
+example, `Backport`, `Lambda`). This has a negative impact on the resulting DEX
+size, since the class names take up more space in the string pool.
 
-AGP 9.0 configures L8 (core library desugaring) so that the DEX file containing all `j$` classes uses a new shortened class name format for synthetic classes. The new class name uses a numeric ID (for example, `$1`).
+AGP 9.0 configures L8 (core library desugaring) so that the DEX
+file containing all `j$` classes uses a new shortened class name format
+for synthetic classes. The new class name uses a numeric ID (for example, `$1`).
 
 ### Remove support for `-addconfigurationdebugging`
 
-AGP 9.0 removes support for `-addconfigurationdebugging`. The compiler now reports a warning if the flag is used.
+AGP 9.0 removes support for `-addconfigurationdebugging`. The compiler now
+reports a warning if the flag is used.
 
 ### Remove support for generating L8 rules from D8/R8
 
-This change is only relevant for developers using the D8/R8 command line or APIs directly.
+This change is only relevant for developers using the D8/R8 command line or
+APIs directly.
 
-R8 9.0 removes support for generating keep rules for L8 from D8 and R8. You should instead use `TraceReferences` for this purpose.
+R8 9.0 removes support for generating keep rules for L8 from D8 and R8.
+You should instead use `TraceReferences` for this purpose.
 
-More specifically, the methods `D8Command.builder.setDesugaredLibraryKeepRuleConsumer` and `R8Command.Builder.setDesugaredLibraryKeepRuleConsumer` are removed, and the support for `--desugared-lib-pg-conf-output` is removed from the command line options of D8 and R8.
+More specifically, the methods
+`D8Command.builder.setDesugaredLibraryKeepRuleConsumer` and
+`R8Command.Builder.setDesugaredLibraryKeepRuleConsumer` are removed, and the
+support for `--desugared-lib-pg-conf-output` is removed from the command line
+options of D8 and R8.
 
 ## Fixed issues
 

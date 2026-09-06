@@ -38,38 +38,48 @@ const { REFERENCES_DIR, INDEX_DIR } = PATHS;
 
 // ----------------------------- 索引加载 -----------------------------
 
-function _ensureIndex(): IndexMeta {
-  const { DOCS_PATH, INVERTED_PATH, META_PATH } = PATHS;
-  if (!fs.existsSync(DOCS_PATH) || !fs.existsSync(INVERTED_PATH) || !fs.existsSync(META_PATH)) {
-    console.error('[info] 索引不存在，开始构建...');
-    execFileSync(process.execPath, [path.join(__dirname, 'build_index.ts')], { stdio: 'inherit' });
-  }
-  const meta = JSON.parse(fs.readFileSync(META_PATH, 'utf-8')) as IndexMeta;
+function _rebuildIndex(): void {
+  execFileSync(process.execPath, [path.join(__dirname, 'build_index.ts')], { stdio: 'inherit' });
+}
 
-  // 简单的过期检测：与 references 目录最新技能文件 mtime 对比
+function _loadMeta(): IndexMeta {
+  return JSON.parse(fs.readFileSync(PATHS.META_PATH, 'utf-8')) as IndexMeta;
+}
+
+// 与 references 目录最新技能文件 mtime 对比，用于过期检测
+function _newestReferenceMtime(dir: string): number {
   let newest = 0;
-  const walk = (dir: string): void => {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.isFile() && PATHS.SKILL_FILES.has(entry.name)) {
-        try {
-          const m = fs.statSync(full).mtimeMs / 1000;
-          if (m > newest) newest = m;
-        } catch {
-          // ignore
-        }
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const m = _newestReferenceMtime(full);
+      if (m > newest) { newest = m; }
+    } else if (entry.isFile() && PATHS.SKILL_FILES.has(entry.name)) {
+      try {
+        const m = fs.statSync(full).mtimeMs / 1000;
+        if (m > newest) { newest = m; }
+      } catch {
+        // ignore
       }
     }
-  };
-  walk(REFERENCES_DIR);
+  }
+  return newest;
+}
 
+function _ensureIndex(): IndexMeta {
+  const { DOCS_PATH, INVERTED_PATH } = PATHS;
+  if (!fs.existsSync(DOCS_PATH) || !fs.existsSync(INVERTED_PATH) || !fs.existsSync(PATHS.META_PATH)) {
+    console.error('[info] 索引不存在，开始构建...');
+    _rebuildIndex();
+  }
+  const meta = _loadMeta();
+
+  const newest = _newestReferenceMtime(REFERENCES_DIR);
   if ((meta.built_at_epoch || 0) < newest - 1) {
     console.error('[info] 检测到文档更新，重建索引...');
-    execFileSync(process.execPath, [path.join(__dirname, 'build_index.ts')], { stdio: 'inherit' });
-    return JSON.parse(fs.readFileSync(META_PATH, 'utf-8')) as IndexMeta;
+    _rebuildIndex();
+    return _loadMeta();
   }
   return meta;
 }
@@ -93,11 +103,13 @@ function bm25Score(
 ): Map<number, number> {
   const nDocs = documents.length;
   const scores = new Map<number, number>();
-  if (queryTerms.length === 0) return scores;
+  if (queryTerms.length === 0) { return scores; }
 
   for (const term of queryTerms) {
     const postings = inverted[term];
-    if (!postings || postings.length === 0) continue;
+    if (!postings || postings.length === 0) {
+      continue;
+    }
     const df = postings.length / 2; // 扁平 [doc_id, tf, ...]
     const idf = Math.log(1 + (nDocs - df + 0.5) / (df + 0.5));
     for (let i = 0; i < postings.length; i += 2) {
@@ -114,6 +126,41 @@ function bm25Score(
 
 // ----------------------------- 摘要 -----------------------------
 
+// 去除 markdown 链接/图片/标记，简化展示
+function _cleanMarkdownBody(body0: string): string {
+  return body0
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/[`*_>#|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// 找最早出现的查询词位置，无匹配返回 -1
+function _findFirstQueryPosition(lowerBody: string, queryTerms: string[]): number {
+  let first = -1;
+  for (const q of queryTerms) {
+    if (!q) { continue; }
+    const idx = lowerBody.indexOf(q.toLowerCase());
+    if (idx >= 0 && (first < 0 || idx < first)) {
+      first = idx;
+    }
+  }
+  return first;
+}
+
+function _extractSnippetWindow(body: string, center: number, maxLen: number): string {
+  const half = Math.floor(maxLen / 2);
+  const start = Math.max(0, center - half);
+  const end = Math.min(body.length, center + half);
+  let snippet = body.slice(start, end);
+  if (start > 0) { snippet = '...' + snippet; }
+  if (end < body.length) {
+    snippet = snippet + '...';
+  }
+  return snippet;
+}
+
 function makeSnippet(relPath: string, queryTerms: string[], maxLen: number = 240): string {
   const absPath = path.join(REFERENCES_DIR, relPath);
   let content: string;
@@ -124,64 +171,51 @@ function makeSnippet(relPath: string, queryTerms: string[], maxLen: number = 240
   }
 
   const [, body0] = parseFrontmatter(content);
-  // 去除 markdown 链接/图片/标记，简化展示
-  let body = body0
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/[`*_>#|]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const body = _cleanMarkdownBody(body0);
+  if (!body) { return ''; }
 
-  if (!body) return '';
-
-  // 找最早出现的查询词位置
-  const lowerBody = body.toLowerCase();
-  const positions: number[] = [];
-  for (const q of queryTerms) {
-    if (!q) continue;
-    const idx = lowerBody.indexOf(q.toLowerCase());
-    if (idx >= 0) positions.push(idx);
-  }
-  if (positions.length === 0) {
+  const center = _findFirstQueryPosition(body.toLowerCase(), queryTerms);
+  if (center < 0) {
     return body.slice(0, maxLen) + (body.length > maxLen ? '...' : '');
   }
-
-  const center = Math.min(...positions);
-  const half = Math.floor(maxLen / 2);
-  const start = Math.max(0, center - half);
-  const end = Math.min(body.length, center + half);
-  let snippet = body.slice(start, end);
-  if (start > 0) snippet = '...' + snippet;
-  if (end < body.length) snippet = snippet + '...';
-  return snippet;
+  return _extractSnippetWindow(body, center, maxLen);
 }
 
 // ----------------------------- 输出 -----------------------------
 
 function _categoryShort(cat: string): string {
   const idx = cat.indexOf('(');
-  if (idx > 0) return cat.slice(0, idx).trim();
+  if (idx > 0) {
+    return cat.slice(0, idx).trim();
+  }
   return cat.slice(0, 20);
 }
 
 function _normalizeCategory(category: string): string {
   const catLower = category.toLowerCase().replace(/[\s\-_]/g, '');
   try {
-    for (const name of fs.readdirSync(REFERENCES_DIR)) {
-      const full = path.join(REFERENCES_DIR, name);
-      if (!fs.statSync(full).isDirectory()) continue;
-      // 完整匹配
-      if (name === category) return name;
-      // 英文名匹配（括号前部分）
-      const en = name.split('(')[0].trim();
-      if (en.toLowerCase().replace(/[\s\-_]/g, '') === catLower) return name;
-      // 中文匹配（括号内）
-      if (name.includes('(') && name.includes(')')) {
-        const cnMatch = name.slice(name.indexOf('(') + 1, name.indexOf(')'));
-        if (cnMatch && cnMatch.includes(category)) return name;
+    // Scan all subdirectories under REFERENCES_DIR (e.g., hmos-sdk-basic-skill/, and future dirs)
+    for (const sub of fs.readdirSync(REFERENCES_DIR)) {
+      const subPath = path.join(REFERENCES_DIR, sub);
+      if (!fs.statSync(subPath).isDirectory()) { continue; }
+      for (const name of fs.readdirSync(subPath)) {
+        const full = path.join(subPath, name);
+        if (!fs.statSync(full).isDirectory()) { continue; }
+        // 完整匹配
+        if (name === category) { return name; }
+        // 英文名匹配（括号前部分）
+        const en = name.split('(')[0].trim();
+        if (en.toLowerCase().replace(/[\s\-_]/g, '') === catLower) { return name; }
+        // 中文匹配（括号内）
+        if (name.includes('(') && name.includes(')')) {
+          const cnMatch = name.slice(name.indexOf('(') + 1, name.indexOf(')'));
+          if (cnMatch && cnMatch.includes(category)) { return name; }
+        }
+        // 英文名包含匹配
+        if (en.toLowerCase().replace(/[\s\-_]/g, '').includes(catLower)) {
+          return name;
+        }
       }
-      // 英文名包含匹配
-      if (en.toLowerCase().replace(/[\s\-_]/g, '').includes(catLower)) return name;
     }
   } catch {
     // ignore
@@ -213,11 +247,13 @@ function formatResults(
     const docPath = doc.path || '';
     const bc = doc.breadcrumb || '';
     lines.push(`[${rank + 1}] score=${score.toFixed(2)}  ${cat}  ${docPath}`);
-    if (title) lines.push(`    Title: ${title}`);
-    if (bc) lines.push(`    Breadcrumb: ${bc}`);
+    if (title) { lines.push(`    Title: ${title}`); }
+    if (bc) { lines.push(`    Breadcrumb: ${bc}`); }
     if (withSnippet) {
       const snip = makeSnippet(docPath, queryTerms);
-      if (snip) lines.push(`    Snippet: ${snip}`);
+      if (snip) {
+        lines.push(`    Snippet: ${snip}`);
+      }
     }
     lines.push('');
   }
@@ -244,7 +280,9 @@ function formatJson(
       category: doc.category || '',
       url: doc.url || '',
     };
-    if (withSnippet) item.snippet = makeSnippet(doc.path || '', queryTerms);
+    if (withSnippet) {
+      item.snippet = makeSnippet(doc.path || '', queryTerms);
+    }
     return item;
   });
   const payload = {
@@ -270,8 +308,15 @@ export function search(
   const avgdl = meta.avg_doc_length || 1.0;
   const queryTerms = tokenize(query);
 
+  // 检查 query term 的 df=0 占比，超过半数不存在说明结果基本是噪声
+  const uniqueTerms = [...new Set(queryTerms)];
+  const missingCount = uniqueTerms.filter(t => !inverted[t] || inverted[t].length === 0).length;
+  const missingRatio = uniqueTerms.length > 0 ? missingCount / uniqueTerms.length : 0;
+
   const t0 = Date.now();
-  const scores = bm25Score(queryTerms, inverted, documents, avgdl, meta.k1 || 1.5, meta.b || 0.75);
+  const scores = missingRatio > 0.5
+    ? new Map<number, number>()
+    : bm25Score(queryTerms, inverted, documents, avgdl, meta.k1 || 1.5, meta.b || 0.75);
   const elapsed = (Date.now() - t0) / 1000;
 
   // 按分类过滤
@@ -280,7 +325,9 @@ export function search(
     const normCat = _normalizeCategory(category);
     filteredScores = new Map<number, number>();
     for (const [did, s] of scores) {
-      if (documents[did].category === normCat) filteredScores.set(did, s);
+      if (documents[did].category === normCat) {
+        filteredScores.set(did, s);
+      }
     }
   }
 

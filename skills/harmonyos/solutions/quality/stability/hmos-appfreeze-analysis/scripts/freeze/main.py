@@ -31,30 +31,39 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from freeze.collector import collect_logs
 from freeze.faultlog import parse_freeze_log
-from freeze.report import render_report
+from freeze.report import SECTION_CHOICES, render_section
 
 
-def build_report(log_path: str) -> str:
+def build_report(log_path: str, section: str = 'full') -> str:
     """对外主接口：日志路径 -> 关键日志报告文本。"""
     collected = collect_logs(log_path)
     if not collected.faultlogs:
         raise ValueError(f'未在 {log_path} 中找到 appfreeze/sysfreeze faultlog 日志')
     target = collected.faultlogs[0]
     freeze = parse_freeze_log(target)
-    return render_report(freeze,
-                         sample_stacks=collected.sample_stacks,
-                         other_faultlogs=collected.faultlogs[1:])
+    return render_section(
+        freeze,
+        section=section,
+        sample_stacks=collected.sample_stacks,
+        other_faultlogs=collected.faultlogs[1:],
+    )
 
 
 def main():
     parser = argparse.ArgumentParser(description='appfreeze 关键日志提取')
     parser.add_argument('-p', '--path', required=True, help='faultlog文件或所在目录路径')
+    parser.add_argument(
+        '--section',
+        choices=SECTION_CHOICES,
+        default='full',
+        help='仅输出指定报告区段，默认输出 full 完整报告',
+    )
     args = parser.parse_args()
     # Windows 控制台默认编码可能不是 utf-8，避免中文输出报错
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     try:
-        print(build_report(args.path))
+        print(build_report(args.path, section=args.section))
     except Exception as err:
         print(f'关键日志提取失败：{err}', file=sys.stderr)
         sys.exit(1)

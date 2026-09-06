@@ -258,194 +258,12 @@ class NativeMemoryAnalyzer:
 
         return blocks
 
-    def _query_from_native_hook(self, event_type_filter: str = "") -> List[MemoryBlock]:
-        """从 native_hook 表查询"""
-        if event_type_filter:
-            sql = """
-                  SELECT callchain_id,
-                         ipid,
-                         itid,
-                         addr,
-                         heap_size,
-                         start_ts,
-                         end_ts,
-                         event_type,
-                         sub_type_id
-                  FROM native_hook
-                  WHERE end_ts = 0
-                    AND event_type = ?
-                  ORDER BY heap_size DESC \
-                  """
-            params = (event_type_filter,)
-        else:
-            sql = """
-                  SELECT callchain_id,
-                         ipid,
-                         itid,
-                         addr,
-                         heap_size,
-                         start_ts,
-                         end_ts,
-                         event_type,
-                         sub_type_id
-                  FROM native_hook
-                  WHERE end_ts = 0
-                  ORDER BY heap_size DESC \
-                  """
-            params = ()
-
-        self.cursor.execute(sql, params)
-
-        blocks = []
-        for row in self.cursor.fetchall():
-            block = MemoryBlock(
-                callchain_id=row[0],
-                pid=row[1],
-                tid=row[2],
-                addr=row[3],
-                mem_size=row[4],
-                timestamp=row[5],
-                end_timestamp=row[6],
-                event_type=row[7] if row[7] else "",
-                sub_type=str(row[8]) if row[8] is not None else ""
-            )
-            blocks.append(block)
-
-        return blocks
-
-    def _query_from_native_hook_statistic(self, event_type_filter: str = "") -> List[MemoryBlock]:
-        """从 native_hook_statistic 表查询
-
-        匹配原项目逻辑：按 callchain_id 和 type 分组聚合
-        """
-        type_filter = -1
-        if event_type_filter:
-            type_filter = EVENT_TYPE_TO_TYPE_ID.get(event_type_filter, -1)
-
-        if type_filter >= 0:
-            # 按 type 过滤，且只查询 Create & Existing (apply_size > release_size)
-            # 使用 GROUP BY callchain_id, type 分组，与原项目逻辑一致
-            sql = """
-                  SELECT callchain_id, ipid, MAX(apply_size), MAX(release_size), type, sub_type_id
-                  FROM native_hook_statistic
-                  WHERE type = ?
-                    AND apply_size > release_size
-                  GROUP BY callchain_id, type
-                  ORDER BY (MAX(apply_size) - MAX(release_size)) DESC \
-                  """
-            params = (type_filter,)
-        else:
-            # 没有指定类型过滤时，查询所有 Create & Existing
-            # 按 callchain_id 和 type 分组聚合
-            sql = """
-                  SELECT callchain_id, ipid, MAX(apply_size), MAX(release_size), type, sub_type_id
-                  FROM native_hook_statistic
-                  WHERE apply_size > release_size
-                  GROUP BY callchain_id, type
-                  ORDER BY (MAX(apply_size) - MAX(release_size)) DESC \
-                  """
-            params = ()
-
-        self.cursor.execute(sql, params)
-
-        blocks = []
-        type_id_to_name = {v: k for k, v in EVENT_TYPE_TO_TYPE_ID.items()}
-
-        for row in self.cursor.fetchall():
-            # 使用 MAX(apply_size) - MAX(release_size) 作为未释放的内存大小
-            block = MemoryBlock(
-                callchain_id=row[0],
-                pid=row[1],
-                mem_size=row[2] - row[3],  # MAX(apply_size) - MAX(release_size)
-                event_type=type_id_to_name.get(row[4], "unknown"),
-                sub_type=str(row[5]) if row[5] is not None else ""
-            )
-            block.end_timestamp = 0
-            blocks.append(block)
-
-        return blocks
-
     def query_memory_blocks_by_sizes(self, sizes: List[int], event_type_filter: str = "") -> List[MemoryBlock]:
         """根据内存块大小查询"""
         if not sizes:
             return []
-
-        size_placeholders = ",".join(["?" for _ in sizes])
-        blocks = []
-
-        # 优先尝试 native_hook 表
-        if event_type_filter:
-            sql = f"""
-                SELECT callchain_id, ipid, itid, addr, heap_size, start_ts, end_ts, event_type, sub_type_id
-                FROM native_hook
-                WHERE heap_size IN ({size_placeholders}) AND end_ts = 0 AND event_type = ?
-                ORDER BY heap_size DESC
-            """
-            params = tuple(sizes) + (event_type_filter,)
-        else:
-            sql = f"""
-                SELECT callchain_id, ipid, itid, addr, heap_size, start_ts, end_ts, event_type, sub_type_id
-                FROM native_hook
-                WHERE heap_size IN ({size_placeholders}) AND end_ts = 0
-                ORDER BY heap_size DESC
-            """
-            params = tuple(sizes)
-
-        self.cursor.execute(sql, params)
-
-        for row in self.cursor.fetchall():
-            block = MemoryBlock(
-                callchain_id=row[0],
-                pid=row[1],
-                tid=row[2],
-                addr=row[3],
-                mem_size=row[4],
-                timestamp=row[5],
-                end_timestamp=row[6],
-                event_type=row[7] if row[7] else "",
-                sub_type=str(row[8]) if row[8] is not None else ""
-            )
-            blocks.append(block)
-
-        # 如果 native_hook 表没有数据，尝试 native_hook_statistic 表
-        if not blocks:
-            type_filter = -1
-            if event_type_filter:
-                type_filter = EVENT_TYPE_TO_TYPE_ID.get(event_type_filter, -1)
-
-            if type_filter >= 0:
-                sql = f"""
-                    SELECT callchain_id, ipid, apply_size, type, sub_type_id
-                    FROM native_hook_statistic
-                    WHERE apply_size IN ({size_placeholders}) AND type = ? AND apply_size > release_size
-                    ORDER BY apply_size DESC
-                """
-                params = tuple(sizes) + (type_filter,)
-            else:
-                sql = f"""
-                    SELECT callchain_id, ipid, apply_size, type, sub_type_id
-                    FROM native_hook_statistic
-                    WHERE apply_size IN ({size_placeholders}) AND apply_size > release_size
-                    ORDER BY apply_size DESC
-                """
-                params = tuple(sizes)
-
-            self.cursor.execute(sql, params)
-
-            type_id_to_name = {v: k for k, v in EVENT_TYPE_TO_TYPE_ID.items()}
-
-            for row in self.cursor.fetchall():
-                block = MemoryBlock(
-                    callchain_id=row[0],
-                    pid=row[1],
-                    mem_size=row[2],
-                    event_type=type_id_to_name.get(row[3], "unknown"),
-                    sub_type=str(row[4]) if row[4] is not None else ""
-                )
-                block.end_timestamp = 0
-                blocks.append(block)
-
-        return blocks
+        blocks = self._query_native_hook_by_sizes(sizes, event_type_filter)
+        return blocks or self._query_statistic_by_sizes(sizes, event_type_filter)
 
     def generate_stack_key(self, frames: List[StackFrame], tid: int) -> str:
         """生成堆栈的唯一键（用于分组）"""
@@ -533,18 +351,7 @@ class NativeMemoryAnalyzer:
 
     def analyze(self, query_sizes: List[int] = None, leak_type: str = "",
                 min_percentage: float = 5.0, max_results: int = 5) -> Dict:
-        """
-        执行分析
-
-        Args:
-            query_sizes: 要查询的内存块大小列表（如果为 None，则查询所有）
-            leak_type: 泄露类型（如 "js_heap", "arkts_heap" 等）
-            min_percentage: 最小百分比阈值
-            max_results: 最大返回结果数
-
-        Returns:
-            分析结果字典
-        """
+        """执行内存块聚合分析。"""
         # 获取 event_type 过滤值
         event_type_filter = LEAK_TYPE_TO_EVENT_TYPE.get(leak_type, "")
 
@@ -586,28 +393,11 @@ class NativeMemoryAnalyzer:
         # 限制结果数量
         stats = stats[:max_results]
 
-        # 构建结果
-        results = []
-        for stat in stats:
-            stack_str = self.format_stack_string(stat.frames)
-            mem_blocks = ",".join(str(s) for s in stat.memory_sizes)
-            results.append({
-                "callchain_id": stat.callchain_id,
-                "tid": stat.tid,
-                "total_size": stat.total_size,
-                "percentage": stat.percentage,
-                "hit_count": stat.hit_count,
-                "is_js_stack": "JS" if stat.is_js_stack else "Native",
-                "stack": stack_str,
-                "memory_blocks": mem_blocks,
-                "frames": stat.frames
-            })
-
         return {
             "success": True,
             "total_memory": total_memory,
             "total_allocations": total_allocations,
-            "results": results
+            "results": self._serialize_stats(stats)
         }
 
     def format_stack_string(self, frames: List[StackFrame]) -> str:
@@ -629,6 +419,147 @@ class NativeMemoryAnalyzer:
 
         return " <- ".join(stack_parts)
 
+    def _query_from_native_hook(self, event_type_filter: str = "") -> List[MemoryBlock]:
+        """从 native_hook 表查询"""
+        sql, params = self._native_hook_query(event_type_filter)
+        self.cursor.execute(sql, params)
+        return self._native_rows_to_blocks(self.cursor.fetchall())
+
+    def _query_from_native_hook_statistic(self, event_type_filter: str = "") -> List[MemoryBlock]:
+        """从 native_hook_statistic 表查询
+
+        匹配原项目逻辑：按 callchain_id 和 type 分组聚合
+        """
+        type_filter = -1
+        if event_type_filter:
+            type_filter = EVENT_TYPE_TO_TYPE_ID.get(event_type_filter, -1)
+
+        if type_filter >= 0:
+            # 按 type 过滤，且只查询 Create & Existing (apply_size > release_size)
+            # 使用 GROUP BY callchain_id, type 分组，与原项目逻辑一致
+            sql = """
+                  SELECT callchain_id, ipid, MAX(apply_size), MAX(release_size), type, sub_type_id
+                  FROM native_hook_statistic
+                  WHERE type = ?
+                    AND apply_size > release_size
+                  GROUP BY callchain_id, type
+                  ORDER BY (MAX(apply_size) - MAX(release_size)) DESC \
+                  """
+            params = (type_filter,)
+        else:
+            # 没有指定类型过滤时，查询所有 Create & Existing
+            # 按 callchain_id 和 type 分组聚合
+            sql = """
+                  SELECT callchain_id, ipid, MAX(apply_size), MAX(release_size), type, sub_type_id
+                  FROM native_hook_statistic
+                  WHERE apply_size > release_size
+                  GROUP BY callchain_id, type
+                  ORDER BY (MAX(apply_size) - MAX(release_size)) DESC \
+                  """
+            params = ()
+
+        self.cursor.execute(sql, params)
+
+        blocks = []
+        type_id_to_name = {v: k for k, v in EVENT_TYPE_TO_TYPE_ID.items()}
+
+        for row in self.cursor.fetchall():
+            # 使用 MAX(apply_size) - MAX(release_size) 作为未释放的内存大小
+            block = MemoryBlock(
+                callchain_id=row[0],
+                pid=row[1],
+                mem_size=row[2] - row[3],  # MAX(apply_size) - MAX(release_size)
+                event_type=type_id_to_name.get(row[4], "unknown"),
+                sub_type=str(row[5]) if row[5] is not None else ""
+            )
+            block.end_timestamp = 0
+            blocks.append(block)
+
+        return blocks
+
+    def _native_hook_query(self, event_type_filter: str):
+        fields = "callchain_id, ipid, itid, addr, heap_size, start_ts, end_ts, event_type, sub_type_id"
+        if event_type_filter:
+            sql = f"""
+                SELECT {fields}
+                FROM native_hook
+                WHERE end_ts = 0 AND event_type = ?
+                ORDER BY heap_size DESC
+            """
+            return sql, (event_type_filter,)
+        sql = f"""
+            SELECT {fields}
+            FROM native_hook
+            WHERE end_ts = 0
+            ORDER BY heap_size DESC
+        """
+        return sql, ()
+
+    def _native_rows_to_blocks(self, rows) -> List[MemoryBlock]:
+        return [
+            MemoryBlock(
+                callchain_id=row[0], pid=row[1], tid=row[2], addr=row[3],
+                mem_size=row[4], timestamp=row[5], end_timestamp=row[6],
+                event_type=row[7] if row[7] else "",
+                sub_type=str(row[8]) if row[8] is not None else "",
+            )
+            for row in rows
+        ]
+
+    def _query_native_hook_by_sizes(self, sizes, event_type_filter):
+        placeholders = ",".join("?" for _ in sizes)
+        fields = "callchain_id, ipid, itid, addr, heap_size, start_ts, end_ts, event_type, sub_type_id"
+        type_clause = " AND event_type = ?" if event_type_filter else ""
+        sql = f"""
+            SELECT {fields} FROM native_hook
+            WHERE heap_size IN ({placeholders}) AND end_ts = 0{type_clause}
+            ORDER BY heap_size DESC
+        """
+        params = tuple(sizes) + ((event_type_filter,) if event_type_filter else ())
+        self.cursor.execute(sql, params)
+        return self._native_rows_to_blocks(self.cursor.fetchall())
+
+    def _query_statistic_by_sizes(self, sizes, event_type_filter):
+        placeholders = ",".join("?" for _ in sizes)
+        type_filter = EVENT_TYPE_TO_TYPE_ID.get(event_type_filter, -1) if event_type_filter else -1
+        type_clause = " AND type = ?" if type_filter >= 0 else ""
+        sql = f"""
+            SELECT callchain_id, ipid, apply_size, type, sub_type_id
+            FROM native_hook_statistic
+            WHERE apply_size IN ({placeholders}) AND apply_size > release_size{type_clause}
+            ORDER BY apply_size DESC
+        """
+        params = tuple(sizes) + ((type_filter,) if type_filter >= 0 else ())
+        self.cursor.execute(sql, params)
+        return self._statistic_rows_to_blocks(self.cursor.fetchall())
+
+    def _statistic_rows_to_blocks(self, rows) -> List[MemoryBlock]:
+        type_names = {value: key for key, value in EVENT_TYPE_TO_TYPE_ID.items()}
+        blocks = []
+        for row in rows:
+            block = MemoryBlock(
+                callchain_id=row[0], pid=row[1], mem_size=row[2],
+                event_type=type_names.get(row[3], "unknown"),
+                sub_type=str(row[4]) if row[4] is not None else "",
+            )
+            block.end_timestamp = 0
+            blocks.append(block)
+        return blocks
+
+    def _serialize_stats(self, stats) -> List[Dict]:
+        return [
+            {
+                "callchain_id": stat.callchain_id, "tid": stat.tid,
+                "total_size": stat.total_size, "percentage": stat.percentage,
+                "hit_count": stat.hit_count,
+                "is_js_stack": "JS" if stat.is_js_stack else "Native",
+                "stack": self.format_stack_string(stat.frames),
+                "memory_blocks": ",".join(str(size) for size in stat.memory_sizes),
+                "frames": stat.frames,
+            }
+            for stat in stats
+        ]
+
 
 def format_stack_trace(frames):
     """格式化堆栈为字符串"""
@@ -649,76 +580,77 @@ def format_stack_trace(frames):
     return "\n".join(stack_parts) + "\n"
 
 
-def main():
+def _parse_arguments():
     parser = argparse.ArgumentParser(description="Native Memory Leak Analyzer (Python)")
     parser.add_argument("database", help="SQLite database path")
     parser.add_argument("-s", "--sizes", nargs="+", type=int, help="Memory block sizes to query")
     parser.add_argument("-t", "--type", default="", help="Leak type (js_heap, arkts_heap, malloc, mmap, etc.)")
     parser.add_argument("--min-percentage", type=float, default=5.0, help="Minimum percentage threshold (default: 5.0)")
     parser.add_argument("--max-results", type=int, default=5, help="Maximum number of results (default: 5)")
+    return parser.parse_args()
 
-    args = parser.parse_args()
-    profiler_path = args.database
-    if profiler_path.lower().endswith(".txt"):
-        db_path = os.path.splitext(profiler_path)[0] + ".db"
-        script_dir = os.path.abspath(os.path.dirname(__file__))
-        current_os = platform.system()
-        if current_os == "Windows":
-            streamer_name = "trace_streamer_windows.exe"
-        elif current_os == "Linux":
-            streamer_name = "trace_streamer_linux"
-        else:
-            streamer_name = "trace_streamer_mac"
-        streamer_path = os.path.join(script_dir, streamer_name)
-        if not os.path.isfile(streamer_path):
-            print(f"Error: trace_streamer not found: {streamer_path}")
-            sys.exit(1)
-        result = subprocess.run(
-            [streamer_path, profiler_path, "-e", db_path],
-            text=True,
-            capture_output=True
+
+def _prepare_database(profiler_path: str) -> str:
+    if not profiler_path.lower().endswith(".txt"):
+        return profiler_path
+    db_path = os.path.splitext(profiler_path)[0] + ".db"
+    streamer_names = {
+        "Windows": "trace_streamer_windows.exe",
+        "Linux": "trace_streamer_linux",
+    }
+    streamer_name = streamer_names.get(platform.system(), "trace_streamer_mac")
+    streamer_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), streamer_name)
+    if not os.path.isfile(streamer_path):
+        raise RuntimeError(f"trace_streamer not found: {streamer_path}")
+    result = subprocess.run(
+        [streamer_path, profiler_path, "-e", db_path], text=True, capture_output=True
+    )
+    if result.returncode != 0:
+        detail = f": {result.stderr.strip()}" if result.stderr else ""
+        raise RuntimeError(f"database parse failed{detail}")
+    return db_path
+
+
+def _print_analysis_result(result):
+    print(f"Total Sample Memory: {result['total_memory']} bytes\n")
+    for index, item in enumerate(result["results"], 1):
+        print(f"---- #{index} ---")
+        print(
+            f"  Memory: {item['total_size']} bytes,{item['percentage']:.2f}%, "
+            f"Count: {item['hit_count']}, Type: {item['is_js_stack']}"
         )
-        if result.returncode != 0:
-            print("Error: database parse failed")
-            if result.stderr:
-                print(result.stderr.strip())
-            sys.exit(result.returncode)
-    else:
-        db_path = profiler_path
-    analyzer = NativeMemoryAnalyzer(db_path)
+        print(f"Block: {item['memory_blocks'].split(',')[0]} bytes")
+        print(format_stack_trace(item.get('frames', [])))
 
+
+def main() -> int:
+    args = _parse_arguments()
+    try:
+        db_path = _prepare_database(args.database)
+    except RuntimeError as error:
+        print(f"Error: {error}")
+        return 1
+    analyzer = NativeMemoryAnalyzer(db_path)
     try:
         analyzer.connect()
         analyzer.load_data_dict()
-
         result = analyzer.analyze(
             query_sizes=args.sizes,
             leak_type=args.type,
             min_percentage=args.min_percentage,
-            max_results=args.max_results
+            max_results=args.max_results,
         )
-
         if not result["success"]:
             print(f"Error: {result['message']}")
-            sys.exit(1)
-
-        print(f"Total Sample Memory: {result['total_memory']} bytes\n")
-
-        for i, item in enumerate(result["results"], 1):
-            print(f"---- #{i} ---")
-            print(f"  Memory: {item['total_size']} bytes,"
-                  f"{item['percentage']:.2f}%, "
-                  f"Count: {item['hit_count']}, "
-                  f"Type: {item['is_js_stack']}")
-            print(f"Block: {item['memory_blocks'].split(',')[0]} bytes")
-            print(format_stack_trace(item.get('frames', [])))
-
-    except Exception as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+            return 1
+        _print_analysis_result(result)
+        return 0
+    except Exception as error:
+        print(f"Error: {error}")
+        return 1
     finally:
         analyzer.close()
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

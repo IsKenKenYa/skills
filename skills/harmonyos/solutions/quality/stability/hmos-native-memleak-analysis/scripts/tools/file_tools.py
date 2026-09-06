@@ -14,14 +14,18 @@
 import os
 
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from tools.logger_manager import LogManager
 
 logger = LogManager.create_logger()
 
 
-def read_file_to_list(file_path: Path, encoding='utf-8', read_lines: int = None) -> List[str]:
+def read_file_to_list(
+        file_path: Path,
+        encoding='utf-8',
+        read_lines: int = None,
+        warnings: Optional[List[str]] = None) -> List[str]:
     """
     将文件内容读取为列表
     :param file_path:str 读取的文件路径
@@ -29,16 +33,24 @@ def read_file_to_list(file_path: Path, encoding='utf-8', read_lines: int = None)
     :param read_lines:int 编码方式，默认为utf-8
     :return list 文件内容
     """
-    context = []
     if not os.path.exists(file_path):
         return []
-    if read_lines:
-        with open(file_path, 'r', encoding=encoding, errors='ignore') as file:
-            for index, line in enumerate(file):
-                if index >= read_lines:
-                    break
-                context.append(line)
-    else:
-        with open(file_path, 'r', encoding=encoding, errors='ignore') as file:
-            context = file.readlines()
+    raw_data = Path(file_path).read_bytes()
+    decode_encoding = 'utf-8-sig' if encoding.lower().replace('_', '-') == 'utf-8' else encoding
+    try:
+        text = raw_data.decode(decode_encoding)
+    except UnicodeDecodeError:
+        text = raw_data.decode(decode_encoding, errors='replace')
+        replacement_count = text.count('\ufffd')
+        warning = (
+            f'文件包含 {replacement_count} 处无法按 {encoding} 解码的字节，'
+            '已用替换字符保留其余结构；受影响的文本字段可能不完整。'
+        )
+        if warnings is not None:
+            warnings.append(warning)
+        else:
+            logger.warning(warning)
+    context = text.splitlines(keepends=True)
+    if read_lines is not None:
+        return context[:read_lines]
     return context

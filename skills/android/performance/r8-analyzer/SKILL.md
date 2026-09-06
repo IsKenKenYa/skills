@@ -1,13 +1,13 @@
 ---
 name: r8-analyzer
-description: 分析 Android 构建文件和 R8 keep 规则，识别冗余、过宽的包级规则，以及吞没了库消费者 keep 规则的规则。当开发者想优化应用体积、移除冗余或过宽的 keep 规则，或排查 Proguard 配置时使用。
+description: Analyzes Android build files and R8 keep rules to identify redundancies,
   broad package-wide rules, and rules that subsume library consumer keep rules. Use
   when developers want to optimize their app's size, remove redundant or overly broad
   keep rules, or troubleshoot Proguard configurations.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-06'
+  last-updated: '2026-08-15'
   keywords:
   - R8
   - proguard
@@ -25,7 +25,8 @@ metadata:
 
 ## Step 2. Analysis path selection
 
-- Inspect `build.gradle`, `build.gradle.kts`, and `gradle.properties` and `libs.versions.toml` to get the AGP and R8 versions.
+- Inspect `build.gradle`, `build.gradle.kts`, and `gradle.properties` and
+  `libs.versions.toml` to get the AGP and R8 versions.
 
 - **If AGP \>= 9.3.0** : Proceed to **Path A (Standalone Task)**.
 

@@ -96,6 +96,22 @@ For more Kits (Location Kit, Share Kit, Device Security Kit, etc.), see `hmos-sd
 
 ### Step 3: Retrieve and Read
 
+> **CRITICAL — Pre-search Kit verification**: Before running `search.ts`, you MUST verify that the user's query relates to one of the 25 supported Kits listed in the table above (lines 17-43). If the user mentions a Kit name that is NOT in that table, DO NOT run the search — it will return irrelevant noise results. Instead, inform the user that this Kit is not in the current documentation corpus and suggest checking the supported Kit list.
+
+**Verification rules**:
+
+1. **User mentions a Kit name** (e.g., "SpeechKit", "AudioKit", "MediaKit") → Check the Kit table (lines 17-43). If the Kit is NOT listed, stop and inform the user. Do NOT search.
+2. **User mentions an API/class name** (e.g., "AICaptionController", "PhotoViewPicker") → You may run the search, but if the results are irrelevant or scores are low, inform the user that this API may not have dedicated documentation in the corpus.
+3. **User describes a feature/need** (e.g., "怎么扫码", "蓝牙连接") → Proceed with search, the BM25 retrieval will find relevant docs.
+
+**Precedence**: Rule 1 takes precedence over rule 2. If an API/class name can be attributed to a Kit that is NOT in the 25-Kit table (e.g., `AICaptionController` → SpeechKit, `AudioRenderer` → AudioKit), treat it per rule 1 — stop and inform the user, do NOT search. Rule 2 only applies when you cannot determine which Kit the API belongs to.
+
+**Examples**:
+- ✅ "Account Kit 一键登录" → Account Kit is in the 25 Kits → proceed to search
+- ✅ "蓝牙扫描" → describes a feature → proceed to search
+- ❌ "SpeechKit 字幕" → SpeechKit is NOT in the 25 Kits → **do NOT search**, inform user
+- ❌ "AICaptionController" → not a known Kit API → search may return noise, inform user if results are irrelevant
+
 Use the built-in **BM25 retrieval tool** to precisely locate the Top N most relevant documents across all skill definition files (339), then read the full text to provide a comprehensive answer.
 
 #### Tool Locations
@@ -108,18 +124,22 @@ Use the built-in **BM25 retrieval tool** to precisely locate the Top N most rele
 
 ```bash
 # Keyword retrieval (recommended)
-node scripts/search.ts "蓝牙连接" --top 8 --snippet
-
-# Exact API name/class name matching
-node scripts/search.ts "AVPlayer setURL" --top 5 --snippet
+node scripts/search.ts "蓝牙连接" --category "Connectivity Kit" --top 8 --snippet
 
 # Filter by Kit category (supports full name/English short name/Chinese)
 node scripts/search.ts "AAID" --category "push" --top 5
 node scripts/search.ts "Token" --category "Push Kit" --top 5
 node scripts/search.ts "推送" --category "推送服务" --top 5
 
+# Exact API name/class name matching
+node scripts/search.ts "liveViewManager startLiveView" --category "Live View Kit"  --top 5 --snippet
+
+
 # Machine-readable JSON output
-node scripts/search.ts "音频播放" --top 5 --json
+node scripts/search.ts "自定义界面扫码" --category "Scan Kit" --top 5 --json
+
+# Without --category (only if you don't know which Kit — strongly recommended to include it)
+node scripts/search.ts "启动WiFi扫描" --top 5 --json
 ```
 
 > **First run**: If the index does not exist, `search.ts` will automatically call `build_index.ts` to build it (about 2 seconds). If updates to `hmos-sdk-basic-skill/` are detected, it will also rebuild automatically. Queries typically return in under 1ms (after index loading), with no model dependencies.

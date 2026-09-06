@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-skills:
@@ -100,11 +101,27 @@ jobs:
               f.write('\n')
           "
 
-      - name: Commit and push changes
+      - name: Commit and push to PR branch
         run: |
+          BRANCH="update-skills/$(date +'%Y-%m-%d-%H%M')"
+
           git config user.name "android-devrel-github-bot"
           git config user.email "android-devrel-github-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add -A
-          # The '|| true' ensures the workflow doesn't fail if there's nothing new
-          git commit -m "Updates skills ($(date +'%Y-%m-%d %H:%M'))" || echo "No changes to commit"
-          git push origin main
+
+          # The workflow doesn't fail if there's nothing new to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit — skipping PR creation."
+            exit 0
+          fi
+
+          git commit -m "Updates skills ($(date +'%Y-%m-%d %H:%M'))"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "Update skills ($(date +'%Y-%m-%d %H:%M'))" \
+            --body "Automated skill update from the \`Update Skills\` workflow. Please review the changes before merging." \
+            --base main \
+            --head "$BRANCH"
+        env:
+          GH_TOKEN: ${{ secrets.ADR_GITHUB_BOT_PAT }}

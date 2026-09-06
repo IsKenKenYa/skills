@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import abc
-import traceback
 from abc import ABC
 from typing import List
 
@@ -30,6 +29,7 @@ class FormatUnitHandler(ABC):
         self.logger = LogManager.create_logger()
         self.sub_context: List[str] = []
         self.is_build_fail = False
+        self.build_error = ''
 
     @abc.abstractmethod
     def log_split(self, context: List[str]):
@@ -52,11 +52,14 @@ class FormatUnitHandler(ABC):
         return self
 
     def current_handle(self, context: List[str]):
+        self.is_build_fail = False
+        self.build_error = ''
         try:
             self.build(context)
         except Exception as err:
-            self.logger.error(f'构建成员变量失败，{err}')
-            traceback.print_exc()
+            self.is_build_fail = True
+            self.build_error = f'{type(err).__name__}: {err}'
+            self.logger.error(f'构建成员变量失败：{self.build_error}')
         self.sub_context = []
 
     def next_handle(self, handle: 'FormatUnitHandler'):

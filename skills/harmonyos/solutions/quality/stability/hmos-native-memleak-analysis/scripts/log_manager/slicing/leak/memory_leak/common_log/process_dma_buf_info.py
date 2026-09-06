@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import re
+"""Compatibility view of per-process DMA buffer records."""
+
 from typing import List
 
 from log_manager.common.handler.format_unit_handler import FormatUnitHandler
+from log_manager.slicing.leak.memory_leak.mem_check_base import DmaHeapInfo
 
 
 class ProcessDmaBuf(FormatUnitHandler):
@@ -22,45 +24,34 @@ class ProcessDmaBuf(FormatUnitHandler):
     def __init__(self):
         super().__init__()
         self.process_dma_buf_info_list: List[ProcessDmaBufInfo] = []
-
-    def log_format(self):
-        dma_buf_dict = {'process': 'process_name',
-                        'pid': 'pid',
-                        'fd': 'fd',
-                        'size_bytes': 'size_bytes',
-                        'ino': 'ino',
-                        'exp_pid': 'exp_pid',
-                        'exp_task_comm': 'exp_task_comm',
-                        'buf_name': 'buf_name',
-                        'exp_name': 'exp_name',
-                        'buf_type': 'buf_type'
-                        }
-        member_str_list = re.split(r'Size\s+Rss\s+Pss\s+Clean]\s+', self.sub_context[0].strip())
-        member_index_dict = dict()
-        for index, member_str in enumerate(member_str_list):
-            if member_str in dma_buf_dict.keys():
-                member_index_dict[dma_buf_dict[member_str]] = index
-        for line in self.sub_context[1:]:
-            member_list = line.strip().split()
-            if 'Total' in member_list:
-                continue
-            for member in member_index_dict.keys():
-                process_dma_buf_info = ProcessDmaBufInfo()
-                index = member_index_dict[member]
-                exec(f'process_dma_buf_info.{member} = {member_list[index]}')
-                self.process_dma_buf_info_list.append(process_dma_buf_info)
+        self.warnings = []
 
     def log_split(self, context: List[str]):
-        start_index = 0
-        end_index = 0
-        for index, line in enumerate(context):
-            if "LOGGER_PROCESS_DMABUF_INFO" in line:
-                start_index = index
-            if re.search(r'\*+', line):
-                end_index = index
-        if start_index >= end_index:
-            return
-        self.sub_context = context[start_index:end_index]
+        # DmaHeapInfo already performs marker/header discovery for both 5.x and
+        # 6.x formats. Keep the full context so both parsers share one schema.
+        self.sub_context = context
+
+    def log_format(self):
+        self.process_dma_buf_info_list = []
+        dma_heap_info = DmaHeapInfo()
+        dma_heap_info.dma_build(self.sub_context)
+        self.warnings = list(dma_heap_info.warnings)
+        for heap in dma_heap_info.dma_heap_list:
+            info = ProcessDmaBufInfo()
+            info.process_name = heap.process_name
+            info.pid = heap.pid
+            info.fd = heap.fd
+            info.size_bytes = getattr(heap, 'raw_size', '') or heap.size
+            info.ino = heap.magic
+            info.exp_pid = heap.exp_pid
+            info.exp_task_comm = heap.exp_task_comm
+            info.buf_name = heap.buf_name
+            info.exp_name = heap.exp_name
+            info.buf_type = heap.buf_type
+            info.can_reclaim = heap.can_reclaim
+            info.is_reclaim = heap.is_reclaim
+            info.leak_type = heap.leak_type
+            self.process_dma_buf_info_list.append(info)
 
 
 class ProcessDmaBufInfo:
@@ -75,9 +66,10 @@ class ProcessDmaBufInfo:
         self.exp_task_comm = ''
         self.buf_name = ''
         self.exp_name = ''
-        self.can_reclaim = False
-        self.is_reclaim = False
+        self.can_reclaim = ''
+        self.is_reclaim = ''
         self.buf_type = ''
+        self.leak_type = ''
 
     def build(self):
         pass

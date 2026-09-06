@@ -74,7 +74,7 @@ Main handler dump end time: 2026-03-21 11:11:31.955
 
 ---
 
-## 三、napi栈浅
+## 三、NAPI 崩溃栈顶定界
 
 ### 前置
 
@@ -83,19 +83,39 @@ cppcrash 堆栈
 ### 规则
 
 ```
-Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x006b8bcb86ab7b1b 
+Process name:com.paf.uiwidget
+Process life time:58s
+Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x000000006c6c6143
 Fault thread info:
-Tid:25311, Name:ch.AlipayGwatch
-#00 pc 0000000000071a58 /system/lib64/platformsdk/libace_napi.z.so(napi_get_reference_value+48)(6c2bb24db25e36618ac0e59887fd684a)
-#01 pc 0000000000020b40 /system/lib64/platformsdk/libbt_napi_common.z.so(OHOS::Bluetooth::(anonymous namespace)::NapiCallFunction(napi_env__*, napi_ref__*, napi_value__**, unsigned long)+64)(e15bce1f11392119636fdc6a6a55fdd3)
-#02 pc 0000000000021044 /system/lib64/platformsdk/libbt_napi_common.z.so(OHOS::Bluetooth::NapiCallback::CallFunction(std::__h::shared_ptr<OHOS::Bluetooth::NapiNativeObject> const&)+156)(e15bce1f11392119636fdc6a6a55fdd3)
+Tid:60380, Name:om.paf.uiwidget
+#00 pc 0000000000060de8 /system/lib64/platformsdk/libace_napi.z.so(napi_reject_deferred+104)(998b53857197a096e5ad930f65e67856)
+#01 pc 0000000000072548 /system/lib64/module/libnotificationmanager.z.so(OHOS::NotificationNapi::Common::SetPromise(napi_env__* const&, napi_deferred__* const&, int const&, napi_value__* const&, bool)+176)(d967432384822e5e199d795e3b8be539)
+#02 pc 000000000008d6e8 /system/lib64/module/libnotificationmanager.z.so(OHOS::NotificationNapi::NapiAsyncCompleteCallbackOpenSettings(napi_env__*, void*) (.cfi)+216)(d967432384822e5e199d795e3b8be539)
+#03 pc 000000000008f118 /system/lib64/module/libnotificationmanager.z.so(OHOS::NotificationNapi::ProcessStatusChanged(int)::$_3::__invoke(uv_work_s*, int) (.cfi)+184)(d967432384822e5e199d795e3b8be539)
 ```
 
-1. 日志中栈顶的napi so，01帧是调用napi接口的业务方，这种情况很大原因是因为调用napi接口的so函数传参非法导致，需要跳过libark_jsruntime.so和libace_napi.z.so找下一帧so分析
+满足以下任一栈结构时，将 NAPI 使用方作为首个分析对象：
+
+1. 直接崩溃在 `libace_napi.z.so` 栈顶，连续 NAPI 栈不超过 3 帧。
+2. 通过 `libace_napi.z.so` 调用到 `libark_jsruntime.so`，崩溃栈顶位于
+   `libark_jsruntime.so`，且两个库的连续栈帧总数不超过 3 帧。
+
+跳过 `libark_jsruntime.so` 和 `libace_napi.z.so` 后的第一帧为 NAPI
+调用方，需要优先检查该调用点的入参、对象生命周期和线程归属。该规则用于确定首个
+分析对象，不能仅凭浅栈直接认定具体根因。
 
 ### 结论
 
-一般堆栈中napi的调用不超过3帧，这种情况很大原因是因为调用napi接口的那个so函数传参非法导致，需要跳过libark_jsruntime.so和libace_napi.z.so找下一帧so分析
+优先从以下两类问题检查：
+
+1. `env` 入参非法：`env` 被保存后在释放后继续使用、跨线程使用 `env`，或
+   `env` 指针及其指向的内存被篡改。
+2. NAPI 对象入参非法：`napi_value` 已超出 scope，
+   `napi_ref`、`napi_async_work`、`napi_threadsafe_function` 等对象释放后
+   继续使用、跨线程使用 NAPI 对象，或相关内存被踩写。
+
+只有日志、代码或检测工具能够证明具体生命周期、线程或内存破坏行为时，才能将其作为
+最终根因；否则输出 NAPI 调用方及待核查方向。
 
 ---
 
@@ -108,7 +128,7 @@ cppcrash 堆栈
 ### 规则
 
 ```
-Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x0000005c763042a8 
+Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x0000005c763042a8
 Fault thread info:
 Tid:53731, Name:ei.hmsapp.music
 #00 pc 00000000000a90f0 /system/lib/ld-musl-aarch64.so.1(__find_sym+248)(8a5c9ab8c1168e5eba0b24ddb34e1090)
@@ -166,7 +186,7 @@ cppcrash 堆栈
 
 规则1：
 ```
-Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x0000002cc5800008 
+Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x0000002cc5800008
 Fault thread info:
 Tid:32189, Name:OS_GC_Thread
 #00 pc 000000000052bd58 /system/lib64/platformsdk/libark_jsruntime.so(3aad567d00fac9535fda40922d18ea9e)
@@ -239,3 +259,81 @@ Tid:4252, Name:WorkerThread_Sy
 ### 结论
 
 对于这类napi堆栈的跨线程访问env的问题，建议开启多线程检测查找到问题的第一现场后再根据对应的崩溃日志定位解决
+
+---
+
+## 八、HSP 加载失败
+
+### 前置
+
+cppcrash 堆栈
+
+### 规则
+
+```
+Process name:com.ohos.sceneboard
+Process life time:3s
+Process Memory(kB): 356978(Rss)
+Device Memory(kB): Total 7631384, Free 388340, Available 3617792
+Reason:Signal:SIGABRT(SI_TKILL)@0x01317b370000265f from:9823:20020023
+LastFatalMessage:[default] [LoadJSPandaFile] load hsp failed, hsp name:pcmode, errorMsg:Get in-app HspPath failed, please check the module is correct
+Fault thread info:
+Tid:9823, Name:ohos.sceneboard
+#00 pc 00000000001c39fc /system/lib/ld-musl-aarch64.so.1(raise+228)(f4c2fbddbe2923f0f4930a231ab42edf)
+#01 pc 000000000016c8fc /system/lib/ld-musl-aarch64.so.1(abort+20)(f4c2fbddbe2923f0f4930a231ab42edf)
+#02 pc 00000000002eb0fc /system/lib64/platformsdk/libark_jsruntime.so(common::HiLog<(LogLevel)7, (Component)1>::~HiLog()+120)(467d4b8f754a1d14e993a1b40628a00e)
+```
+
+1. `LastFatalMessage` 中包含 `[LoadJSPandaFile] load hsp failed` 和
+   `hsp name:<模块名>`。
+2. 提取 `hsp name` 与 `errorMsg` 作为直接证据。`raise`、`abort` 和
+   `libark_jsruntime.so` 栈表明加载失败后主动终止，不能替代
+   `LastFatalMessage` 的精确匹配。
+
+### 结论
+
+先确认该设备是否应该加载日志中的 HSP：
+
+1. 如果不需要加载，由应用检查依赖配置、模块引用和触发加载的业务路径。
+2. 如果需要加载，检查崩溃前包含
+   `JsRuntime: [js_module_reader.cpp` 的元能力日志和包含 `BMS` 的包管理日志，
+   以时间最早的错误作为后续定界依据。
+
+---
+
+## 九、NAPI ProcessAll 回调崩溃定界
+
+### 前置
+
+cppcrash 堆栈
+
+### 规则
+
+```
+Process name:com.ohos.sceneboard:HomeThemeComponentExtAbility
+Process life time:31s
+Reason:Signal:SIGTRAP(TRAP_BRKPT)@0x0000005b31b541f0
+LastFatalMessage:This is an unexpected memory usage behavior.may double free[NAPI] Crash occured on ProcessAll, callback: 394044403140
+Fault thread info:
+Tid:36391, Name:onentExtAbility
+#00 pc 00000000000b41f0 /system/lib/ld-musl-aarch64.so.1(large_dalloc_doublefree_check+172)(572f398aa967baf695b573eef2826a69)
+#01 pc 00000000000bd680 /system/lib/ld-musl-aarch64.so.1(free_default+1136)(572f398aa967baf695b573eef2826a69)
+#02 pc 0000000000048e14 /system/lib64/platformsdk/libace_napi.z.so(panda::AsyncNativeCallbacksPack::ProcessAll(char const*)+148)(c4a7d66283599daff1d2362adf7e2bc0)
+#03 pc 0000000000048ce8 /system/lib64/platformsdk/libace_napi.z.so(ArkNativeEngine::RunCallbacks(panda::AsyncNativeCallbacksPack*)+104)(c4a7d66283599daff1d2362adf7e2bc0)
+#04 pc 0000000000048b7c /system/lib64/platformsdk/libace_napi.z.so(ArkNativeEngine::PostAsyncTask(panda::AsyncNativeCallbacksPack*)::$_10::__invoke(uv_work_s*, int)+28)(c4a7d66283599daff1d2362adf7e2bc0)
+#05 pc 000000000001368c /system/lib64/platformsdk/libuv.so(uv__queue_done+156)(0e0543a06bf3b9e5ff3bca3df4a76c6d)
+```
+
+1. `LastFatalMessage` 中包含
+   `[NAPI] Crash occured on ProcessAll, callback: <十进制地址>`。
+2. `callback` 后的地址表示发生异常的回调函数地址；其前后的
+   `LastFatalMessage` 内容可能同时给出 double free 等检测结果。
+3. 如果崩溃栈没有回调函数帧，将十进制回调地址转换为十六进制，并在日志的
+   `Maps` 地址区间中按左闭右开规则查找所属模块。
+
+### 结论
+
+根据回调地址映射结果，将回调所属模块作为首个分析对象。模块归属只用于定界，不能单独
+证明根因；仍需结合 `LastFatalMessage`、回调实现和对象生命周期确认是 double free、
+释放后使用或其他内存问题。若地址未命中任何 `Maps` 区间，保留未归属结论并补充符号和
+映射信息后继续分析。

@@ -32,13 +32,17 @@ desktop.ini
 # clone 定制版 typescript 到 node_modules/typescript/。
 skills/harmonyos/development/application-framework/ArkTS/hmos-arkts-knowledge-retriever/linter-cli/node_modules/
 
-# ── HarmonyOS hmos-jsleak-analysis 的 heap_cluster 二进制 ──
-# 单文件超 100MB（116/110/103/93MB），超过 GitHub 硬限，不入库。
-# 用户从上游获取：https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git
-# 路径：03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/
-# 取回后放至本 skill 同名目录。详见 skill 内 SKILL.md 的 Step 0。
+# ── HarmonyOS hmos-jsleak-analysis 的 heap_cluster 预编译二进制 ──
+# 上游单文件 93–116MB（后转 Git LFS），超 GitHub 100MB 硬限，不入库。
+# 首选 Node 源码版 scripts/node/heap_cluster.js（已入库，见 SKILL.md Step 0/-0.5）。
+# 如需预编译版：装 git-lfs 后从上游拉取，或自行编译。
+# 注意 scripts/node/heap_cluster.js（源码）不受以下规则影响，正常入库。
 skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster
 skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster_*
+skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster.exe
+
+# ── references/（submodule 工作区，仅 upstream-refs 分支追踪）──
+references/
 
 # ── 注意：不要加全局 node_modules/ 规则 ────────
 # 上面只针对仓库根和 linter-cli 两个确切的 node_modules 位置做忽略。

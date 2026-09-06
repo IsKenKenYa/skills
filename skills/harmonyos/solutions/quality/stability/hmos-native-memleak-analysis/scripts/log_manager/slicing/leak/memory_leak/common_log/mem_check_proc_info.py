@@ -119,12 +119,15 @@ class GpuInfo:
         self.all_type_memory_dict = dict()
         self.channel_info: ChannelInfo = ChannelInfo()
 
+    def build(self, context: List[str]):
+        self.basic_info_build(context)
+
     def basic_info_build(self, context: List[str]):
         start_index = 0
         end_index = 0
         total_u_device_res = re.compile(r'Total U\(device\):\s+(?P<total_u_device>\d+)')
         total_a_device_res = re.compile(r'Total A \(device\):\s+(?P<total_a_device>\d+)')
-        total_p_device_res = re.compile(r'Total A \(device\):\s+(?P<total_p_device>\d+)')
+        total_p_device_res = re.compile(r'Total P \(device\):\s+(?P<total_p_device>\d+)')
         for index, line in enumerate(context):
             total_u_device_match = total_u_device_res.search(line)
             if total_u_device_match:
@@ -160,7 +163,9 @@ class GpuInfo:
         flag = False
         channel_info_list = []
         for line in context:
-            if re.search(rf'{total_memory_name}\s+\(Total memory:\s+{total_summary}\d+\)', line):
+            if re.search(
+                    rf'{re.escape(total_memory_name)}\s+\(Total memory:\s+{total_summary}\)',
+                    line):
                 flag = True
                 continue
             if not flag:

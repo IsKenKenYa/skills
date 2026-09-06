@@ -28,28 +28,24 @@ class KernelHeader(FormatUnitHandler):
         self.top_memory: int = 0
 
     def log_split(self, context: List[str]):
-        start_index = 0
-        end_index = 0
+        start_index = None
+        end_index = len(context)
         for index, line in enumerate(context):
-            if 'LOGGER_MEMCHECK_GERNAL_INFO' in line:
+            if ('LOGGER_MEMCHECK_GERNAL_INFO' in line or
+                    'LOGGER_MEMCHECK_GENERAL_INFO' in line):
                 start_index = index + 1
                 continue
-            if re.search(r'\*+', line):
+            if start_index is not None and index >= start_index and re.search(r'^\s*\*+', line):
                 end_index = index
                 break
-            if index > 10:
-                end_index = index
-                break
-        self.sub_context = context[start_index:end_index]
-        if start_index != 0:
-            del context[:end_index]
+        self.sub_context = context[start_index:end_index] if start_index is not None else []
 
     def log_format(self):
         for line in self.sub_context:
             self.basic_info_build(line)
 
     def basic_info_build(self, line):
-        memory_name_match = re.search(r'memoryName:(?P<memory_name>\w+)', line)
+        memory_name_match = re.search(r'memoryName\s*:\s*(?P<memory_name>[\w-]+)', line, re.IGNORECASE)
         if memory_name_match:
             self.memory_name = memory_name_match.group('memory_name')
         soft_threshold_match = re.search(r'softThreshold:(?P<soft_threshold>\d+)\((?P<unit>\w+)\)', line)

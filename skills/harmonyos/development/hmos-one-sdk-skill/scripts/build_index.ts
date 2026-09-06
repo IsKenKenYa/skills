@@ -108,67 +108,78 @@ const _STOPWORDS = new Set<string>([
 ]);
 
 function _splitCamel(token: string): string[] {
-  if (!token) return [];
+  if (!token) { return []; }
   const sub = token.replace(_CAMEL_RE, '$1 $2');
   const parts = sub.split(/[\s_-]+/).filter(p => p.length > 0);
   const out: string[] = [];
   for (const p of parts) {
     const low = p.toLowerCase();
-    if (low) out.push(low);
+    if (low) { out.push(low); }
   }
   const whole = token.toLowerCase();
-  if (whole && !out.includes(whole)) out.push(whole);
+  if (whole && !out.includes(whole)) {
+    out.push(whole);
+  }
   return out;
 }
 
-export function tokenize(text: string): string[] {
-  if (!text) return [];
-  const tokens: string[] = [];
-
-  // 1. 英文/数字 token
+function _tokenizeWords(text: string): string[] {
   const wordMatches = text.match(_WORD_RE);
-  if (wordMatches) {
-    for (const raw of wordMatches) {
-      for (const sub of _splitCamel(raw)) {
-        if (sub.length <= 1) continue;
-        if (_STOPWORDS.has(sub)) continue;
-        tokens.push(sub);
-      }
+  if (!wordMatches) { return []; }
+  const tokens: string[] = [];
+  for (const raw of wordMatches) {
+    for (const sub of _splitCamel(raw)) {
+      if (sub.length <= 1) { continue; }
+      if (_STOPWORDS.has(sub)) { continue; }
+      tokens.push(sub);
     }
   }
-
-  // 2. 中文 token（单字 + bigram）
-  const cjkChars = text.match(_CJK_RE);
-  if (cjkChars) {
-    for (const ch of cjkChars) {
-      if (_STOPWORDS.has(ch)) continue;
-      tokens.push(ch);
-    }
-    for (let i = 0; i < cjkChars.length - 1; i++) {
-      const bigram = cjkChars[i] + cjkChars[i + 1];
-      if (_STOPWORDS.has(bigram)) continue;
-      tokens.push(bigram);
-    }
-  }
-
   return tokens;
+}
+
+function _tokenizeCjk(text: string): string[] {
+  const cjkChars = text.match(_CJK_RE);
+  if (!cjkChars) { return []; }
+  const tokens: string[] = [];
+  for (const ch of cjkChars) {
+    if (_STOPWORDS.has(ch)) { continue; }
+    tokens.push(ch);
+  }
+  for (let i = 0; i < cjkChars.length - 1; i++) {
+    const bigram = cjkChars[i] + cjkChars[i + 1];
+    if (_STOPWORDS.has(bigram)) { continue; }
+    tokens.push(bigram);
+  }
+  return tokens;
+}
+
+export function tokenize(text: string): string[] {
+  if (!text) { return []; }
+  return [..._tokenizeWords(text), ..._tokenizeCjk(text)];
 }
 
 // ----------------------------- frontmatter -----------------------------
 
+function _parseFrontmatterLine(line: string): [string, string] | null {
+  const idx = line.indexOf(':');
+  if (idx < 0) { return null; }
+  const k = line.slice(0, idx).trim();
+  const v = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+  if (!k || !v) { return null; }
+  return [k, v];
+}
+
 export function parseFrontmatter(content: string): [Record<string, string>, string] {
   const m = _FRONTMATTER_RE.exec(content);
-  if (!m) return [{}, content];
+  if (!m) { return [{}, content]; }
   const fmText = m[1];
   const body = content.slice(m.index + m[0].length);
   const meta: Record<string, string> = {};
   for (const line of fmText.split('\n')) {
-    const idx = line.indexOf(':');
-    if (idx < 0) continue;
-    const k = line.slice(0, idx).trim();
-    let v = line.slice(idx + 1).trim();
-    v = v.replace(/^["']|["']$/g, '');
-    if (k && v) meta[k] = v;
+    const parsed = _parseFrontmatterLine(line);
+    if (parsed) {
+      meta[parsed[0]] = parsed[1];
+    }
   }
   return [meta, body];
 }
@@ -226,7 +237,9 @@ function _newestSkillMtime(): number {
   for (const f of files) {
     try {
       const stat = fs.statSync(f);
-      if (stat.mtimeMs > newest) newest = stat.mtimeMs / 1000;
+      if (stat.mtimeMs > newest) {
+        newest = stat.mtimeMs / 1000;
+      }
     } catch {
       // ignore
     }
@@ -245,7 +258,11 @@ function buildIndex(force: boolean = false): void {
   for (const oldName of ['docs.pkl', 'docs.pkl.xz', 'docs.pkl.zst', 'inverted.pkl', 'inverted.pkl.xz', 'inverted.pkl.zst']) {
     const oldPath = path.join(INDEX_DIR, oldName);
     if (fs.existsSync(oldPath)) {
-      try { fs.unlinkSync(oldPath); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(oldPath);
+      } catch {
+        // ignore
+      }
     }
   }
 
@@ -255,7 +272,6 @@ function buildIndex(force: boolean = false): void {
     const oldBuilt = oldMeta.built_at_epoch || 0;
     const newest = _newestSkillMtime();
     if (oldBuilt >= newest) {
-      console.log(`[skip] 索引已是最新（built_at=${oldMeta.built_at}）。使用 --force 强制重建。`);
       return;
     }
   }
@@ -270,7 +286,6 @@ function buildIndex(force: boolean = false): void {
   const skillFiles = _walkDir(REFERENCES_DIR);
   for (let i = 0; i < skillFiles.length; i++) {
     const absPath = skillFiles[i];
-    if (i % 200 === 0) console.log(`md_index=${i}`);
     const relPath = path.relative(REFERENCES_DIR, absPath).replace(/\\/g, '/');
 
     let content: string;
@@ -286,7 +301,7 @@ function buildIndex(force: boolean = false): void {
     const title = meta.title || meta.name || path.basename(absPath, path.extname(absPath));
     const description = meta.description || '';
     const breadcrumb = meta.breadcrumb || description || '';
-    const category = meta.category || relPath.split('/')[0];
+    const category = meta.category || relPath.split('/')[1] || relPath.split('/')[0];
     const url = meta.url || '';
 
     // 分词 + 加权
@@ -305,7 +320,7 @@ function buildIndex(force: boolean = false): void {
     }
 
     let docLength = 0;
-    for (const tf of tfMap.values()) docLength += tf;
+    for (const tf of tfMap.values()) { docLength += tf; }
     if (docLength === 0) {
       skipped++;
       continue;
@@ -330,7 +345,9 @@ function buildIndex(force: boolean = false): void {
         inverted.set(term, postings);
       }
       postings.push(docId, tf);
-      if (tf > maxTf) maxTf = tf;
+      if (tf > maxTf) {
+        maxTf = tf;
+      }
     }
   }
 
@@ -367,18 +384,6 @@ function buildIndex(force: boolean = false): void {
     references_dir: '.',
   };
   fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2), 'utf-8');
-
-  const elapsed = (Date.now() - t0) / 1000;
-  const docsSize = fs.statSync(docsPath).size / 1024 / 1024;
-  const invSize = fs.statSync(invertedPath).size / 1024 / 1024;
-  console.log(`[ok] 索引构建完成，耗时 ${elapsed.toFixed(2)}s`);
-  console.log(`     文档数: ${totalDocs}（跳过 ${skipped}）`);
-  console.log(`     平均文档长度: ${avgDocLength.toFixed(1)}`);
-  console.log(`     词表大小: ${Object.keys(invertedPlain).length}`);
-  console.log(`     压缩: gzip (level 9)`);
-  console.log(`     docs.json.gz     : ${docsSize.toFixed(2)} MB`);
-  console.log(`     inverted.json.gz : ${invSize.toFixed(2)} MB`);
-  console.log(`     meta.json       : ${metaPath}`);
 }
 
 // ----------------------------- 主入口 -----------------------------

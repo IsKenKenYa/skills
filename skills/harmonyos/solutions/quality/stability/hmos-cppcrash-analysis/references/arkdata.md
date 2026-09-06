@@ -138,7 +138,7 @@ Process name:com.huawei.hms.myfamily:FamilyShareUIExtensionAbility:169
 Process life time:2471s
 Process Memory(kB): 123764(Rss)
 Device Memory(kB): Total 11862608, Free 332436, Available 2401280
-Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x00000059e7f4a000 
+Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x00000059e7f4a000
 Fault thread info:
 Tid:31469, Name:OS_FFRT_3_7
 #00 pc 000000000008d884 /system/lib64/platformsdk/libsqlite.z.so(walIndexTryHdr+60)
@@ -291,7 +291,7 @@ resultSet 的接口带有 IO 操作，其耗时不稳定，业务需要将遍历
 ### 前置
 
 ```
-Tid:27979, Name:ynext.ulbclient 
+Tid:27979, Name:ynext.ulbclient
 #00 pc 000000000a373c /system/lib/ld-musl-aarch64.so.1
 #01 pc 000000006f779c /system/lib64/platformsdk/libark_jsruntime.so(panda:os:thread:GetCurrentThreadId()+12)
 #02 pc 000000006502f4 /system/li64/platformsdk/libark-jsruntime so(panda: :ecmascript:Taskpool:IsDaemonThreadorInThreadpool(std:_h:_thread_id) const+84)

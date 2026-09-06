@@ -4,9 +4,9 @@ description: >
   自动分析 HarmonyOS / OpenHarmony Native内存泄漏问题，基于 sample 采样文件、smaps 文件、profiler 火焰图等信息定位泄漏根因并输出完整证据链。
   当用户提供 sample 采样文件、smaps 文件、profiler 火焰图、NMD 数据，或询问应用内存泄漏/内存增长/OOM问题的根因
   即使用户只说"帮我分析这个内存泄漏"、"应用内存一直涨"、"native泄漏分析"、"PSS泄漏"、"DMA泄漏"、"GPU泄漏"，也应立即触发此技能。
-metadata:
-   author: Huawei Reliability Technology Lab
-   version: 1.1.0
+metadata: 
+    author: Huawei Reliability Technology Lab 
+    version: 1.3.0
 ---
 
 # Native Memory Leak Analysis Skill
@@ -66,6 +66,7 @@ metadata:
 - Smaps文件：`memleak-native-{bundleName}-{pid}-smaps.txt`
 - Profiler文件：`memleak-native-{bundleName}-{pid}-{timestamp}.txt`
 - Kernel文件：`memleak-kernel-{bundleName}-{pid}-{timestamp}.txt`
+- Kernel companion文件：`memleak-kernel-hiapp-{bundleName}-{pid}-{timestamp}.txt`（按采集时间选择最新/与Native采集最接近的文件；同一时间同时存在时优先标准文件，禁止重复统计）
 - 如果**仅有 kernel 文件**，说明是**非统一管控场景**
 
 ---
@@ -180,6 +181,10 @@ metadata:
 如果存在kernel侧泄漏：
 调用 `python scripts/kernel_leak.py -p {file_path}`
 
+- 脚本兼容 `memoryName:*`、`Process dma_heap info`、`MM_DMABUF_INFO`、`LOGGER_PROCESS_DMABUF_INFO` 新旧格式。
+- 需要结构化数据时调用 `python scripts/kernel_leak.py -p {file_path} --json`。
+- 若脚本非零退出并提示“不支持或无法识别”，必须如实记录检测到的标记和缺失数据，不得把空输出解释为“无泄漏”。
+
 1. 获取 kernel 文件中的内存信息
 2. 获取主要内存占用类型
 3. 根据内存占用类型比判断：
@@ -196,10 +201,11 @@ metadata:
 调用 `python scripts/kernel_leak.py -p {file_path}`
 获取Top5进程的DMA使用情况和共享内存
 
-1. 分析可能存在泄漏的进程和 **DMA 信息**
-2. 给出占用较大的 **size_bytes** 及对应的 **buf_name**
-3. 给出对应的**组件名称**
-4. 参考 dma.md，分析 DMA buffer 未释放的可能原因：
+1. 完整日志优先使用带单位的系统MemInfo `IonTotalUsed/DmaHeapTotalUsed` 作为物理DMA总量；裁剪日志没有该值时使用 **DMA明细按 ino 去重总量**。必须同时报告明细覆盖总量及二者差额；“原始引用合计”仅反映fd/进程引用，禁止当作物理独占总量。
+2. 分析Top5进程的总DMA、进程私有、共享归属，并给出占用较大的 **size_bytes**、**buf_name**、**buf_type**、**leak_type**。
+3. `is_reclaim=0` 才计入DDR，`is_reclaim=1` 计入可回收/UFS；字段缺失或取值未知时必须单列“回收状态未知”，禁止强行计入DDR。
+4. 根据 `buf_name`、`buf_type`、`leak_type` 给出对应组件；若字段为空或损坏，只能标记待补证。
+5. 参考 dma.md，分析 DMA buffer 未释放的可能原因：
     - 媒体业务未释放解码缓冲区
     - 图形渲染未释放纹理/帧缓冲区
     - Camera 业务未释放预览缓冲区

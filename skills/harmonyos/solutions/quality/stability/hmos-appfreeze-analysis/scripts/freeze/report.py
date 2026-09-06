@@ -21,7 +21,7 @@
 """
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from freeze.binder import (
     Node, Propagation, PropagationChain, build_propagation, node_label)
@@ -32,12 +32,54 @@ from freeze.stack import ThreadStack
 _REASON_NOTES = {
     'THREAD_BLOCK_6S': '主线程卡死超时',
     'BUSSINESS_THREAD_BLOCK_6S': '业务线程卡死超时',
+    'BUSINESS_THREAD_BLOCK_6S': '业务线程卡死超时',
     'APP_INPUT_BLOCK': '用户输入处理超时',
     'LIFECYCLE_TIMEOUT': '生命周期切换超时',
     'LIFECYCLE_HALF_TIMEOUT': '生命周期切换半超时',
     'APP_HICOLLIE': '业务看门狗超时',
     'SERVICE_BLOCK': '系统服务卡死',
 }
+
+SECTION_CHOICES = (
+    'full',
+    'overview',
+    'resources',
+    'event-queue',
+    'fault-stack',
+    'other-threads',
+    'binder',
+    'attachments',
+)
+
+_SECTION_TITLES = {
+    'overview': '按需分析概览',
+    'resources': '整机资源状态',
+    'event-queue': 'EventHandler队列状态',
+    'fault-stack': '故障线程堆栈',
+    'other-threads': '同进程其他线程堆栈',
+    'binder': 'Binder故障传播链',
+    'attachments': '附件信息',
+}
+
+
+def _is_business_thread_freeze(freeze: FreezeLog) -> bool:
+    events = [
+        freeze.reason,
+        freeze.warning.event_name,
+        freeze.block.event_name if freeze.block else '',
+    ]
+    return any(
+        'BUSSINESS_THREAD_BLOCK' in event or 'BUSINESS_THREAD_BLOCK' in event
+        for event in events
+    )
+
+
+def _fault_thread_role(freeze: FreezeLog) -> str:
+    if _is_business_thread_freeze(freeze):
+        return '业务线程（事件上报 TID）'
+    if freeze.reason in {'THREAD_BLOCK_6S', 'APP_INPUT_BLOCK'}:
+        return '主线程'
+    return '事件目标线程'
 
 
 def render_report(freeze: FreezeLog,
@@ -56,6 +98,164 @@ def render_report(freeze: FreezeLog,
     return '\n'.join(section for section in sections if section)
 
 
+def render_section(freeze: FreezeLog, section: str = 'full',
+                   sample_stacks: Optional[List[Path]] = None,
+                   other_faultlogs: Optional[List[Path]] = None) -> str:
+    """按需渲染单个报告区段；full 保持原有完整报告行为。"""
+    if section not in SECTION_CHOICES:
+        choices = ', '.join(SECTION_CHOICES)
+        raise ValueError(f'不支持的报告区段: {section}，可选值: {choices}')
+    if section == 'full':
+        return render_report(
+            freeze,
+            sample_stacks=sample_stacks,
+            other_faultlogs=other_faultlogs,
+        )
+
+    samples = sample_stacks or []
+    faultlogs = other_faultlogs or []
+    if section == 'overview':
+        return _render_overview(freeze, samples, faultlogs)
+
+    available, _ = _section_summary(freeze, section, samples, faultlogs)
+    if not available:
+        return _render_missing_section(section)
+    if section == 'attachments':
+        return _render_attachments(freeze, samples, faultlogs)
+
+    renderers = {
+        'resources': _render_resources,
+        'event-queue': _render_event_queue,
+        'fault-stack': _render_fault_stacks,
+        'other-threads': _render_other_threads,
+        'binder': _render_binder,
+    }
+    renderer = renderers.get(section)
+    if renderer is None:
+        raise ValueError(f'报告区段未注册渲染器: {section}')
+    return renderer(freeze)
+
+
+def _render_overview(freeze: FreezeLog, sample_stacks: List[Path],
+                     other_faultlogs: List[Path]) -> str:
+    """输出区段索引和故障元数据，不展开日志正文。"""
+    reason = freeze.reason
+    if reason in _REASON_NOTES:
+        reason = f'{reason}({_REASON_NOTES[reason]})'
+    fault_time = freeze.warning.msg.fault_time or freeze.warning.msg.timestamp
+    lines = [
+        f'【{_SECTION_TITLES["overview"]}】',
+        f'选中日志：{freeze.path}',
+        f'故障类型：{reason or "未获取到"}',
+        f'故障进程PID：{freeze.pid or "未获取到"}',
+        f'故障线程TID：{freeze.fault_tid() or "未获取到"}',
+        f'故障线程角色：{_fault_thread_role(freeze)}',
+        f'故障进程：{freeze.process_name or "未获取到"}',
+        f'故障时间：{fault_time or "未获取到"}',
+        f'上报时间：{freeze.warning.msg.start_time or "未获取到"}',
+        f'抓栈时间：{freeze.warning.stack_catch_time or "未获取到"}',
+    ]
+    if freeze.block:
+        lines.extend([
+            f'二次上报事件：{freeze.block.event_name or "未获取到"}',
+            f'二次上报时间：{freeze.block.msg.start_time or "未获取到"}',
+            f'二次抓栈时间：{freeze.block.stack_catch_time or "未获取到"}',
+        ])
+    lines.extend([
+        f'Binder抓取时间：{freeze.binder.catch_time or "未获取到"}',
+        f'NOTE：{freeze.header.note or "未获取到"}',
+        f'FFRT目标：{_ffrt_target(freeze)}',
+        '区段索引：',
+    ])
+    for name in SECTION_CHOICES[2:]:
+        available, detail = _section_summary(
+            freeze, name, sample_stacks, other_faultlogs)
+        state = '有' if available else '无'
+        suffix = f'（{detail}）' if detail else ''
+        lines.append(f'- {name}：{state}{suffix}')
+    return '\n'.join(lines)
+
+
+def _ffrt_target(freeze: FreezeLog) -> str:
+    if not freeze.ffrt.tid:
+        return '未获取到'
+    queue_name = freeze.ffrt.queue_name or '未知队列'
+    task_id = freeze.ffrt.task_id or '未知任务'
+    return f'队列 {queue_name}，线程 {freeze.ffrt.tid}，任务 {task_id}'
+
+
+def _section_summary(freeze: FreezeLog, section: str,
+                     sample_stacks: List[Path],
+                     other_faultlogs: List[Path]) -> Tuple[bool, str]:
+    if section == 'resources':
+        return _resource_summary(freeze)
+    if section == 'event-queue':
+        queues = [
+            part.event_queue
+            for part in (freeze.warning, freeze.block)
+            if part and part.event_queue
+        ]
+        history_count = sum(len(queue.history_events) for queue in queues)
+        queued_count = sum(queue.total_count for queue in queues)
+        detail = (
+            f'队列 {len(queues)} 个，历史事件 {history_count} 条，'
+            f'排队任务 {queued_count} 个'
+        )
+        return bool(queues), detail
+    if section == 'fault-stack':
+        stack_count = sum(bool(stack) for stack in (
+            freeze.fault_stack(), freeze.block_fault_stack()))
+        error_count = sum(
+            len(part.stack_errors)
+            for part in (freeze.warning, freeze.block)
+            if part
+        )
+        detail = f'故障栈 {stack_count} 个，抓栈异常 {error_count} 条'
+        return bool(stack_count or error_count), detail
+    if section == 'other-threads':
+        fault_tid = freeze.fault_tid()
+        count = sum(tid != fault_tid for tid in freeze.warning.stacks)
+        return bool(count), f'其他线程栈 {count} 个'
+    if section == 'binder':
+        binder = freeze.binder
+        available = bool(
+            binder.catch_time or binder.trans or binder.usage_rows or binder.peers)
+        detail = (
+            f'调用 {len(binder.trans)} 条，资源记录 {len(binder.usage_rows)} 条，'
+            f'对端进程 {len(binder.peers)} 个'
+        )
+        return available, detail
+    if section == 'attachments':
+        detail = (
+            f'采样栈 {len(sample_stacks)} 个，其他 faultlog '
+            f'{len(other_faultlogs)} 个'
+        )
+        return bool(sample_stacks or other_faultlogs), detail
+    return False, ''
+
+
+def _resource_summary(freeze: FreezeLog) -> Tuple[bool, str]:
+    has_cpu = bool(freeze.cpu.total_line)
+    has_memory = any((
+        freeze.memory.mem_total_kb,
+        freeze.memory.mem_free_kb,
+        freeze.memory.mem_available_kb,
+        freeze.memory.reclaim_avail_buffer_kb,
+    ))
+    has_thermal = freeze.hot_level is not None
+    sample_count = len(freeze.summary.mem_series) + len(freeze.summary.cpu_series)
+    available = bool(has_cpu or has_memory or has_thermal or sample_count)
+    detail = (
+        f'CPU {int(has_cpu)}，内存 {int(has_memory)}，温度 {int(has_thermal)}，'
+        f'资源采样 {sample_count} 条'
+    )
+    return available, detail
+
+
+def _render_missing_section(section: str) -> str:
+    return f'{_title(_SECTION_TITLES[section])}\n未获取到该区段'
+
+
 def _title(name: str) -> str:
     return f'\n【{name}】'
 
@@ -69,6 +269,7 @@ def _render_basic(freeze: FreezeLog) -> str:
              f'故障类型：{reason}',
              f'故障进程pid：{freeze.pid}',
              f'故障线程tid：{freeze.fault_tid()}',
+             f'故障线程角色：{_fault_thread_role(freeze)}',
              f'故障发生时间：{freeze.warning.msg.fault_time or freeze.warning.msg.timestamp}',
              f'故障包名：{freeze.header.package_name or freeze.header.module_name}',
              f'故障进程：{freeze.process_name}']
@@ -223,6 +424,7 @@ def _event_queue_lines(part: FreezePart) -> List[str]:
 # ------------------------------------------------------------ 故障线程堆栈
 def _render_fault_stacks(freeze: FreezeLog) -> str:
     lines = [_title('故障线程堆栈'),
+             f'分析目标：{_fault_thread_role(freeze)} TID {freeze.fault_tid()}',
              '说明：调用方向从栈底（最大编号）到栈顶（#00），栈顶为最后调用位置']
     warning_stack = freeze.fault_stack()
     block_stack = freeze.block_fault_stack()

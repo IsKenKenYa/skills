@@ -1,6 +1,6 @@
 ---
 name: play-policy-insights
-description: 用于核查 Android 应用是否符合 Google Play 政策域的自动化审计器。它交叉比对静态代码分析与 Play 商店声明，生成确定性的合规报告，识别权限与 API 卫生、用户账号与身份、数据安全与隐私领域中未声明的数据收集、架构风险和缺失披露。
+description: Automated auditor designed to verify Android applications against Google Play Policy domains. It cross-references static code analysis with Play Store declarations to generate deterministic compliance reports, identifying undeclared data collection, architectural risks, and missing disclosures across Permissions and APIs Hygiene, User Account and Identity, and Data Safety and Privacy domains.
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

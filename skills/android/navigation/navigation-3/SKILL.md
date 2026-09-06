@@ -1,6 +1,6 @@
 ---
 name: navigation-3
-description: 学习如何安装并迁移到 Jetpack Navigation 3，以及如何实现 deep links、多个 backstack、scenes（对话框、底部表、list-detail、two-pane、supporting pane）、条件导航（如已登录导航 vs 匿名导航）、从流程返回结果、与 Hilt/ViewModel/Kotlin/View 互操作集成等功能和模式。
+description: Learn how to install and migrate to Jetpack Navigation 3, and how to
   implement features and patterns such as deep links, multiple backstacks, scenes
   (dialogs, bottom sheets, list-detail, two-pane, supporting pane), conditional navigation
   (such as logged-in navigation versus anonymous), returning results from flows, integration
@@ -8,7 +8,7 @@ description: 学习如何安装并迁移到 Jetpack Navigation 3，以及如何�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-06'
+  last-updated: '2026-08-14'
   keywords:
   - recipe
   - Android

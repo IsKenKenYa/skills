@@ -19,57 +19,49 @@ from common.enum.common_enum import NativeMemoryType
 from tools.common_tools import print_table_info
 
 
+def _parse_bin(native_leak):
+    details = native_leak.mem_check_detial_info
+    sorted_items = sorted(details.bin_list + details.large_list, key=lambda item: item.allocated, reverse=True)
+    if not sorted_items:
+        return ''
+    rows = [('size(B)', 'allocated(B)', 'rate')]
+    for info in sorted_items[:3]:
+        rate = '{:.2f}%'.format(float(info.allocated) * 100 / details.total_allocated)
+        rows.append((info.size, info.allocated, rate))
+        native_leak.nmd_set.add(info.size)
+    return print_table_info(rows)
+
+
+def _parse_top_nmd_use(native_leak):
+    allocated_map = native_leak.mem_check_nmd_info.nmd_map2
+    top_items = sorted(allocated_map.items(), key=lambda item: item[1], reverse=True)[:3]
+    total_size = sum(allocated_map.values())
+    rows = [('size(B)', 'allocated(B)', 'rate')]
+    for size, allocated in top_items:
+        rate = '{:.2f}%'.format((float(allocated) / total_size) * 100)
+        rows.append((size, allocated, rate))
+        native_leak.nmd_set.add(size)
+    return print_table_info(rows)
+
+
+def _parse_top_nmd_change(native_leak):
+    before = native_leak.mem_check_nmd_info.nmd_map1
+    after = native_leak.mem_check_nmd_info.nmd_map2
+    if not before or not after:
+        return ''
+    changes = {size: allocated - before.get(size, 0) for size, allocated in after.items()}
+    top_items = sorted(changes.items(), key=lambda item: item[1], reverse=True)[:3]
+    rows = [('size(B)', 'allocated(B)', '增长内存')]
+    for size, change in top_items:
+        rows.append((f'{size}', f'{after[size]}', f'{change}'))
+        native_leak.nmd_set.add(size)
+    return print_table_info(rows)
+
+
 def get_jemalloc_leak_info(native_leak):
-    def bin_parser():
-        bin_list = native_leak.mem_check_detial_info.bin_list
-        large_list = native_leak.mem_check_detial_info.large_list
-        total_allocated = native_leak.mem_check_detial_info.total_allocated
-        total_list = bin_list + large_list
-        # 按照分配大小从大到小排序
-        sorted_total_list = sorted(total_list, key=lambda x: x.allocated, reverse=True)
-        if not sorted_total_list:
-            return ''
-        sorted_total_list = sorted_total_list[:3] if len(sorted_total_list) > 3 else sorted_total_list
-        allocated = 0
-        nmd_info_list = [('size(B)', 'allocated(B)', 'rate')]
-        for info in sorted_total_list:
-            allocated += info.allocated
-            rate = '{:.2f}%'.format(float(info.allocated) * 100 / total_allocated)
-            nmd_info_list.append((info.size, info.allocated, rate))
-            native_leak.nmd_set.add(info.size)
-        return print_table_info(nmd_info_list)
-
-    def top3_nmd_use_parser():
-        nmd_map2 = native_leak.mem_check_nmd_info.nmd_map2
-        sorted_allocated = sorted(nmd_map2.items(), key=lambda x: x[1], reverse=True)
-        nmd_list = sorted_allocated[:3] if len(sorted_allocated) > 3 else sorted_allocated
-        total_allocated_size = sum(nmd_map2.values())
-        nmd_info_list = [('size(B)', 'allocated(B)', 'rate')]
-        for size, allocated in nmd_list:
-            rate = '{:.2f}%'.format((float(allocated) / total_allocated_size) * 100)
-            nmd_info_list.append((size, allocated, rate))
-            native_leak.nmd_set.add(size)
-        return print_table_info(nmd_info_list)
-
-    def top3_nmd_change_parser():
-        nmd_map1 = native_leak.mem_check_nmd_info.nmd_map1
-        nmd_map2 = native_leak.mem_check_nmd_info.nmd_map2
-        if len(nmd_map1) == 0 or len(nmd_map2) == 0:
-            return ''
-        allocated_change = {}
-        for size, allocated in nmd_map2.items():
-            allocated_change[size] = allocated - nmd_map1.get(size, 0)
-        sort_allocated_change = sorted(allocated_change.items(), key=lambda x: x[1], reverse=True)
-        nmd_list = sort_allocated_change[:3] if len(sort_allocated_change) > 3 else sort_allocated_change
-        nmd_info_list = [('size(B)', 'allocated(B)', '增长内存')]
-        for size, change in nmd_list:
-            nmd_info_list.append((f'{size}', f'{nmd_map2[size]}', f'{change}'))
-            native_leak.nmd_set.add(size)
-        return print_table_info(nmd_info_list)
-
-    top3_nmd_use = top3_nmd_use_parser()
-    top3_nmd_change = top3_nmd_change_parser()
-    bin_str = bin_parser()
+    top3_nmd_use = _parse_top_nmd_use(native_leak)
+    top3_nmd_change = _parse_top_nmd_change(native_leak)
+    bin_str = _parse_bin(native_leak)
     nmd_info = ''
     if top3_nmd_use:
         nmd_info += f'堆内存快照占用Top3 size：\n' + top3_nmd_use
