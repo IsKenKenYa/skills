@@ -75,7 +75,7 @@
 
 | Error message 关键词 | 分析结论 | 修改建议 |
 | --- | --- | --- |
-| `OutOfMemory when trying to allocate` | 应用分配内存时超过 Heap 空间上限；手机设备主线程 OldSpaceSize 上限通常接近 350MB。 | 如果 OOM 堆栈稳定，优先分析高频调用和潜在泄漏路径；如果堆栈不稳定，通过 Snapshot 对比操作前后的内存快照定位泄漏对象。 |
+| `OutOfMemory when trying to allocate` | 应用分配内存时超过 Heap 空间上限；手机设备主线程 OldSpaceSize 上限通常接近 350MB。 | 如果 OOM 堆栈稳定，优先分析高频调用和潜在泄漏路径；用户提供 rawheap 或 heapsnapshot 时，调用 `jsleak-analysis` Skill 对比并定位泄漏对象。 |
 | `AllocateHugeObject` | 尝试分配大对象时超过大对象空间阈值。 | 检查大数组、大字符串、大图片/缓存等一次性分配，拆分或释放不必要对象。 |
 | `AllocateYoungOrHugeObject` | 年轻代或大对象空间分配失败，即使小对象也可能因堆空间耗尽失败。 | 排查生命周期过长对象、列表复用、缓存释放、组件销毁释放和闭包持有。 |
 

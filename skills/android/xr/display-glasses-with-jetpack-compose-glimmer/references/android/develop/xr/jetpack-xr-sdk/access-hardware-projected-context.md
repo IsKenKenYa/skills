@@ -26,14 +26,32 @@ obtain a projected context. To do this, use the
 
 
 ```kotlin
-@OptIn(ExperimentalProjectedApi::class)
-private fun getGlassesContext(context: Context): Context? {
-    return try {
-        // From a phone Activity or Service, get a context for the AI glasses.
-        ProjectedContext.createProjectedDeviceContext(context)
-    } catch (e: IllegalStateException) {
-        Log.e(TAG, "Failed to create projected device context", e)
-        null
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
+@OptIn(ExperimentalProjectedApi::class, ExperimentalCoroutinesApi::class)
+private fun monitorProjectedConnectivity(activity: ComponentActivity) {
+    activity.lifecycleScope.launch {
+        // Before creating a projected context, check to see if the projected device is connected.
+        // While this method returns true, the projected context remains valid.
+        ProjectedContext.isProjectedDeviceConnected(activity, coroutineContext)
+            .collectLatest { isConnected ->
+                if (isConnected) {
+                    // From a phone Activity or Service, get a context for the audio and display glasses.
+                    // Re-initialize on reconnect: Obtain another context instance.
+                    val projectedContext = try {
+                        ProjectedContext.createProjectedDeviceContext(activity)
+                    } catch (e: IllegalStateException) {
+                        Log.e(TAG, "Failed to create projected context", e)
+                        return@collectLatest
+                    }
+
+                    // Use the projectedContext to initialize system services (e.g., CameraManager).
+                    Log.i(TAG, "Projected device connected. Initializing hardware...")
+                } else {
+                    // The projected context is destroyed when the device disconnects.
+                    // Clean up on disconnect: Listen for 'false' and release resources.
+                    Log.i(TAG, "Projected device disconnected. Cleaning up hardware resources...")
+                }
+            }
     }
 }
 ```
@@ -222,71 +240,79 @@ context for your app:
 
 ```kotlin
 private fun startCameraOnGlasses(activity: ComponentActivity) {
-    // 1. Get the CameraProvider using the projected context.
-    // When using the projected context, DEFAULT_BACK_CAMERA maps to the AI glasses' camera.
-    val projectedContext = try {
-        ProjectedContext.createProjectedDeviceContext(activity)
-    } catch (e: IllegalStateException) {
-        Log.e(TAG, "AI Glasses context could not be created", e)
-        return
+    activity.lifecycleScope.launch {
+        // Before creating a projected context, check to see if the projected device is connected.
+        ProjectedContext.isProjectedDeviceConnected(activity, coroutineContext)
+            .collectLatest { isConnected ->
+                if (isConnected) {
+                    // 1. Get the CameraProvider using the projected context.
+                    // When using the projected context, DEFAULT_BACK_CAMERA maps to the audio and display glasses' camera.
+                    val projectedContext = try {
+                        ProjectedContext.createProjectedDeviceContext(activity)
+                    } catch (e: IllegalStateException) {
+                        Log.e(TAG, "Projected context could not be created", e)
+                        return@collectLatest
+                    }
+
+                    val cameraProviderFuture = ProcessCameraProvider.getInstance(projectedContext)
+
+                    cameraProviderFuture.addListener({
+                        val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                        // 2. Check for the presence of a camera.
+                        if (!cameraProvider.hasCamera(cameraSelector)) {
+                            Log.w(TAG, "The selected camera is not available.")
+                            return@addListener
+                        }
+
+                        // 3. Query supported streaming resolutions using Camera2 Interop.
+                        val cameraInfo = cameraProvider.getCameraInfo(cameraSelector)
+                        val camera2CameraInfo = Camera2CameraInfo.from(cameraInfo)
+                        val cameraCharacteristics = camera2CameraInfo.getCameraCharacteristic(
+                            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
+                        )
+
+                        // 4. Define the resolution strategy.
+                        val targetResolution = Size(1920, 1080)
+                        val resolutionStrategy = ResolutionStrategy(
+                            targetResolution,
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER
+                        )
+                        val resolutionSelector = ResolutionSelector.Builder()
+                            .setResolutionStrategy(resolutionStrategy)
+                            .build()
+
+                        // 5. If you have other continuous use cases bound, such as Preview or ImageAnalysis,
+                        // you can use  Camera2 Interop's CaptureRequestOptions to set the FPS
+                        val fpsRange = Range(30, 60)
+                        val captureRequestOptions = CaptureRequestOptions.Builder()
+                            .setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
+                            .build()
+
+                        // 6. Initialize the ImageCapture use case with options.
+                        val imageCapture = ImageCapture.Builder()
+                            // Optional: Configure resolution, format, etc.
+                            .setResolutionSelector(resolutionSelector)
+                            .build()
+
+                        try {
+                            // Unbind use cases before rebinding.
+                            cameraProvider.unbindAll()
+
+                            // Bind use cases to camera using the Activity as the LifecycleOwner.
+                            cameraProvider.bindToLifecycle(
+                                activity,
+                                cameraSelector,
+                                imageCapture
+                            )
+                        } catch (exc: Exception) {
+                            Log.e(TAG, "Use case binding failed", exc)
+                        }
+                    }, ContextCompat.getMainExecutor(activity))
+                }
+            }
     }
-
-    val cameraProviderFuture = ProcessCameraProvider.getInstance(projectedContext)
-
-    cameraProviderFuture.addListener({
-        val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-        // 2. Check for the presence of a camera.
-        if (!cameraProvider.hasCamera(cameraSelector)) {
-            Log.w(TAG, "The selected camera is not available.")
-            return@addListener
-        }
-
-        // 3. Query supported streaming resolutions using Camera2 Interop.
-        val cameraInfo = cameraProvider.getCameraInfo(cameraSelector)
-        val camera2CameraInfo = Camera2CameraInfo.from(cameraInfo)
-        val cameraCharacteristics = camera2CameraInfo.getCameraCharacteristic(
-            CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
-        )
-
-        // 4. Define the resolution strategy.
-        val targetResolution = Size(1920, 1080)
-        val resolutionStrategy = ResolutionStrategy(
-            targetResolution,
-            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER
-        )
-        val resolutionSelector = ResolutionSelector.Builder()
-            .setResolutionStrategy(resolutionStrategy)
-            .build()
-
-        // 5. If you have other continuous use cases bound, such as Preview or ImageAnalysis,
-        // you can use  Camera2 Interop's CaptureRequestOptions to set the FPS
-        val fpsRange = Range(30, 60)
-        val captureRequestOptions = CaptureRequestOptions.Builder()
-            .setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange)
-            .build()
-
-        // 6. Initialize the ImageCapture use case with options.
-        val imageCapture = ImageCapture.Builder()
-            // Optional: Configure resolution, format, etc.
-            .setResolutionSelector(resolutionSelector)
-            .build()
-
-        try {
-            // Unbind use cases before rebinding.
-            cameraProvider.unbindAll()
-
-            // Bind use cases to camera using the Activity as the LifecycleOwner.
-            cameraProvider.bindToLifecycle(
-                activity,
-                cameraSelector,
-                imageCapture
-            )
-        } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc)
-        }
-    }, ContextCompat.getMainExecutor(activity))
 }
 ```
 
@@ -340,7 +366,7 @@ the host device's (phone) context:
 @OptIn(ExperimentalProjectedApi::class)
 private fun getPhoneContext(activity: ComponentActivity): Context? {
     return try {
-        // From an AI glasses Activity, get a context for the phone.
+        // From a projected Activity, get a context for the phone.
         ProjectedContext.createHostDeviceContext(activity)
     } catch (e: IllegalStateException) {
         Log.e(TAG, "Failed to create host device context", e)

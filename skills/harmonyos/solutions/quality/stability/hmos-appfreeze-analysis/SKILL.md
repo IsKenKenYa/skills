@@ -3,13 +3,14 @@ name: hmos-appfreeze-analysis
 description: >
   DFX Skills，自动分析 HarmonyOS / OpenHarmony Freeze（冻屏/卡死）故障日志，定位根因并输出完整证据链。
   当用户提供完整的faultlog 文件和采样栈文件、询问应用无响应/卡死/ANR 问题的根因，
-  或上传包含 APPFREEZE / INPUT_BLOCK / LIFECYCLE_TIMEOUT 等关键字的日志时，必须使用此技能。
+  或上传包含 APPFREEZE / INPUT_BLOCK / LIFECYCLE_TIMEOUT / THREAD_BLOCK_6S /
+  BUSSINESS_THREAD_BLOCK_6S / BUSINESS_THREAD_BLOCK_6S 等关键字的日志时，必须使用此技能。
   即使用户只说"帮我分析这个 freeze 日志"、"应用卡死了是什么原因"，也应立即触发此技能。
   技能会按优先级逐步排除整机低内存、高负载、热限频等系统级异常，再深入分析线程堆栈、
   Binder 通信链路、EventHandler 队列，最终输出唯一根因模块与修复建议。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.3.0
 ---
 
 # Appfreeze Analysis Skill
@@ -25,19 +26,73 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 - 必须基于日志中**实际存在**的信息，严禁编造或随意拼接日志片段。
 - 每条关键结论必须有原始日志内容作为佐证。
 - 按以下 Step 顺序逐步分析，遇到可直接定性的整机异常时可提前终止并输出结论。
+- 输出修复建议前必须先判定责任领域（应用 / 系统 / 混合 / 未定），修复建议必须与根因责任领域一致。
+- 证据链确认根因在系统服务、系统框架或系统库时，**只输出系统侧修改建议**，并定位到具体系统模块、函数、锁、队列或接口契约；不得把应用规避方案写成根因修复，也不得要求应用为系统缺陷承担修改责任。
+- 根因在应用侧时只输出应用侧修改建议；确属混合责任时分栏列出双方修改，先写主要责任方。责任未定时只列补充证据与验证方向，不跨责任域猜测修改方案。
+- 仅当用户明确要求临时规避方案时，才可在系统侧根因之后单列“应用侧临时规避”；必须注明它不替代系统侧根因修复。
 
 ---
 
 ## 分析工作流
 
-### Step 1 — 提取关键日志
-> 调用 `scripts/macos/reliability_analyze -p {file_path}`，提取关键日志
-完整的看完提取的关键日志，后面所有的分析必须基于此关键日志
+### Step 0 — 前置环境检查
 
+在调用任何脚本前，必须先完成以下环境检查：
 
+1. **Python 可用性检查**
+   ```bash
+   python --version
+   ```
+   - 若命令不可用，先提示用户安装 Python 3。
+   - 若系统同时存在 `python3`，可使用 `python3` 替代后续命令中的 `python`。
+
+2. **脚本路径检查**
+   确认以下脚本存在：
+   - `<skill-root>/scripts/freeze/main.py`
+   - `<skill-root>/scripts/sample_stack_analyzer.py`
+
+3. **依赖检查**
+   appfreeze Python 脚本仅使用 Python 标准库和本技能内置模块，无需安装第三方 pip 依赖。
+   如脚本执行失败，优先检查：
+   - `<skill-root>` 是否指向 `appfreeze-analysis` 技能根目录
+   - Python 命令是否指向可用解释器
+   - 输入的 faultlog / sample_stacks 文件路径是否存在
+
+### Step 1 — 读取轻量概览
+> 首次只读取日志元数据和区段索引：
+>
+> ```bash
+> python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section overview
+> ```
+
+概览仅用于确认选中日志、故障类型、PID/TID、时间、NOTE、FFRT 目标，以及各区段是否存在和数量。不得在首轮读取完整报告。
+
+#### 故障目标线程路由（概览后必须执行）
+
+- `THREAD_BLOCK_6S`、`APP_INPUT_BLOCK`：按对应故障模式分析主线程或事件明确指定的目标线程。
+- `BUSSINESS_THREAD_BLOCK_6S` / `BUSINESS_THREAD_BLOCK_6S`：这是业务线程超时事件，其中 `BUSSINESS` 是日志中的历史拼写。必须使用事件上报的 `TID` 作为故障目标线程，并读取该 TID 对应的 3s、6s 堆栈；不得使用进程 PID 对应的主线程堆栈替代业务线程堆栈。
+- 业务线程事件中，主线程与其他线程堆栈只用于分析跨线程依赖、持锁方或上下文，不参与该事件“阻塞/繁忙”的直接判定，除非证据证明目标业务线程正在同步等待这些线程。
+- 事件 `TID` 缺失时，才可从 `OH_HiCollie_Report ... current tid` 或同一上报区段中的线程信息恢复目标 TID，并在结论中降低可信度；无法恢复时不得改用主线程强行定性。
+
+按以下顺序按需读取区段：
+
+1. `overview`：每次分析必须首先读取。
+2. `resources`：概览显示存在资源信息时读取；命中明确整机异常后按现有规则提前结束。
+3. `event-queue`：概览显示存在队列信息时读取。
+4. `fault-stack`：未被整机异常定性时读取。
+5. `other-threads`：仅当故障栈表现为等锁时读取。
+6. `binder`：仅当栈包含 Binder 等待、出现 IPC FULL 特征，或前面步骤无法形成闭环时读取。
+7. `attachments`：仅在需要采样栈或其他日志路径时读取。
+8. `full`：仅当用户明确要求完整提取，或需要调试解析器时读取。未指定 `--section` 也会输出完整报告，以兼容旧命令。
 
 ### Step 2 — 整机资源评估（低内存 / 高负载）
-读取关键日志内容，识别故障基本信息：
+概览中 `resources` 为“有”时执行：
+
+```bash
+python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section resources
+```
+
+结合概览与资源区段识别：
 - 故障时间（Fault time）
 - 上报 hiview 时间
 - 抓栈开始时间
@@ -54,18 +109,23 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 可以列出相关信息（CPU、内存、温度信息）用来佐证整机高负载。
 
 - 1、CPU信息
-分析关键日志中的CPU信息，如果时间与故障时间相差**超过10s**，则该部分内容不具参考价值；
-分析规则：当CPU使用率**>85%**，则结论中加上**CPU负载过高**，进一步佐证整机高负载
+数据源优先级：**优先使用采样栈文件（cpuinfo-ext）中`#CpuFreq Usage（usage >= 1%）`区域各核使用率和频率作为参考，未提供时回退到关键日志中的 CPU 信息**。
+时间校验：分析CPU信息中的时间信息，如果时间与故障时间相差**超过10s**，则该部分内容不具参考价值。
+分析规则（按数据源区分）：
+
+   >来自故障日志：取 Total 使用率，**>85%** 则结论加入 **CPU负载过高**，佐证整机高负载；
+   >来自采样栈：按频率将各核聚类（频率分布相同或高度相近的归为一组），组名用核心编号范围表示（如cpu0-cpu3），不附加核心类型标签。对每组分别计算 Usage 算术平均值并独立判定，**>85%** 的组在结论加入 **{组名}负载过高**（如「cpu0-cpu3负载过高」），佐证整机高负载。
+   >**严禁在报告任何位置（结论、证据链、原始日志摘录）显示CPU频点/频率分布等信息**，避免误导开发者。摘录CPU原始日志时只保留Usage数值，删除所有频点行。
 
 - 2、内存信息
 分析关键日志中的内存信息，如果时间与故障时间相差**超过2分钟**，则该部分内容不具参考价值；
-分析规则：当可用内存**<800MB**，则结论中加上**低内存**，进一步佐证整机高负载
+分析规则：当可用内存 **<800MB**，则结论中加上**低内存**，进一步佐证整机高负载
 
 - 3、温度信息
 分析关键日志中的温度信息;
 分析规则：
-  >如果温度等级**≥4**，则结论中加上**热限频**警告备选结论，
-  >如果温度等级**>5**，则结论中加上**温度过高导致热限频**，温度过高导致热限频
+  >如果温度等级 **≥4**，则结论中加上**热限频**警告备选结论，
+  >如果温度等级 **>5**，则结论中加上**温度过高导致热限频**，温度过高导致热限频
 
 > **注意**：低内存 / 高负载 / 高温等整机异常会导致 DFX 维测信息失真，典型特征：
 > 瞬时栈（warning 与 error 不一致）、无堆栈、堆栈获取延时、Binder 获取延时。
@@ -81,6 +141,14 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 
 ### Step 3 — EventHandler 任务队列分析
 
+概览中 `event-queue` 为“有”时执行；不存在则跳过本步骤：
+
+```bash
+python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section event-queue
+```
+
+对于 `BUSSINESS_THREAD_BLOCK_6S` / `BUSINESS_THREAD_BLOCK_6S`，只有队列所属 TID 与故障业务线程 TID 一致，或日志存在明确的跨线程同步等待关系时，EventHandler 队列才能作为根因证据。主线程队列不能直接解释业务线程超时。
+
 #### 3a. Current Running（当前执行任务）
 - 执行时间 = `EventHandler dump begin curTime` − `trigger time`（warning 与 error 取较大值）
 - 执行时间 **> 3 s** → 该任务阻塞了 EventHandler 队列，需业务模块排查原因。
@@ -92,29 +160,50 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 
 ---
 
-### Step 4 — 主线程 & 子线程堆栈分析
+### Step 4 — 故障目标线程 & 关联线程堆栈分析
+
+未被整机异常定性时，执行：
+
+```bash
+python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section fault-stack
+```
 
 > 堆栈调用方向：**栈底（最大编号）→ 栈顶（#00）**，栈顶为最后被调用位置。
 
-1. 分析 warning / error 级别堆栈，识别卡死线程的函数调用链。
+1. 先按 Step 1 的故障类型路由选定目标线程，再分析 warning / error 级别堆栈：普通 `THREAD_BLOCK_6S` 分析主线程，业务线程事件分析上报 `TID` 对应的业务线程。阻塞/繁忙必须比较同一目标 TID 的 3s、6s 栈顶，禁止比较不同线程。
 2. 若卡死线程栈顶处于**等锁**状态，则：
+   ```bash
+   python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section other-threads
+   ```
    - 扫描同进程其他子线程，寻找**持有相同 so、且调用层次更深**的线程 → 该线程即持锁方。
    - 依此递推，找到**最终持锁位置**。
+3. **FFRT 阻塞识别（命中时必做）**：若卡死线程（主线程或子线程）调用栈出现 `libffrt.so` / `libffrt.z.so`，或线程名匹配 `OS_FFRT_`，则判定为 FFRT 相关阻塞：
+   - 若关键日志摘要已出现 `FFRT队列阻塞：队列 ... 工作线程 ... 执行超时`，直接以该工作线程作为根因分析对象。
+   - 📖 读取 `references/ffrt-freeze-analysis.md`，按其中四类场景（worker 占满 / 任务超限 / 队列超时 / 原语死锁）逐项排查定位。根因模块定位到实际责任实现 so / 组件（可以是应用或系统模块）；除非有 FFRT 框架自身缺陷的直接证据，**不得**停留在 `libffrt.so`。
+4. **libuv 阻塞识别（命中时必做）**：若故障目标线程调用栈或采样栈出现 `libuv.so`，或命中符号 `uv_run` / `uv__io_poll` / `uv_async_send` / `uv_queue_work` / `uv_ffrt_work` / `uv_queue_done` / `uv_close` / `uv__async_io` / `uv__fs_work` / `uv_fs_sendfile`，则进入 libuv 链路分析：
+   - 对主线程，长时间停留在 `uv_run` / `uv__io_poll` 或采样栈高频命中 `uv_*` 回调时，继续追踪实际回调或 fd 所有者。
+   - 📖 读取 `references/libuv-freeze-analysis.md`，按其中场景（阶段卡死 / 线程池耗尽 / async 滥用 / 生命周期不当 / uv_run 重入 / 同步阻塞调用）逐项排查。案例参考 https://developer.huawei.com/consumer/cn/doc/best-practices/bpta-stability-coding-standard-libuv 。根因模块定位到实际责任实现 so / 组件（可以是应用或系统模块）；除非有 libuv 自身缺陷的直接证据，**不得**停留在 `libuv.so`。
 
 ---
 
 ### Step 5 — Binder 通信链路分析
 
+仅当故障栈包含 Binder 等待、日志出现 IPC FULL 特征，或此前步骤无法形成证据闭环时执行：
+
+```bash
+python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section binder
+```
+
 1. 从 `binder catcher` 信息追踪 IPC 调用链，找到**最终阻塞的对端进程及线程**。
 2. 若对端线程处于等锁状态 → 同 Step 5 方式找到持锁线程。
 3. 若对端 binder 线程数为 0 且出现 **IPC FULL（binder 资源耗尽）**：
    - 分析所有 IPC 线程，若大量线程因锁竞争阻塞 → 按持锁追踪规则找到最终位置。
-4. **不得直接将责任模块定位为 IPC 模块**，必须追踪到业务层根因。
+4. **不得直接将责任模块定位为 IPC 模块**，必须追踪到实际责任实现；对端系统服务内部的锁、队列、线程池或接口实现缺陷可以定界为系统侧根因。
 
 ---
 
 ### Step 6 — IPC 对端堆栈分析
-结合 Step 5 确定的对端进程，进一步分析其堆栈，明确对端阻塞的具体原因（非 IPC 框架本身）。
+结合 Step 5 确定的对端进程，进一步分析其堆栈，明确对端阻塞的具体原因（非 IPC 框架本身），并以最终阻塞实现所在进程/模块判定责任领域。若调用方只是正常使用公开接口，而对端系统服务因内部锁竞争、死锁、线程池耗尽或无超时保护而阻塞，则定界为系统侧根因。
 
 ---
 
@@ -125,12 +214,18 @@ HarmonyOS 高级开发工程师 / HarmonyOS 架构师 / 系统 DFX 工程师 / �
 
 ### Step 8 — 热点函数采样分析（如有）
 
+概览中 `attachments` 为“有”且需要采样栈或其他 faultlog 路径时，先执行：
+
+```bash
+python "<skill-root>/scripts/freeze/main.py" -p "<file_path>" --section attachments
+```
+
 每一次Snapshot堆栈是一次的采样（最多采样10次），我们统计函数的次数的时候一次采样堆栈里面就算出现多次，也只统计为一次。请对采样栈通过下面的脚本进行分析：
 
 **调用独立采样栈分析脚本**：
 
-```
-scripts/macos/sample_stack_analyzer <sample_stacks.txt路径>
+```bash
+python "<skill-root>/scripts/sample_stack_analyzer.py" "<sample_stacks.txt路径>"
 ```
 
 这个脚本只会列出采样栈中业务帧的情况，你需要重点关注业务函数分布情况，分析时**必须**给出完整的**函数名称，包含文件位置，行号，列号**。如果脚本结果没有任何信息，不需要列出系统函数。那么你需要直接阅读一下采样栈，
@@ -138,25 +233,28 @@ scripts/macos/sample_stack_analyzer <sample_stacks.txt路径>
 
 ---
 
-### Step 10 — 综合结论输出
+### Step 9 — 综合结论输出
 
-综合以上所有步骤信息，**首先对照故障模式库匹配三级根因**，再输出完整分析报告。
+综合以上所有步骤信息。故障类型在现有故障模式库覆盖范围内时匹配三级根因，再输出完整分析报告。
 
-#### 10a. 故障模式库匹配（必须执行）
+`BUSSINESS_THREAD_BLOCK_6S` / `BUSINESS_THREAD_BLOCK_6S` 当前不纳入故障模式库，不新增或套用三级根因；直接基于事件 TID 对应业务线程的日志证据输出诊断结论。
+
+#### 9a. 故障模式库匹配（故障类型命中时执行）
 
 > 📖 读取 `references/fault-mode-library.md`，按以下顺序逐级匹配：
-> 1. **一级**：判断故障大类（当前库覆盖：主线程卡死超时 FML-001）
-> 2. **二级**：对比 3s 栈与 6s 栈栈顶是否一致，区分"阻塞"或"繁忙"
+> 1. **一级**：判断故障大类（当前库覆盖：主线程卡死超时 FML-001、用户输入处理超时；其中主线程阻塞下含「FFRT 同步等待阻塞」「libuv EventLoop 阻塞」三级条目，命中时须分别引用 `references/ffrt-freeze-analysis.md` / `references/libuv-freeze-analysis.md` 给出细分场景）
+> 2. **二级**：对比同一故障目标 TID 的 3s 栈与 6s 栈栈顶是否一致，区分“阻塞”或“繁忙”
 > 3. **三级**：按各编码的判定规则逐条匹配，找到**唯一命中条目**（优先精确匹配，无匹配时使用兜底条目）
 
 匹配完成后，在报告中以表格形式呈现三级根因定位结果（见输出模板）。
 
-#### 10b. 输出内容要求
-1. **三级根因匹配表**（来自故障模式库）
-2. **证据链**（每条结论须附原始日志片段，严禁编造，若涉及调用链，注意调用链顺序从栈底到栈顶）
+#### 9b. 输出内容要求
+1. **三级根因匹配表**（仅在故障类型命中故障模式库时输出）
+2. **证据链**（每条结论须附原始日志片段，严禁编造，若涉及调用链，注意调用链顺序从栈底到栈顶；CPU相关原始日志必须脱敏频点，只保留Usage数值）
 3. **根本原因**（详细描述触发路径）
 4. **根因模块**（具体模块名）
-5. **修复建议**（无需输出验证步骤，不要输出系统侧的建议，只输出应用侧的）
+5. **责任领域**（应用 / 系统 / 混合 / 未定，并给出定界依据）
+6. **修复建议**（无需输出验证步骤；严格面向已判定的责任领域。系统侧根因只给系统侧代码/架构修改，应用侧根因只给应用侧修改，混合责任分开输出，未定时不强行给修改方案）
 
 ---
 
@@ -206,9 +304,11 @@ scripts/macos/sample_stack_analyzer <sample_stacks.txt路径>
 
 【根因模块】
 <模块名称，例如：com.example.app / libxxx.z.so / xxx_service>
+责任领域 : <应用 / 系统 / 混合 / 未定>
+定界依据 : <根因实现、调用契约与代码归属证据；不能只看路径>
 
 【修复建议】
-1. <建议1>
-2. <建议2>
+1. <针对责任模块直接根因的修改；系统侧根因必须写系统模块的修改，应用侧根因必须写应用代码的修改>
+2. <针对深层设计、锁/队列/生命周期/接口契约的同责任域改进>
 ================================================================================
 ```

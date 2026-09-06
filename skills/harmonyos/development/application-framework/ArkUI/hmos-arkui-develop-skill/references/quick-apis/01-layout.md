@@ -85,7 +85,7 @@
 | .chainAnimation | `.chainAnimation(value: boolean)` | false | API 12+ 联动动画 |
 | .multiSelectable | `.multiSelectable(value: boolean)` | false | 鼠标多选 |
 | .sticky | `.sticky(value: StickyStyle)` | None | 吸顶模式 |
-| .nestedScroll | `.nestedScroll(value: NestedScrollOptions)` | — | 嵌套滚动 |
+| .nestedScroll | `.nestedScroll(value: NestedScrollOptions)` | - | API 10+ 嵌套滚动。`NestedScrollOptions = { scrollForward, scrollBackward }`，默认 `{SELF_ONLY, SELF_ONLY}`，模式见下 |
 
 **事件：**
 
@@ -96,6 +96,8 @@
 | .onScrollIndex | `.onScrollIndex(event: (start: number, end: number) => void)` | 可见区域索引变化 |
 | .onReachStart | `.onReachStart(event: () => void)` | 到达起始位置 |
 | .onReachEnd | `.onReachEnd(event: () => void)` | 到达末尾 |
+
+> **NestedScrollMode（API 10+）枚举**：`SELF_ONLY`(0,默认,只自身滚不联动父) / `SELF_FIRST`(1,自身先滚到边缘再父滚) / `PARENT_FIRST`(2,父先滚到边缘再自身滚) / `PARALLEL`(3,父子同时滚)。`scrollForward`=往末尾端、`scrollBackward`=往起始端。
 
 ---
 
@@ -276,7 +278,7 @@
 | .scrollBarWidth | `.scrollBarWidth(value: number)` | 4vp | 滚动条宽度 |
 | .edgeEffect | `.edgeEffect(value: EdgeEffect, options?)` | Spring | 边缘效果 |
 | .scrollSnap | `.scrollSnap(value: ScrollSnapOptions)` | — | API 10+ 对齐 snapping（注意：`SnapAlign`/`SnapPagination` 类型不存在。如果需要 snap 效果，建议使用 List 配合 .chainScroll 或查询最新文档确认替代方案。） |
-| .nestedScroll | `.nestedScroll(value: NestedScrollOptions)` | — | API 10+ 嵌套滚动 |
+| .nestedScroll | `.nestedScroll(value: NestedScrollOptions)` | - | API 10+ 嵌套滚动，模式同 List。注意：Scroll 同时设 `enablePaging`/`scrollSnap` 且父组件优先(PARENT_FIRST)时嵌套不生效 |
 | .enablePaging | `.enablePaging(value: boolean)` | false | API 11+ 分页滚动 |
 | .friction | `.friction(value: number \| Resource)` | — | API 10+ 摩擦系数 |
 | .enableScrollInteraction | `.enableScrollInteraction(value: boolean)` | true | 是否响应滚动 |
@@ -372,6 +374,8 @@
 | .onAnimationStart | `.onAnimationStart(event: (index, targetIndex) => void)` | 切换动画开始 |
 | .onAnimationEnd | `.onAnimationEnd(event: (index) => void)` | 切换动画结束 |
 
+> **Swiper 陷阱**：`.prevMargin(40)` 非 `.previousMargin(40)`。
+
 ---
 
 ### Stack
@@ -388,7 +392,7 @@
 
 | 方法 | 签名 | 默认值 | 说明 |
 |------|------|--------|------|
-| .alignContent | `.alignContent(value: Alignment)` | Center | 子组件对齐方式 |
+| .alignContent | `.alignContent(value: Alignment)` | Center | 子组件对齐方式。⚠️ Stack 用 `.alignContent()` 不是 `.alignItems()` |
 
 ---
 
@@ -405,7 +409,7 @@
 | .guideLine | `.guideLine(value: Array<GuideLineStyle>)` | — | API 12+ 参考线 |
 | .barrier | `.barrier(value: Array<BarrierStyle>)` | — | API 12+ 屏障 |
 
-### RelativeContainer 核心用法
+#### RelativeContainer 核心用法
 
 子组件通过 `.alignRules()` 定位，必须设置 `.id()`。
 
@@ -522,6 +526,8 @@ RelativeContainer() {
 | .onStateChange | `.onStateChange(event: (state: RefreshStatus) => void)` | 刷新状态变化 |
 | .onRefreshing | `.onRefreshing(event: () => void)` | 刷新触发 |
 | .onOffsetChange | `.onOffsetChange(event: (offset: number) => void)` | 偏移变化 |
+
+> **Refresh**：`refreshing` 是构造器参数，支持 `$$` 双向绑定。状态变化用 `.onStateChange()` 监听，非链式方法。`RefreshStatus.Inactive` 非 `InActive`。
 
 ---
 

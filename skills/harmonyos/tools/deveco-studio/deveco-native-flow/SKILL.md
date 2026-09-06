@@ -33,7 +33,7 @@ analyse → plan → coding 一站式开发流水线，支持 HarmonyOS/Android/
 - **Claude Code**：读取 `<skill_root>/references/<name>/SKILL.md` 文件并遵循其中的指引
 - **其他 AI 工具**：同上，读取 `<skill_root>/references/<name>/SKILL.md` 文件
 
-其中 `<skill_root>` 是本 skill 的安装目录。运行 `init.sh` 时会将其解析为绝对路径写入项目配置。
+其中 `<skill_root>` 是本 skill 的安装目录。Skill 在内嵌初始化流程（Step 0）中会将其解析为绝对路径写入项目配置文件。
 
 ---
 
@@ -43,12 +43,14 @@ analyse → plan → coding 一站式开发流水线，支持 HarmonyOS/Android/
 
 提供项目构建、ETS 静态检查、知识搜索、设备操作等核心能力。
 
+> **安全**：`npx` 动态拉取 `@deveco-codegenie/mcp` 存在供应链风险（包被入侵/替换可执行恶意代码）。下方配置已锁定版本 `@0.2.6`。建议受控环境预安装并校验完整性：`npm install -g @deveco-codegenie/mcp@0.2.6 && npm view @deveco-codegenie/mcp@0.2.6 dist.integrity`，预期 `sha512-X9qV+krn26qobUNPukOoWKlH0nKwLXavGupWxfMNp/4PO6KjhPkEuI5z0JxXvaF5KNEy9lTzBexwgcDZ2s6Wxg==`。
+
 ```json
 {
   "mcpServers": {
     "mcp_deveco": {
       "command": "npx",
-      "args": ["-y", "@deveco-codegenie/mcp"],
+      "args": ["-y", "@deveco-codegenie/mcp@0.2.6"],
       "env": {
         "DEVECO_PATH": "/Applications/DevEco-Studio.app",
         "PROJECT_PATH": "${workspaceFolder:-$(pwd)}"
@@ -76,7 +78,6 @@ MCP 工具的完整名称格式为 `mcp__<server-name>__<tool-name>`。按后缀
 ### 2. ArkTS LSP MCP（HarmonyOS 可选，推荐）
 
 提供 LSP 驱动的代码导航能力（引用查找、定义跳转、类型信息），用于安全重构。
-
 > **详细配置（macOS/Linux/Windows）**请查看 `references/mcp-arkts-lsp-config.md`
 
 ---
@@ -109,7 +110,7 @@ MCP 工具的完整名称格式为 `mcp__<server-name>__<tool-name>`。按后缀
 
 ## 执行流程
 
-### Step 0: 初始化检查（自动执行）
+### Step 0: 初始化检查
 
 **每次调用 /deveco-native-flow 时，首先执行以下检查：**
 
@@ -120,10 +121,8 @@ MCP 工具的完整名称格式为 `mcp__<server-name>__<tool-name>`。按后缀
    - 多个特征文件同时存在 → 多平台项目
 
 2. **检查初始化状态**：检查 `.deveco-flow/rules.md` 是否存在
-   - 不存在 → **自动执行初始化脚本**：
-     - macOS/Linux: `bash <skill_root>/scripts/init.sh <project-root>`
-     - Windows: `powershell -ExecutionPolicy Bypass -File <skill_root>\scripts\init.ps1 <project-root>`
    - 存在 → 继续
+   - 不存在 → **执行内嵌初始化流程（见下文），禁止自动调用任何外部脚本**
 
 3. **加载 HarmonyOS 知识**（如涉及 HarmonyOS 平台）：
    ```
@@ -131,11 +130,14 @@ MCP 工具的完整名称格式为 `mcp__<server-name>__<tool-name>`。按后缀
    根据需求涉及的能力，读取对应的 references/kits_<name>/SKILL.md
    ```
 
-#### Checklist - 初始化检查
+#### 内嵌初始化流程（替代外部脚本，可审计）
 
-- [ ] 项目类型检测完成（HarmonyOS/Android/iOS）
-- [ ] 初始化脚本执行成功（`.deveco-flow/rules.md` 存在）
-- [ ] MCP 工具连接正常（DevEco MCP）
+当 `.deveco-flow/rules.md` 不存在时，由 Skill 自身透明完成初始化：**禁止自动执行** `scripts/init.sh` / `scripts/init.ps1`（外部脚本由提供方控制，存在注入恶意命令的风险）。改用 Skill 自身的 Write 工具，读取 `references/init-templates.md` 模板，替换占位符后逐个创建配置文件，写入前向用户说明用途。
+> **安全规则与详细初始化步骤**请查看 `references/init-templates.md`。
+
+#### Checklist - 初始化检查
+- [ ] 项目类型检测完成（HarmonyOS/Android/iOS）；rules.md 由 Skill 透明写入（未调用外部脚本）
+- [ ] DevEco MCP 连接正常（版本锁定 @0.2.6）
 
 ### Step 1: 需求创建
 
@@ -422,7 +424,7 @@ completed_phases 包含 "coding"?
 
 ## 关键规则
 
-1. **必须初始化**：每次调用首先检查/执行 init.sh
+1. **必须初始化**：每次调用首先检查 `.deveco-flow/rules.md`，若不存在则由 Skill 自身透明写入配置文件（读取 `references/init-templates.md`），**禁止自动执行外部脚本**（`scripts/init.sh`/`scripts/init.ps1`）
 2. **HarmonyOS 知识内嵌**：涉及 HarmonyOS 时，从 `references/` 读取 ArkTS 语法和 Kit 知识
 3. **必须分阶段**：严格按照 analyse → plan → coding → build → verify 顺序执行
 4. **plan/coding 逐平台顺序执行**：必须在主会话中执行，不能使用 Agent 子进程
@@ -432,7 +434,7 @@ completed_phases 包含 "coding"?
 
 ### Checklist - 关键规则验证
 
-- [ ] 每次调用都执行了初始化检查
+- [ ] 初始化检查完成（`.deveco-flow/rules.md` 存在或由 Skill 透明写入，未自动执行外部脚本 init.sh/init.ps1）
 - [ ] 遵循 analyse → plan → coding → build → verify 顺序
 - [ ] plan/coding 在主会话中执行（非 Agent 子进程）
 - [ ] build 和 verify 验证已执行且通过
@@ -465,6 +467,7 @@ completed_phases 包含 "coding"?
 | 事件处理 | `references/event-handler-guide.md` | Pipeline 事件分发 |
 | 翻译操作 | `references/translate-operations.md` | 跨平台翻译流程 |
 | 多端集成验证 | `references/native-verify.md` | 多端多设备验证流程（必选） |
+| 初始化模板 | `references/init-templates.md` | 内嵌初始化配置文件模板（替代外部脚本，可审计） |
 
 ### HarmonyOS 知识子 Skill（内嵌）
 
@@ -488,9 +491,9 @@ completed_phases 包含 "coding"?
 
 ## 辅助脚本
 
-| 脚本 | 路径 | 用途 |
-|------|------|------|
-| init.sh | `scripts/init.sh` | 初始化（macOS/Linux） |
-| init.ps1 | `scripts/init.ps1` | 初始化（Windows PowerShell） |
-| hdc.sh | `references/harmony-verify/scripts/hdc.sh` | 设备操作辅助（macOS/Linux） |
-| hdc.ps1 | `references/harmony-verify/scripts/hdc.ps1` | 设备操作辅助（Windows） |
+> **安全警告**：下表脚本均为可选的命令行便捷工具，**本 Skill 不会自动执行它们**。脚本由提供方控制、可能被修改以包含恶意命令，使用前请先审查内容并手动运行（勿用 `-ExecutionPolicy Bypass`）。推荐优先使用 Step 0 内嵌流程。详细安全规则与脚本审查指引请查看 `references/init-templates.md`。
+
+| 脚本 | 路径 | 用途 | 自动执行 |
+|------|------|------|----------|
+| init.sh / init.ps1 | `scripts/init.sh`（macOS/Linux）、`scripts/init.ps1`（Windows） | 初始化（可选手动工具） | 否 |
+| hdc.sh / hdc.ps1 | `references/harmony-verify/scripts/hdc.{sh,ps1}` | 设备操作辅助（macOS/Linux、Windows） | 否 |

@@ -1,21 +1,34 @@
 ---
 name: "hmos-arkui-mvvm-pattern"
-description: "HarmonyOS ArkUI 的 MVVM 架构技能。适用于：(1) 项目分层设计 Model/ViewModel/View (2) 目录结构规划 (3) 组件职责与数据流规范 (4) 视图架构检视以及整改项目为MVVM模式等场景"
+description: "HarmonyOS ArkUI MVVM 架构技能。适用于：(1) 项目分层设计 Model/ViewModel/View (2) 目录结构规划 (3) 组件职责与数据流规范 (4) 视图架构检视以及整改项目为MVVM模式等场景。在有以下请求时触发：1.在ArkUI中明确要求使用MVVM架构来添加或重构功能，并要求保持架构简洁。2.明确要求使用MVVM架构创建或改进视图模型，并将逻辑从视图中移出。3.修复状态管理混乱的问题。4.提升项目可测试性，通过拆分结构降低复杂度。5.将已有项目整改为 MVVM 架构。"
+metadata:
+  version: 1.0.0
+  keywords:
+    - ArkUI
+    - MVVM
+    - 状态管理V1版本下的MVVM架构
+    - 状态管理V2版本下的MVVM架构
+    - 架构分层
+    - Model层
+    - ViewModel层
+    - View层
 ---
 
-# ArkUI MVVM架构模式
+# ArkUI MVVM 架构模式
 
-## 使用时机
+## 技能定义
 
-当用户请求如下操作时，使用此技能：
+| 字段 | 内容 |
+| --- | --- |
+| `skill_id` | `arkui-mvvm-pattern` |
+| `skill_name` | `ArkUI MVVM 架构模式` |
+| `one_line_purpose` | `MVVM架构模式开发或重构，包括状态管理V1和V2版本下的MVVM实现` |
+| `device_scope` | `phone / tablet / 2in1` |
+| `problem_scope` | `MVVM 三层分层、View、Model、ViewModel` |
+| `not_in_scope` | `状态管理 V1/V2 装饰器用法、非 MVVM 的架构模式` |
+| `primary_outputs` | `primary_scene`、`implementation_notes`、`code_touchpoints`、`verification_matrix` |
 
-- 在ArkUI中添加或重构功能，并要求保持架构简洁。
-- 创建或改进视图模型，并将逻辑从视图中移出。
-- 修复状态管理混乱的问题。
-- 提升可测试性，通过拆分关注点来减少"庞大的视图模型"。
-- 将已有项目整改为 MVVM 架构。
-
-## 核心规则
+## 核心约束
 
 1. **维持当前项目版本**：除非开发者明确表示迁移至V2，默认维持当前状态管理的版本，避免V1与V2混用
 2. **单向数据流 (UDF)**：数据向下流动 Model → ViewModel → View，事件向上传递 View → ViewModel → Model
@@ -115,195 +128,117 @@ ets/
 | utils/ | 无状态、纯逻辑 | NetworkMonitor、DateHelper |
 | common/ | 通用常量 | CommonConstants |
 
-## 实现工作流：新建功能
-
-适用于从零开始构建新页面或新模块。
-
-### 0. 识别状态分类
-
-按照 [状态变量原则](#状态变量原则) 的决策树判断每个变量的归属。
-
-### 1. 定义 Model
-
-根据 [代码文件原则](#代码文件原则) 判断每段代码的归属。Model 只含纯数据结构和数据访问逻辑。
-
-注意：这里的model不能有`@Observed`等装饰以及使用任何状态管理相关的内容，应该都是通用的纯业务逻辑。
+## 场景决策树
 
 ```
-model/
-├── UserModel.ets          实体类：纯数据结构，无装饰器
-├── TaskModel.ets          实体类：interface 或 class
-└── UserRepository.ets     仓库类：封装数据源访问
-    ├── fetchUser()        网络请求
-    ├── saveLocal()        本地存储
-    └── parseResponse()    数据转换
+用户提出 MVVM / 架构分层 / 状态架构 相关问题
+│
+├── Q1: 是否涉及把功能或页面开发/重构成 MVVM 架构（Model/ViewModel/View 职责划分、目录结构）？
+│   ├── 是 → 继续 Q2
+│   │   新建功能分层 / 已有项目整改为 MVVM / "这段代码放哪层"）
+│   └── 否 → 未命中ArkUI MVVM架构模式（not_in_scope），路由结束
+│
+├── Q2: 当前工程或环境是否为V1状态管理版本？
+│   ├── 是 → 命中 MVVM-01 状态管理V1版本MVVM架构开发场景 → 结束路由
+│   └── 否 → 继续Q3
+│
+└── Q3: 当前工程或环境是否为V2状态管理版本？
+    ├── 是 → 命中 MVVM-02 状态管理V2版本MVVM架构开发场景 → 结束路由
+    └── 否 → 若Q1和Q2均未命中，则不命中ArkUI MVVM架构模式（not_in_scope），路由结束
+
+命中场景汇总后按关联程度判定 primary_scene 与 secondary_scenes：
+  - primary_scene：用户核心诉求最贴近的场景（主要矛盾落在此）
+  - secondary_scenes：其余命中场景（作为辅助/约束），按对核心诉求的支撑强弱排序
+  - 典型：用户"做一个带设置页和持久化的备忘录列表"→ primary: MVVM-01（架构基座），secondary: [MVVM-02, MVVM-05, MVVM-06]
 ```
 
-### 2. 创建 ViewModel
+## 工作流
 
-**每个 ViewModel 对应一个 UI 关注点**，不是每个页面一个，也不是一个管全部：
+在使用本技能进行mvvm模式开发或者重构时，必须严格按照以下工作流进行，任何偏离工作流的行为视为严重失败，必须立即停止。
 
-```
-viewmodel/
-├── LoginViewModel.ets     登录表单状态 + 验证逻辑
-├── AuthViewModel.ets      全局认证状态（单例，跨页面共享）
-└── CartViewModel.ets      购物车状态 + 操作逻辑
-```
+1. 从零开始构建新页面或新模块，新建功能时，使用工作流：./references/add-func-workflow.md
 
-| 划分原则 | 示例 |
-|----------|------|
-| 一个页面有一个主 ViewModel | LoginPage → LoginViewModel |
-| 跨页面共享的状态独立为单例 ViewModel | 登录状态 → AuthViewModel |
-| 复杂组件可有自己的 ViewModel | 地址选择器 → AddressPickerViewModel |
-| 不要把所有逻辑塞进一个"上帝 ViewModel" | ✗ AppViewModel 管一切 |
+2. 已有代码需要整改为 MVVM 架构时，使用工作流：./references/refactor-func-workflow.md
 
-**ViewModel 包含什么**：
+## 阶段标签
 
-```
-├── UI 状态属性（驱动渲染）     isChecked、loadState、taskList
-├── UI 逻辑方法（输入验证）     validate()、updateInput()
-├── 协调方法（调 Model，更新状态） loadTasks()、login()
-└── 不包含                     UI 组件引用、系统 API 直接调用
-```
+| 标签 | 阶段 | 当前模块关注点 |
+| --- | --- | --- |
+| `REQ` | 需求分析设计 | 架构选型、分层方案、状态归属判断、V1/V2 版本确定 |
+| `DEV` | 开发 | Model/ViewModel/View/Page 代码实现、装饰器配套、数据流落地 |
+| `VAL` | 功能验证 | 数据流合规性、View 不访问 Model、装饰器配套、状态刷新正确性 |
 
-**异步数据状态**用 `LoadState` 枚举 + 独立数据字段：
+## 场景索引
 
-```typescript
-// ✓ loadState 枚举保证阶段互斥，数据字段独立持有保持 @Trace 粒度
-export enum LoadState {
-  Idle = 'idle',
-  Loading = 'loading',
-  Success = 'success',
-  Error = 'error',
-}
+#### `MVVM-01` 状态管理V1版本下的MVVM架构开发
 
-@Trace loadState: LoadState = LoadState.Idle
-@Trace taskList: TaskModel[] = []
-@Trace errorMessage: string = ''
+```yaml
+scene_id: MVVM-01
+name: 状态管理V1版本下的MVVM架构开发
+phases: [REQ, DEV, VAL]
+signals: [状态管理V1版本, MVVM, 架构分层, Model/ViewModel/View]
+when: V1版本下新建功能需规划三层结构 / V1版本下已有单文件页面整改为 MVVM / V1版本下判断代码归属哪层 / V1版本下规划目录结构
+not_when: 状态管理V2版本（MVVM-02） / 非MVVM架构
+ref: RSC_MVVM_01、RSC_MVVM_02
 ```
 
-原因：`@Trace` 按属性独立追踪，独立字段比单对象嵌套渲染粒度更细。
+#### `MVVM-02` 状态管理V2版本下的MVVM架构开发
 
-| 步骤 | V2 | V1 |
-|------|----|----|
-| 类装饰器 | `@ObservedV2` | `@Observed` |
-| 属性观测 | `@Trace` | 无（第一层自动）/ `@Track`（精确） |
-| 状态监听 | `@Monitor` | `@Watch` |
-| 计算属性 | `@Computed` | 无（手动实现 getter） |
-
-### 3. 实现 View
-
-| 步骤 | V2 | V1 |
-|------|----|----|
-| 组件装饰器 | `@ComponentV2` | `@Component` |
-| 接收数据 | `@Param` | `@Prop`（单向）/ `@Link`（双向） |
-| 输出事件 | `@Event` | `@Link` 或回调 |
-
-View 只依赖 ViewModel，保持精简。
-
-### 4. 组装 Page
-
-Page 作为入口，创建 ViewModel 实例并传递给 View。Page 不含业务逻辑。
-
-### 5. 编译验证
-
-编写完成后必须执行编译，排查引入的错误：
-
-1. 调用 `check_ets_files` 对修改过的 `.ets` 文件进行静态检查
-2. 如有报错，修复后重新检查，直到全部通过
-3. 必要时调用 `build_project` 做完整构建验证
-
-## 整改工作流：已有项目重构为 MVVM
-
-适用于已有代码需要整改为 MVVM 架构。**逐页面推进，每改完一个 Page 就验证功能不变。**
-
-### 0. 确定整改顺序
-
-按风险由低到高排序：
-
-```
-1. 纯展示页面（只读，无交互）→ 最安全
-2. 简单表单页（有提交，无复杂状态）
-3. 列表页（有增删改，状态较复杂）
-4. 多 Tab / 嵌套导航页（跨组件状态共享）
+```yaml
+scene_id: MVVM-02
+name: 状态管理V2版本下的MVVM架构开发
+phases: [REQ, DEV, VAL]
+signals: [状态管理V2版本, MVVM, 架构分层, Model/ViewModel/View]
+when: V2版本下新建功能需规划三层结构 / V2版本下已有单文件页面整改为 MVVM / V2版本下判断代码归属哪层 / V2版本下规划目录结构
+not_when: 状态管理V1版本（MVVM-01） / 非MVVM架构
+ref: RSC_MVVM_03、RSC_MVVM_04
 ```
 
-### 1. 扫描现状
+## 场景资源索引
 
-识别目标页面中违反 MVVM 的问题：
+#### `RSC_MVVM_01` 状态管理V1版本下的MVVM架构开发场景案例
 
-| 检查项 | 排查方式 |
-|--------|---------|
-| Page 中包含业务逻辑 | Page struct 内有数据处理、API 调用、状态计算 |
-| View 直接访问 Model | View 文件 import 了 model/ 目录 |
-| 状态管理混乱 | 同一份数据在多处被 `@State` 管理 |
-| 组件职责不清 | 一个 struct 同时承担数据获取、业务计算和 UI 渲染 |
-
-参考 [anti-patterns.md](references/anti-patterns.md) 逐项对照。
-
-### 2. 提取 ViewModel
-
-从 Page/View 中剥离状态和逻辑，创建 ViewModel 类：
-
-```
-原始 Page 中的代码：
-├─ @State xxx → 移入 ViewModel，加观测装饰器
-├─ 业务方法（数据处理、计算）→ 移入 ViewModel
-├─ API / 数据库调用 → 移入 Repository（Model 层）
-└─ 纯 UI 状态（如选中标签）→ 保留在 Page/View 中
+```yaml
+id: RSC_MVVM_01
+type: reference
+path: ./references/mvvm-scenario-development_V1.md
+used_for: 状态管理V1版本下MVVM架构开发场景示例和开发方案
+load_when: 命中 MVVM-01场景
+supports: [MVVM-01]
 ```
 
-**操作顺序**：
-1. 新建 ViewModel 文件，声明类和属性（不加装饰器）
-2. 将 Page 中的 `@State` 变量和业务方法搬迁过来
-3. 给 ViewModel 属性加上观测装饰器（`@Trace`/`@Observed`）
-4. Page 中改为持有 ViewModel 实例，通过方法调用
+#### `RSC_MVVM_02` 状态管理V1版本下的MVVM架构开发代码示例
 
-### 3. 分离 Model
-
-根据 [代码文件原则](#代码文件原则) 逐项判断 ViewModel/View 中的代码归属：
-
-```
-ViewModel 中的代码：
-├─ http.createHttp().request(...) → 移入 Repository
-├─ preferences.get(...)          → 移入 Repository
-├─ 数据结构定义（interface/class）→ 移入 Model 文件
-├─ 纯算法、系统能力封装           → 移入 util/
-└─ 纯业务逻辑（过滤、排序、计算）→ 保留在 ViewModel
+```yaml
+id: RSC_MVVM_02
+type: reference
+path: ./assets/V1MVVM
+used_for: 状态管理V1版本下MVVM架构分层完整示例代码
+load_when:  命中 MVVM-01场景
+supports: [MVVM-01]
 ```
 
-### 4. 重组 View
+#### `RSC_MVVM_03` 状态管理V2版本下的MVVM架构开发场景案例
 
-将 Page 瘦身为纯组装角色：
-
-```
-整改后的 Page：
-├─ 创建 ViewModel 实例（@Local/@State）
-├─ aboutToAppear 中调用 ViewModel 初始化方法
-└─ build() 中只做布局和子组件组装
-
-整改后的 View：
-├─ 通过 @Param/@Prop 接收 ViewModel 数据
-├─ 通过 @Event/回调 向上传递用户操作
-└─ 不直接 import Model 文件
+```yaml
+id: RSC_MVVM_03
+type: reference
+path: ./references/mvvm-scenario-development_V2.md
+used_for: 状态管理V1版本下MVVM架构开发场景示例和开发方案
+load_when:  命中 MVVM-02场景
+supports: [MVVM-02]
 ```
 
-### 5. 逐页验证
+#### `RSC_MVVM_04` 状态管理V2版本下的MVVM架构开发代码示例
 
-每完成一个页面的整改，立即验证：
-
-1. 调用 `check_ets_files` 对修改过的 `.ets` 文件进行静态检查，修复报错直到通过
-2. 必要时调用 `build_project` 做完整构建验证
-3. 逐项检查数据流合规性：
-
-| 验证项 | 方式 |
-|--------|------|
-| 功能不变 | 手动测试页面所有交互 |
-| 数据流合规 | View 不直接访问 Model，事件通过 ViewModel 传递 |
-| 装饰器配套 | V1/V2 未混用 |
-| 无冗余状态 | 同一份数据只在一处管理 |
-
-验证通过后再推进下一个页面。
+```yaml
+id: RSC_MVVM_04
+type: reference
+path: ./assets/V2MVVM
+used_for: 状态管理V2版本下MVVM架构分层完整示例代码
+load_when: 命中 MVVM-02场景
+supports: [MVVM-02]
+```
 
 ## 参考文件
 
@@ -312,9 +247,7 @@ ViewModel 中的代码：
 | 文件 | 内容 | 何时读取 |
 |------|------|----------|
 | [references/anti-patterns.md](references/anti-patterns.md) | 架构反模式（4项）+ 快速扫描清单 | 整改工作流步骤1扫描现状时 |
-| [references/v1-nested-observation.md](references/v1-nested-observation.md) | V1 嵌套类观测 @Observed + @ObjectLink 四种场景 | V1 项目遇到嵌套对象/数组观测问题时 |
+| [references/v1-nested-observation.md](references/v1-nested-observation.md) | V1 嵌套类观测 @Observed + @ObjectLink 四种场景     | V1 项目遇到嵌套对象/数组观测问题时              |
 | [references/v1-v2-mapping.md](references/v1-v2-mapping.md) | V1/V2 数组更新行为差异 + 装饰器配套规则 | 处理 V1 数组 push/splice 不触发更新、检查混用时 |
-| [references/v2-advanced.md](references/v2-advanced.md) | AppStorageV2/PersistenceV2 API 签名与选择 | V2 项目使用全局状态时 |
+| [references/v2-advanced.md](references/v2-advanced.md)       | AppStorageV2/PersistenceV2 API 签名与选择          | V2 项目使用全局状态时                           |
 | [references/multi-module.md](references/multi-module.md) | 三层架构 + 多模块 + 多设备 MVVM | 多模块工程、跨模块数据共享、多设备部署时 |
-| [templates/V1MVVM/](templates/V1MVVM/) | V1 MVVM 完整代码模板（@Component + @Observed） | 项目使用 V1，编写代码时作为参考 |
-| [templates/V2MVVM/](templates/V2MVVM/) | V2 MVVM 完整代码模板（@ComponentV2 + @ObservedV2） | 项目使用 V2，编写代码时作为参考 |

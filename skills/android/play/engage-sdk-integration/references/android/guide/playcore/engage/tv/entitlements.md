@@ -308,8 +308,8 @@ implementation. Verify data accuracy and proper functionality before launch.
    - User purchases new subscription.
    - User upgrades subscription.
    - User subscription expires.
-3. Check if app is correctly calling `isServiceAvailable()` and
-   `publishClusters()` APIs in logcat, on the publishing events.
+3. Check if app is correctly calling `isServiceAvailable` and
+   `publishClusters` APIs in logcat, on the publishing events.
 
 4. Verify that data is visible in the verification app. The verification app
    should display subscription as a separate row. When the publish API is

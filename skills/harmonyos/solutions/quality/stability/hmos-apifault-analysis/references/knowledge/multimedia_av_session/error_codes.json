@@ -237,7 +237,7 @@
     "code": "6612102",
     "message": "This resource is already in use",
     "source_file": "api/interface_sdk_c/multimedia/av_session/native_avsession_errors.h",
-    "description": "资源正在使用中。可能原因：资源被其他进程占用。处理步骤：检查资源是否可用，更换资源后重试。"
+    "description": "资源正在使用中。可能原因：资源被其它进程占用。处理步骤：检查资源是否可用，更换资源后重试。"
   },
   {
     "code": "6612103",
@@ -279,7 +279,7 @@
     "code": "6613001",
     "message": "Parsing error associated with media container format bit streams",
     "source_file": "api/interface_sdk_c/multimedia/av_session/native_avsession_errors.h",
-    "description": "非法类型，媒体容器格式比特流解析错误。可能原因：资源是不受AVTransport支持的MIME类型。处理步骤：更换其他类型资源，再重新发起会话。"
+    "description": "非法类型，媒体容器格式比特流解析错误。可能原因：资源是不受AVTransport支持的MIME类型。处理步骤：更换其它类型资源，再重新发起会话。"
   },
   {
     "code": "6613002",

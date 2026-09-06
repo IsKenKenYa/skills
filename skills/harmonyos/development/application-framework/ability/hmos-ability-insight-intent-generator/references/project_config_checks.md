@@ -91,3 +91,45 @@
 
 > 违反此规则会导致编译错误：`Schema validate failed, must be string` 或类型不匹配。
 
+### 步骤 6：检查 AppStorage 导入可用性
+
+当意图方案中需要使用 `AppStorage`（如 Router 架构适配方案或 Tabs 信号驱动）时，**必须在生成代码前验证当前 SDK 版本是否支持从 `@kit.ArkUI` 导入 `AppStorage`**。
+
+**检查方法**：
+
+1. 在项目的任意 `.ets` 文件中（如 `pages/Index.ets` 顶部）临时写入：
+
+   ```typescript
+   import { AppStorage } from '@kit.ArkUI';
+   ```
+
+2. 尝试编译（或检查 IDE 是否报红）。
+
+3. 若编译报错提示 `"@kit.ArkUI" has no exported member named 'AppStorage'`，说明该 SDK 版本导出的是 `AppStorageV2`，则不应使用 `AppStorage`，而是改用**静态类持有**方案（详见 [architecture_checks.md](architecture_checks.md/) 中的“参数传递方式对比表”）。
+
+**处理方案**：
+
+- **若 `AppStorage` 可用**：继续使用 `AppStorage.setOrCreate` + `AppStorage.get` 方案。
+- **若 `AppStorage` 不可用**：改用静态类持有数据，在意图执行器中将数据存入一个静态类的静态属性，目标页面在 `aboutToAppear` 中从静态类读取并清空。
+
+**示例（静态类持有）**：
+
+```typescript
+// 定义一个静态数据持有类
+export class IntentDataHolder {
+  static categoryType: string = '';
+  static data: Record<string, Object> = {};
+}
+
+// 意图执行器中写入
+IntentDataHolder.categoryType = this.categoryType;
+
+// 目标页面 aboutToAppear 中读取
+const category = IntentDataHolder.categoryType;
+if (category) {
+  this.categoryType = category;
+  IntentDataHolder.categoryType = ''; // 清空
+}
+```
+
+> **注意**：静态类持有方案无需修改 `build-profile.json5`，且适用于所有 SDK 版本，是 Router 架构中 `loadContent` 加载页面的可靠备选方案。

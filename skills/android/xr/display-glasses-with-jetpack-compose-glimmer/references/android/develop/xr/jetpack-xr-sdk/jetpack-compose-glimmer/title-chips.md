@@ -21,8 +21,25 @@ The following code creates a basic title chip:
 
 ```kotlin
 @Composable
-fun TitleChipSample() {
+fun BasicTitleChipSample() {
     TitleChip { Text("Messages") }
+}
+```
+
+<br />
+
+## Basic example: Create a title chip with an icon
+
+The following code creates a title chip with an icon:
+
+
+```kotlin
+@Composable
+fun TitleChipWithIconSample() {
+    TitleChip {
+        Icon(FavoriteIcon, contentDescription = "Favorite")
+        Text("Favorites")
+    }
 }
 ```
 
@@ -40,7 +57,9 @@ the composable. The following code creates a title chip with a card:
 fun TitleChipWithCardSample() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         TitleChip { Text("Title Chip") }
+
         Spacer(Modifier.height(TitleChipDefaults.associatedContentSpacing))
+
         Card(
             title = { Text("Title") },
             subtitle = { Text("Subtitle") },

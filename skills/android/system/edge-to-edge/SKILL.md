@@ -1,10 +1,11 @@
 ---
 name: edge-to-edge
 description: 使用此 skill 迁移 Jetpack Compose 应用以添加自适应 edge-to-edge 支持，并排查常见问题。用于修复被导航栏或状态栏遮挡/重叠的 UI 组件（如按钮或列表）、修复 IME insets、以及修复系统栏可读性。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-04-01'
+  last-updated: '2026-08-14'
   keywords:
   - android
   - compose

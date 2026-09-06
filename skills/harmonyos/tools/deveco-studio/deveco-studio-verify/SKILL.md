@@ -397,7 +397,14 @@ hdc list targets
 - 使用 UI 元素树替代
 
 ### uitest命令失败
+
+> **⚠️ 警告：持久化系统参数（仅限测试模拟器）**
+> 此命令会修改一个**持久化的系统参数**（`persist.ace.testmode.enabled`），该参数在**设备重启后依然存在**，非临时变更。
+> **仅限在测试模拟器上使用**；**切勿应用于生产/真实设备**。
+> 若确需在真机上临时使用，测试完成后**必须重置**：`hdc shell param set persist.ace.testmode.enabled 0`
+
 - 开启测试模式：`hdc shell param set persist.ace.testmode.enabled 1`
+- 关闭测试模式（测试完成后执行）：`hdc shell param set persist.ace.testmode.enabled 0`
 
 ### 真机日志乱码
 - 使用 hilogtool 配合字典文件解析

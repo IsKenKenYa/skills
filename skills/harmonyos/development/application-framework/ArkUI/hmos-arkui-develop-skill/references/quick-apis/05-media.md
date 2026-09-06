@@ -48,13 +48,43 @@
 | **CanvasRenderingContext2D** | `new CanvasRenderingContext2D(settings?)` | `fillRect/strokeRect/clearRect/drawImage/fillText/strokeText/arc/beginPath/closePath/moveTo/lineTo/bezierCurveTo/quadraticCurveTo/rotate/scale/translate/save/restore/clip/createLinearGradient/createRadialGradient` |
 | **OffscreenCanvas** | `new OffscreenCanvas(width, height)` | 离屏渲染 |
 | **Path2D** | `new Path2D()` | `addPath/arc/arcTo/bezierCurveTo/ellipse/lineTo/moveTo/quadraticCurveTo/rect` |
-| **Shape** | `Shape(options?: {viewPort})` | `.fill()` `.stroke()` `.strokeWidth()` `.strokeDashArray()` `.strokeLineCap()` `.antiAlias()` |
+| **Shape** | `Shape(value?: PixelMap)` | `.viewPort({x,y,width,height})` `.fill()` `.stroke()` `.strokeWidth()` `.strokeDashArray()` `.strokeLineCap()` `.antiAlias()` |
+| **ColorFilter** | `new ColorFilter(number[20])`（4×5 矩阵行优先） | 仅构造函数，**无 `ColorFilter.matrix()` 静态方法**；Drawing 模块用 `drawing.ColorFilter.createMatrixColorFilter(Array<number>)` (since 12) |
 | **Rect** | `Rect(options?)` | `.width()` `.height()` `.radiusWidth()` `.radiusHeight()` `.fill()` `.stroke()` |
 | **Circle** | `Circle(options?)` | `.width()` `.height()` `.fill()` `.stroke()` |
 | **Ellipse** | `Ellipse(options?)` | `.width()` `.height()` `.fill()` `.stroke()` |
-| **Line** | `Line(options?)` | `.startPoint()` `.endPoint()` `.fill()` `.stroke()` `.strokeWidth()` |
+| **Line** | `Line(options?)` | `.startPoint([x,y])` `.endPoint([x,y])`（参数是 `Array<number>`，**非 `{x,y}` 对象**） `.fill()` `.stroke()` `.strokeWidth()` |
 | **Polyline** | `Polyline(options?)` | `.points(Array\<Point\>)` `.fill()` `.stroke()` |
 | **Polygon** | `Polygon(options?)` | `.points(Array\<Point\>)` `.fill()` `.stroke()` |
 | **Path** | `Path(options?)` | `.commands(string)` `.fill()` `.stroke()` |
+
+### 典型用法
+
+#### Shape 构造陷阱
+
+```ts
+// ✅ 正确：viewPort 是链式方法，不是构造参数
+Shape().viewPort({ x: 0, y: 0, width: 400, height: 300 })
+
+// ❌ 错误：Shape({ viewPort: {...} }) — 构造参数实际是 PixelMap
+```
+
+#### Line 起点终点
+
+```ts
+// ✅ 正确：参数是 Array<number>
+Line().startPoint([10, 20]).endPoint([310, 20])
+
+// ❌ 错误：传对象 { x: 10, y: 20 } 不匹配
+```
+
+#### Video 回调参数
+
+```ts
+// ✅ 回调参数是对象，不是 number
+Video({ src: $r('app.media.video') })
+  .onUpdate((data: PlaybackInfo) => { data.time })      // 非 (time: number)
+  .onPrepared((data: PreparedInfo) => { data.duration }) // 非 (duration: number)
+```
 
 ---

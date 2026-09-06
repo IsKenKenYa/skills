@@ -1,4 +1,4 @@
-This file defines the structure of various clusters in the Engage SDK.
+The Engage SDK defines cluster structures as shown in this reference:
 
     {
       "clusters": {
@@ -23,7 +23,8 @@ This file defines the structure of various clusters in the Engage SDK.
               "adder": "addAllDisplayTimeWindow(DisplayTimeWindow)",
               "adderAll": "addAllDisplayTimeWindow(List<DisplayTimeWindow>)"
             }
-          }
+          },
+          "associatedClusterType": "ClusterType.TYPE_FEATURED"
         },
         "ContinuationCluster": {
           "package": "com.google.android.engage.common.datamodel.ContinuationCluster",
@@ -58,7 +59,8 @@ This file defines the structure of various clusters in the Engage SDK.
               "adder": "addAllDisplayTimeWindow(DisplayTimeWindow)",
               "adderAll": "addAllDisplayTimeWindow(List<DisplayTimeWindow>)"
             }
-          }
+          },
+          "associatedClusterType": "ClusterType.TYPE_CONTINUATION"
         },
         "RecommendationCluster": {
           "package": "com.google.android.engage.common.datamodel.RecommendationCluster",
@@ -107,11 +109,12 @@ This file defines the structure of various clusters in the Engage SDK.
             },
             "recommendationClusterType": {
               "type": "@RecommendationClusterType int",
-              "requirement": "Optional",
+              "requirement": "Required",
               "setter": "setRecommendationClusterType(@RecommendationClusterType int)",
               "getter": "getRecommendationClusterType()"
             }
-          }
+          },
+          "associatedClusterType": "ClusterType.TYPE_RECOMMENDATION"
         },
         "SubscriptionCluster": {
           "package": "com.google.android.engage.common.datamodel.SubscriptionCluster",
@@ -128,10 +131,12 @@ This file defines the structure of various clusters in the Engage SDK.
               "adder": "addSubscriptionEntity(SubscriptionEntity)",
               "getter": "getSubscriptionEntities()"
             }
-          }
+          },
+          "associatedClusterType": "ClusterType.TYPE_SUBSCRIPTION"
         },
         "EngagementCluster": {
           "package": "com.google.android.engage.common.datamodel.EngagementCluster",
+          "associatedClusterType": "ClusterType.TYPE_ENGAGEMENT",
           "fields": {
             "signInCardEntity": {
               "type": "SignInCardEntity",

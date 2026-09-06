@@ -1,221 +1,216 @@
 ---
 name: hmos-cppcrash-analysis
-description: DFX Skills，分析 HarmonyOS/OpenHarmony 应用的 CppCrash（Native 层崩溃）故障日志，定位根因并给出修复建议。当用户提供 cppcrash 日志、粘贴 Native 崩溃堆栈、询问 SIGSEGV/SIGABRT/SIGILL/SIGBUS 崩溃原因、或上传含有信号值/寄存器/调用栈的故障日志时，必须使用此技能。即使用户只说"帮我分析这个崩溃日志"、"应用崩溃了是什么原因"、"空指针崩溃怎么排查"，也应立即触发此技能。
+description: >-
+  DFX Skills，分析 HarmonyOS/OpenHarmony 应用的 CppCrash（Native 层崩溃）日志，
+  基于信号、寄存器、Native 调用栈、符号和内存证据定位根因并给出修复建议。
+  当输入包含 cppcrash、NativeCrash、Reason:Signal、Fault thread info、Registers、
+  Memory near registers、Native .so 调用栈、SIGSEGV/SIGABRT/SIGILL/SIGBUS/SIGFPE，
+  或 GWP-ASan 报告时使用。若用户只说“应用崩溃/闪退”但没有 JS 或 Native 证据，
+  先识别日志类型；仅在确认是 Native Crash 后使用本技能。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.0.0
+   version: 1.3.0
 ---
 
 # CppCrash 故障分析技能
 
-## 概述
+## 核心原则
 
-本技能用于系统化分析 HarmonyOS / OpenHarmony 平台上的 Native 层（C/C++）进程崩溃故障，覆盖日志获取、信号分类、寄存器分析、行号定位、根因判断及修复建议全流程。
+1. 先提取事实，再匹配故障模式；不得用单个栈帧直接推导深层根因。
+2. 关键日志报告用于导航，原始日志仍是证据源。提取结果缺失字段时必须回读原始日志。
+3. 区分崩溃点、首个非运行时调用方和首个应用侧帧，不把系统运行时帧直接当作业务根因。
+4. `.so` 路径只能辅助判断代码归属，不能单独证明责任归属。
+5. 区分第一现场和延迟崩溃。GC、allocator、容器或运行时栈可能只是内存破坏后的触发点。
+6. 使用证据等级：检测器明确报告 > 指令/寄存器联合证据 > 多项栈特征 > 单一模块特征。
+7. 修复建议必须与根因责任领域一致：系统侧根因只给系统侧修改，应用侧根因只给应用侧修改；不得用应用规避方案替代系统缺陷修复。
 
----
+## 分析流程
 
-## 分析流程（）
+### 步骤零：环境与输入检查
+
+1. 确认 Python 3.8 或更高版本可用：
+
+   ```bash
+   python --version
+   ```
+
+   Windows 中没有 `python` 命令时尝试 `py -3`。脚本只使用 Python 标准库，无需安装第三方依赖。
+
+2. 将包含本文件的目录记为 `<skill-root>`。调用脚本时使用完整路径，不依赖当前工作目录：
+
+   ```bash
+   python "<skill-root>/scripts/main.py" -p "<cppcrash文件或目录>"
+   ```
+
+3. 用户要求分析目录内全部日志时增加 `--all`：
+
+   ```bash
+   python "<skill-root>/scripts/main.py" -p "<日志目录>" --all
+   ```
+
+4. 检查输入是否存在、是否可读。若脚本未识别日志，直接检查原始文件中的 `Reason:`、
+   `Fault thread info:`、`Reason:GWP-ASAN` 和 `*** GWP-ASan detected a memory error ***`。
+
 ### 步骤一：提取关键日志
-> 调用 `scripts/windows/reliability_analyze -p {file_path}`，提取关键日志
 
-完整的看完提取的关键日志，后面所有的分析必须基于此关键日志
-📖 读取 references/arkui.md
-📖 读取 references/arkdata.md
-📖 读取 references/arkweb.md
-📖 读取 references/jsruntime.md
-📖 读取 references/render_service.md
-📖 读取 references/jsvm.md
-📖 读取 references/rosen_text.md
+完整阅读脚本输出，并在以下情况回读原始日志：
 
-### 步骤二：基于信号值确定崩溃类
-优先读取日志中的 `Reason` 字段，识别信号值：
+- 报告提示字段或调用栈缺失。
+- 需要其他线程完整调用栈、完整 Maps、HiLog 或 GWP-ASan 三段调用栈。
+- 日志包含多个故障事件或拼接内容。
+- 结论依赖未被提取的上下文。
 
-| 信号 | 含义 | 分析方向 |
-|------|------|----------|
-| `SIGSEGV(SEGV_MAPERR)` | 访问未映射内存 | 空指针、野指针、越界 |
-| `SIGSEGV(SEGV_ACCERR)` | 访问权限不足 | 代码段写操作、只读内存修改 |
-| `SIGILL` | 非法指令 | 访问合法地址但不是代码段 |
-| `SIGBUS(BUS_ADRALN)` | 地址未对齐 | 指针强转后非对齐访问 |
-| `SIGABRT` | 进程主动终止 | 线程/FD/接口时序资源问题，查 abort 调用栈 |
+目录输入默认分析按日志时间或文件修改时间确定的最新一份日志；批量分析必须使用 `--all`。
 
-**日志字段格式说明：**
-```
-Reason:Signal:SIGSEGV(SI_TKILL)@0x000027e0 from:10208:0
-         ↑信号值(来源类型)  ↑崩溃地址         ↑发送信号的Pid:Uid
-```
+### 步骤二：选择分析分支
 
----
+#### GWP-ASan 分支
 
-### 步骤三：分析崩溃地址
+用户描述或日志内容包含以下任一特征时，读取 `references/gwp_asan.md`：
 
-- `@0x00000000`：高概率**空指针解引用**
-- `@0x0000000c`（极小值）：结构体成员含**空指针**，偏移访问导致崩溃
-- 地址为合法范围但信号为 `SIGILL`：地址指向的不是代码段
-- 地址随机、崩溃栈随机：怀疑**地址越界**或**二进制不匹配**
-- Reason中需要关注signal信息和地址。内存地址如果是**0x006b** 或者 **0x6b6b** 开头，很可能是use-after-free问题。
----
-### 步骤四: 分析Hilog流水日志
-> 调用 `scripts/windows/extract_hilog.exe {file_path}`，提取关键日志，file_path为faultlog地址
-根据闪退前的流水日志，分析业务特征，识别崩溃前一段时间在执行什么业务，输出崩溃前的业务特征（不做为根因分析）
+- `gwpasen`、`gwpasan`、`GWP-ASan` 或 `GWP-ASAN`
+- `Reason:GWP-ASAN`
+- `*** GWP-ASan detected a memory error ***`
 
-### 步骤五: 解析调用栈
+必须保留并分析违规访问、释放和申请调用栈。普通 CppCrash 不加载该 reference。
 
-根据下载的SO文件解析鸿蒙应用的崩溃调用栈。
+#### 普通 Native Crash 分支
 
-**工作流程：**
+读取 `references/fault_mode.md`，从 `Reason` 中提取信号、`si_code` 和故障地址：
 
-1. 读取cppcrash文件中的崩溃堆栈信息
-2. 使用llvm-addr2line解析地址到函数名和行号
-4. 记录解析地址到函数名和行号
+| 信号 | 基础语义 | 首要分析方向 |
+|------|----------|--------------|
+| `SIGSEGV(SEGV_MAPERR)` | 地址未映射 | 空基址偏移、悬空指针、越界地址 |
+| `SIGSEGV(SEGV_ACCERR)` | 映射权限不允许当前访问 | 写只读页、执行不可执行页、映射状态变化 |
+| `SIGILL` | CPU 执行了非法或不受支持的指令 | 指令损坏、错误跳转、ISA/PAC/CFI 问题 |
+| `SIGBUS` | 对齐、映射文件或硬件访问异常 | 对齐、mmap 文件变化、对象访问错误 |
+| `SIGABRT` | 进程主动终止 | LastFatalMessage、assert、未捕获异常、检测器报告 |
+| `SIGFPE` | 算术异常 | 除零、溢出或无效算术操作 |
 
-**使用工具：**
+信号只描述故障机制，不等于代码根因。
 
-```
-scripts/windows/llvm-addr2line.exe -pCfie so文件 崩溃栈中的相对偏移
-```
+### 步骤三：按需加载知识库
 
-### 步骤六：反汇编（必选）
+只读取与关键日志匹配的 reference。允许命中多项，但不要读取无关文件。
 
-当单行代码含多参数函数调用、无法仅凭源码得出结论时，使用反汇编工具进一步分析寄存器传参和内存布局，
+| 日志特征 | 读取 reference |
+|----------|----------------|
+| `libace_compatible`、`libace_ndk`、`OHOS::Ace`、XComponent、UI 节点 | `references/arkui.md` |
+| `libnative_rdb`、`libsqlite`、`libnative_appdatafwk`、`librelationalstore` | `references/arkdata.md` |
+| ArkWeb、WebView、`libarkweb_engine`、crashpad、Web GPU | `references/arkweb.md` |
+| `libark_jsruntime`、`libace_napi`、N-API、JS GC/OOM、`LoadJSPandaFile`、`load hsp failed`、`Crash occured on ProcessAll` | `references/jsruntime.md` |
+| `RenderService`、`OHOS::Rosen`、NativeWindow、BufferQueue | `references/render_service.md` |
+| `libv8_shared`、`libjsvm`、`OH_JSVM_*`、`DestroyEnv`、`HandleScope`、`openHandleScopes`、JSVM Fatal Error | `references/jsvm.md` |
+| `librosen_text`、FontCollection、Paragraph 文本对象 | `references/rosen_text.md` |
+| allocator/CFI/PAC/StackProtector/代码段异常等内存破坏特征 | `references/memory_corruption.md` |
+| `edata_heap_remove`、`emap_update_edata_state`；或故障地址以 `0x006b` / `0x6b6b` 开头且 `#00` 为 `/system/lib64/` 系统栈 | `references/memory_corruption_second_scene.md` |
 
-**工作流程：**
+满足以下四类表现之一时额外读取 `references/multithreading.md`：
 
-1. 对SO文件进行反汇编，生成汇编文件
-2. 结合cppcrash文件栈顶的地址，从反汇编得到的文件so文件名.objdump中取出对应地址所在函数的汇编指令，从栈顶地址开始分析寄存器和指令执行流程，要注意向前追溯异常。
-如果需要可以在Memory near registers下找到对应的寄存器（寄存器周边内存信息）进行分析，不限制搜索日志行数
+1. 日志包含 `CheckThread` 和 `ecma_vm cannot run in multi-thread`。
+2. 主线程或工作线程栈同时包含业务/组件代码与 N-API、JS Runtime 或 JS 绑定调用，且故障地址为
+   NULL 小偏移、连续可打印 ASCII 字符型地址或其他疑似对象损坏地址。
+3. `OS_GC_Thread` 的栈只有 GC 帧，并在 `ConcurrentMarker`、`NonMovableMarker` 或
+   `ProcessMarkStack` 等标记阶段访问非法地址。
+4. `OS_GC_Thread` 的栈只有 GC 帧，并在 `EvacuateObject`、`FullGCRunner` 或
+   `CompressGCMarker` 等搬迁阶段出现 `unreachable type` 或非法对象类型。
 
-**使用工具：**
+第 1 类是跨线程使用 `env` 的第一现场。第 2 至第 4 类通常是 JS 对象被破坏后的延迟崩溃；
+优先排查跨线程 `env`，但需结合线程归属、N-API 路径或检测结果确定最终可信度。
 
-- llvm-objdump：反汇编工具
+reference 发生冲突时，以证据等级更高的规则为准。模块栈模式不得覆盖检测器报告或明确的寄存器/指令证据。
 
-- 使用示例
+命中 `references/memory_corruption_second_scene.md` 时，只能将当前崩溃栈定界为踩内存的第2现场。
+`#00` 系统模块是损坏内存的访问方或检测点，不能据此直接认定为非法踩写源；缺少第一现场证据时，
+必须明确说明踩写模块尚未定位。
 
-  ```
-  scripts/windows/llvm-objdump -dS -l -C so文件 > so文件名.objdump
-  ```
+### 步骤四：建立证据链
 
----
-### 步骤七：结合业务分析代码（必选）
+#### 1. 信号、地址和寄存器
 
-定位到行号后，在源码上下文中结合代码分析代码根因
+- `fault_addr` 接近 0 只表示疑似空基址加成员偏移，需结合实际访存指令、基址寄存器及
+  N-API/线程归属证据判断是否为跨线程破坏后的延迟表现。
+- `fault_addr` 按字节解析后包含连续可打印 ASCII 字符时，说明指针或对象字段可能被字符数据覆盖；
+  这是内存破坏证据，不能脱离线程与调用链单独确认跨线程根因。
+- 随机地址、allocator、GC 或容器栈只能作为内存破坏候选，除非有检测器或联合证据。
+- 从 PC 附近指令确定读写方向、参与计算的寄存器和实际访问地址。
+- Maps 区间采用左闭右开语义：`start <= address < end`。
 
----
-### 步骤八：地址越界专项分析（可选）
+#### 2. 调用栈分层
 
-**判断特征：** 崩溃栈随机、每次崩溃位置不同。
+按以下层级分别记录，不得混为一个“业务首帧”：
 
-此时进程崩溃已非第一现场，需借助 **HWASan** 等内存检测工具：
-- 开启 HWASan 重新构建并复现
-- 分析 HWASan 报告定位越界写操作的源头
+| 层级 | 含义 |
+|------|------|
+| 崩溃帧 | `#00`，进程最终触发信号的位置 |
+| 首个非运行时调用方 | 跳过 libc、abort、Ark Runtime、N-API 桥接层后的第一个调用模块 |
+| 首个应用侧帧 | 路径或构建信息能够确认属于应用产物的第一帧 |
 
+没有应用帧时不得伪造应用责任模块。系统栈也可能由错误入参、生命周期或回调契约触发。
 
-## 常见崩溃类型速查
+#### 3. 责任领域与修复建议对齐
 
-### 1. 空指针解引用
+输出修复建议前，必须依据第一现场、违规访问/释放/申请栈、调用契约、寄存器/指令和源码证据，将责任领域判定为：应用、系统、混合或未定。
 
-**特征：**
-- `SIGSEGV(SEGV_MAPERR)@0x00000000`
-- 传参寄存器 `r0/r1` 值为 0 或极小值（如 `0x0c`）
+- **系统侧根因**：证据链确认缺陷位于系统服务、系统框架、系统库或系统 API 实现时，只输出对应系统模块的代码/架构修改，例如空值与边界修复、对象生命周期和并发修复、锁序调整、接口契约修正。不得要求应用修改调用方式、增加兜底或规避系统缺陷来充当根因修复。
+- **应用侧根因**：证据链确认应用错误入参、生命周期、越界、跨线程或接口误用时，只输出应用侧修改。
+- **混合责任**：双方都有直接缺陷时分栏输出，先写主要责任方；应用侧临时规避必须明确标注，不能替代系统侧修复。
+- **责任未定**：只有系统栈、只有应用调用入口或当前仅为踩内存第2现场时，不强行给跨责任域修改方案；输出继续定界所需的符号、第一现场、源码或检测器证据。
 
-**排查：** 检查调用入参、结构体成员是否含空指针。
+`.so` 路径仅用于代码归属辅助，责任结论仍须由根因证据决定。根因位于系统侧时，即使故障进程是三方应用，也必须给系统侧修改建议。
 
----
+#### 4. 符号化、反汇编和源码
 
-### 2. SIGABRT（进程主动终止）
+仅在材料齐全时执行，不得将其写成无条件必选步骤：
 
-**特征：** 调用栈中含 `abort`
+1. 有匹配 BuildID 的 `.so` 和符号时运行：
 
-**排查方向：**
-- 线程创建超限
-- 文件描述符泄漏耗尽
-- 接口调用时序错误
+   ```bash
+   llvm-addr2line -pCfie "<so文件>" "<pc相对偏移>"
+   ```
 
-**方法：** 跳过 C 库/abort 帧，直接看第一个业务帧。
+2. 行号仍不足以判断多参数调用、虚表、函数指针或访存寄存器时运行：
 
----
+   ```bash
+   llvm-objdump -dS -l -C "<so文件>" > "<so文件名>.objdump"
+   ```
 
-### 3. 多线程竞争（SIGSEGV）
+3. 用户提供源码后，结合行号上下文检查空值、边界、所有权、线程和回调时序。
+4. 缺少符号、二进制或源码时明确列为缺失信息，不猜测函数行号或代码实现。
 
-**特征：** `llvm-addr2line` 定位到 `std::vector`、`std::map` 等集合操作行
+#### 5. 符号表反解状态门禁
 
-**原因：** STL 容器非线程安全，多线程并发增删触发崩溃
+输出修复建议前必须判断关键责任候选栈帧是否已完成符号表反解：
 
-**修复：** 加锁或改用线程安全容器。
+- 用户明确说明已使用与故障版本 BuildID 匹配的符号文件，且提供了关键责任候选帧的函数名或源码行，才视为已反解。
+- 用户未说明反解过程、未核对 BuildID，或关键责任候选帧仍仅有裸地址、`<so>+offset` 或 `unknown`，均视为未反解。
+- 应用侧根因或应用侧责任候选未反解时，【修复建议】或【下一步建议】的第 1 项要求提供匹配 BuildID 的应用 `.so`/符号；系统侧根因或系统侧责任候选未反解时，要求提供对应系统模块的匹配符号、源码或可符号化版本。不得在已确认系统侧根因后仍把“反解应用帧”作为首要修改建议。
+- 责任未定时，按证据指向分别列出需要反解的候选模块；在反解完成前只给定界建议，不猜测具体代码修改。
+- 上述要求适用于常规 CppCrash、踩内存第2现场和 GWP-ASan 场景；不得只在“是否需要进一步分析”中勾选符号文件核对而省略必要的责任模块符号化建议。
 
----
+#### 6. HiLog
 
-### 4. 裸指针生命周期不匹配
+日志含 `HiLog:` 且需要还原崩溃前业务时运行：
 
-**特征：** 随机崩溃栈，崩溃位置指向对象成员访问
-
-**原因：** 用裸指针保存 `sptr` / `shared_ptr` 管理的对象，对象释放后继续访问（use-after-free）
-
-**修复：** 改用智能指针（`shared_ptr` / `unique_ptr`）。
-
----
-
-### 5. Use-After-Free
-
-**典型代码：**
-```cpp
-int &getRef() {
-    int x = 5;
-    return x; // 返回局部变量引用，函数返回后 x 已销毁
-}
+```bash
+python "<skill-root>/scripts/extract_hilog.py" "<faultlog文件>"
 ```
 
-**修复：** 避免返回局部变量引用/指针；指针释放后立即置 `nullptr`。
-
----
-
-### 6. 栈溢出
-
-**特征：** `sp` 小于 `[stack]` 低地址；日志含 `stack overflow` 提示
-
-**典型场景：**
-- 递归调用（含析构函数内递归创建对象）
-- 信号栈中使用大块栈内存
-
-**典型代码：**
-```cpp
-~RecursiveClass() {
-    RecursiveClass obj; // 析构中递归构造，导致无限递归 → 栈溢出
-}
-```
-
----
-
-### 7. 二进制不匹配
-
-**特征：** 随机崩溃栈，BuildID 与日志不符
-
-**原因：** 运行时 `.so` 与调试符号文件版本不一致（ABI/数据结构差异）
-
-**修复：** 确保符号文件与设备上运行的二进制 BuildID 完全一致。
-
----
-
-### 8. 地址越界
-
-**特征：** 随机崩溃栈，写越界覆盖正常数据
-
-**工具：** HWASan 定位越界写操作源头。
-
----
-
-### 9. SIGBUS（地址未对齐）
-
-**特征：** `SIGBUS(BUS_ADRALN)`
-
-**原因：** 指针强转后地址不满足目标类型的对齐要求
-
-**排查：** 检查所有 `reinterpret_cast` / C 风格强转后的指针使用。
+HiLog 仅作触发路径和时序辅助证据，不能单独作为根因。
 
 ---
 
 ## 输出格式要求
+
 读取参考文件：`references/fault_mode.md`
-分析完成后，按以下结构输出结论：
+
+根据分析结果严格选择一个模板，不得混用：
+
+- 命中 `references/memory_corruption_second_scene.md` 时，只能使用“模板B：踩内存场景”。
+- 其他 CppCrash 场景使用“模板A：常规CppCrash场景”。
+- 所有模板中的【修复建议】必须服从“责任领域与修复建议对齐”规则；reference 中的场景示例不得覆盖该规则。
+
+### 模板A：常规CppCrash场景
 
 ```
 ================================================================================
@@ -301,9 +296,9 @@ int &getRef() {
 
 
 【修复建议】
-1. <针对直接原因的代码修复，如"在 Foo::Bar 入口处判空 this 相关成员">
-2. <针对深层原因的架构改进，如"改用 shared_ptr / weak_ptr 管理 Obj 生命周期">
-3. <防御性改进，如"增加 Crash 自测用例覆盖多线程释放场景">
+1. <按责任领域填写：系统侧根因写对应系统模块的直接代码修复；应用侧根因写应用代码修复；责任模块未反解时先要求该责任模块的匹配符号>
+2. <针对同一责任领域深层原因的架构改进，如生命周期、锁序、边界或接口契约修复>
+3. <由责任模块实施的防御性改进和回归用例；不得把另一责任域的规避措施写成根因修复>
 
 
 【是否需要进一步分析】
@@ -313,5 +308,81 @@ int &getRef() {
 [ ] Core Dump / Tombstone 深度解析
 [ ] 多次复现对比以排除随机性
 
+================================================================================
+```
+
+### 模板B：踩内存场景
+
+**⚠️ 注意：踩内存场景下，【根本原因】和【根因模块】部分字段不适用，无需填写。**
+**⚠️ 注意：请不要泛化增加字段。**
+
+严格按照以下结构输出结论：
+
+```
+================================================================================
+                        CppCrash 问题综合分析报告
+================================================================================
+
+【故障基本信息】
+故障时间     : <从日志提取>
+故障进程     : <PID / 进程名 / UID>
+故障类型     : CPP_CRASH (NativeCrash)
+信号类型     : <signo=SIGXXX, code=XXX_YYY>
+崩溃地址     : <fault addr>
+崩溃函数     : <调用栈 #00 帧>
+崩溃模块     : <so 路径>
+故障原因描述 : <日志中的原始 Reason 字段>
+
+
+【根因分析】
+诊断结果 : <一句话概括根因，如："jemalloc堆元数据被踩写损坏导致崩溃">
+故障类别 : 踩内存第2现场
+可信度   : HIGH / MEDIUM / LOW
+
+
+【三级根因定位】（依据 CPP_CRASH 故障模式库）
+┌──────────┬────────────────────────────────┬─────────────────────────────────┐
+│   层级   │              根因              │           匹配依据              │
+├──────────┼────────────────────────────────┼─────────────────────────────────┤
+│ 一级根因 │ CPP_CRASH                      │ <name_=CPP_CRASH 原始日志片段>  │
+│          │                                │                                 │
+│ 二级根因 │ <信号名称，如 SIGSEGV>         │ <signo=XXX 原始日志片段>        │
+│          │ (1.1.1.X.0)                    │                                 │
+│ 三级根因 │ <si_code 名称，如 SEGV_MAPERR> │ <code=XXX 原始日志片段>         │
+│          │ (1.1.1.X.Y)                    │                                 │
+└──────────┴────────────────────────────────┴─────────────────────────────────┘
+
+
+【证据链】（⚠️ 仅限以下2项，禁止扩展）
+
+1. 信号与子码语义分析
+   原始日志：
+   <Reason / Fault thread info / signal 行原始片段>
+   解读：
+   <基于故障模式库对 signo + code 组合的语义说明>
+
+2. 寄存器与故障地址分析
+   原始日志：
+   <x0-x30 / pc / lr / sp 等关键寄存器原始片段>
+   解读：
+   <分析寄存器值与崩溃地址的关系>
+
+【根因模块】
+责任领域 : 未定（当前仅为踩内存第2现场）
+定界依据 : <参考**踩内存第2现场定界专项分析**；不得因 #00 位于 /system 或进程属于应用而提前定责>
+
+【下一步建议】
+1. <提供与责任候选模块匹配 BuildID 的未剥离 .so/符号文件；候选为系统模块时提供系统符号，候选为应用模块时提供应用符号，反解到函数及源码行后重新定界>
+2. 获取现网 GWP_ASan 地址越界日志或其他踩内存第1现场日志，依据第一现场确定责任领域后再输出对应侧修复
+   链接：https://developer.huawei.com/consumer/cn/doc/best-practices/bpta-stability-gwpasan-detection
+3. 在责任候选模块可控构建中开启 HWASan 并复现，分析 HWASan 报告定位越界写操作源头
+   链接：https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-hwasan
+
+
+【是否需要进一步分析】
+[ ] 符号文件 BuildID 核对
+[ ] 反汇编分析（pc 附近指令）
+[ ] HWASan / ASan 地址越界检测
+[ ] Core Dump / Tombstone 深度解析
 ================================================================================
 ```

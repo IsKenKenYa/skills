@@ -1,10 +1,11 @@
 ---
 name: migrate-xml-views-to-jetpack-compose
 description: 提供将 Android XML View 迁移到 Jetpack Compose 的结构化工作流。该 skill 详述从规划和依赖设置，到主题和布局迁移、验证及 XML 清理的分步流程。当需要在 Android 项目中把 XML View 迁移到 Jetpack Compose 时使用。它解决将旧版 XML View 的 UI 转换为现代声明式 Compose 组件、同时保持互操作性的问题。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-06-08'
+  last-updated: '2026-08-14'
   keywords:
   - Jetpack Compose
   - migration

@@ -45,6 +45,7 @@ $logDirs = @(
 $existingLogDir = $logDirs | Where-Object { Test-Path $_ } | Select-Object -First 1
 Write-Host "找到日志目录: $existingLogDir"
 ```
+```
 %LOCALAPPDATA%\Huawei\DevEcoStudio{版本}\log\
 ```
 

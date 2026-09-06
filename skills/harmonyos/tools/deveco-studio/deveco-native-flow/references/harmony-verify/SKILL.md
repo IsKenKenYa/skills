@@ -1,6 +1,6 @@
 ---
 name: harmony-verify
-description: HarmonyOS 设备验证助手 - 支持模拟器管理、获取应用UI结构、执行UI自动化操作、打开网址、截图验证和日志获取。使用 hdc 命令行工具直接操作设备。
+description: HarmonyOS 设备验证助手 - 支持模拟器管理、应用安装/卸载、应用数据清除、获取应用UI结构、执行UI自动化操作、打开网址、设备设置修改（屏幕方向、测试模式）、截图验证和日志获取。使用 hdc 命令行工具直接操作设备。
 metadata:
   internal: true
 ---
@@ -140,6 +140,9 @@ hdc -t <device_id> install -r <hap路径>
 
 ### 2.4 卸载应用
 
+> **⚠️ 警告：破坏性操作（不可撤销）**
+> 卸载会永久移除应用及其全部数据，**无法撤销**，可能导致用户数据丢失。执行前请确认 `bundleName` 正确，并已做好必要备份。
+
 ```bash
 hdc -t <device_id> uninstall <bundleName>
 ```
@@ -161,6 +164,9 @@ hdc -t <device_id> shell aa force-stop <bundleName>
 ```
 
 ### 2.7 清除应用数据
+
+> **⚠️ 警告：破坏性操作（不可撤销）**
+> `bm clean` 会永久清除应用的持久化数据/缓存，**无法撤销**，将造成应用内用户数据丢失。执行前请确认目标 `bundleName`，并已备份关键数据。
 
 ```bash
 hdc -t <device_id> shell bm clean -d -n <bundleName>  # 清除数据
@@ -311,6 +317,9 @@ hdc -t <device_id> shell hidumper -s WindowManagerService -a -a
 **解析：** 匹配 `Highlighted\s+windows:\s*(\d+)`
 
 ### 5.2 开启测试模式
+
+> **⚠️ 警告：系统配置变更（持久化）**
+> `persist.ace.testmode.enabled` 会写入系统参数并持久化，**重启后仍生效，非临时变更**，会影响设备 UI 行为。生产环境请勿开启；用完请执行 `param set persist.ace.testmode.enabled 0` 关闭。
 
 ```bash
 hdc -t <device_id> shell param set persist.ace.testmode.enabled 1
@@ -492,6 +501,9 @@ hdc -t <device_id> shell aa force-stop com.example.app
 hdc -t <device_id> shell hidumper -s WindowManagerService -a -a
 
 # 2. 开启测试模式
+# ⚠️ 警告：persist.ace.testmode.enabled 为持久化参数，重启后仍生效。
+# 完成元素获取后必须执行步骤 9 重置；若流程被中断，需手动执行：
+#   hdc -t <device_id> shell param set persist.ace.testmode.enabled 0
 hdc -t <device_id> shell param set persist.ace.testmode.enabled 1
 
 # 3. 获取窗口 ID
@@ -511,6 +523,9 @@ hdc -t <device_id> shell uitest uiInput swipe 540 1500 540 500 600
 
 # 8. 按返回键
 hdc -t <device_id> shell uitest uiInput keyEvent Back
+
+# 9. 清理：重置测试模式（持久化参数，必须显式关闭）
+hdc -t <device_id> shell param set persist.ace.testmode.enabled 0
 ```
 
 ---

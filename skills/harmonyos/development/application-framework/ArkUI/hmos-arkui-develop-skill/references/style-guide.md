@@ -24,9 +24,9 @@ struct Item {}
 
 ```typescript
 // ✅ 正确: camelCase，使用有意义的名称
-@State isLoading: boolean = false
-@State userName: string = ''
-@State itemCount: number = 0
+@State isLoading: boolean = false;
+@State userName: string = '';
+@State itemCount: number = 0;
 
 // ❌ 错误: 无意义的名称
 @State flag: boolean = false
@@ -282,10 +282,10 @@ struct MyComponent {
 
 ```typescript
 // ✅ 正确: 添加类型注解
-@State users: UserData[] = []
-@State count: number = 0
-@State message: string = ''
-@State isLoading: boolean = false
+@State users: UserData[] = [];
+@State count: number = 0;
+@State message: string = '';
+@State isLoading: boolean = false;
 
 private handleClick(): void {
   // 实现

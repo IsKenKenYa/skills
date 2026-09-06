@@ -37,6 +37,74 @@ class RetrievalResult:
     suggested_queries: List[str]
 
 
+# ---- 技术栈语境检测(用于自动路由到 ArkTS / NDK 知识库)----
+
+# NDK / C-API 强信号
+_NDK_DOMAIN_PATTERNS = [
+    r"\bndk\b",
+    r"\bnative\b",
+    r"\bcapi\b",
+    r"capi-",
+    r"\bnapi\b",
+    r"oh_native\w*",
+    r"arkui_native\w*",
+    r"libace_ndk",
+    r"native_node",
+    r"nativemodule",
+    r"native\s*module",
+    r"native\s*侧",
+    r"native\s*层",
+    r"native\s*接口",
+    r"native\s*api",
+    r"c\+\+",
+]
+
+# ArkTS / ArkUI 声明式强信号
+_ARKTS_DOMAIN_PATTERNS = [
+    r"@\w+",                # @Local / @State / @Component 等装饰器
+    r"\barkts\b",
+    r"声明式",
+    r"\bforeach\b",
+    r"\blazyforeach\b",
+    r"状态管理",
+    r"装饰器",
+    r"navdestination",
+]
+
+# 跨域信号:ArkTS 与 NDK 都有对应文档,两库都查
+_CROSS_DOMAIN_PATTERNS = [
+    r"\bxcomponent\b",
+    r"\begl\b",
+    r"opengles",
+    r"opengl",
+    r"\bsurface\b",
+]
+
+# 默认技术栈:这是 ArkUI skill,无强信号时按 ArkTS 处理
+DEFAULT_DOMAIN = "arkts"
+
+
+def detect_domain(query: str) -> str:
+    """根据查询语境判断技术栈,返回 'ndk' / 'arkts' / 'both'。
+
+    纯关键词规则,不加载索引,供 run.py 自动路由使用。
+    """
+    if not query or not query.strip():
+        return DEFAULT_DOMAIN
+    ndk_hit = any(re.search(p, query, re.IGNORECASE) for p in _NDK_DOMAIN_PATTERNS)
+    arkts_hit = any(re.search(p, query, re.IGNORECASE) for p in _ARKTS_DOMAIN_PATTERNS)
+    cross_hit = any(re.search(p, query, re.IGNORECASE) for p in _CROSS_DOMAIN_PATTERNS)
+    if cross_hit:
+        return "both"
+    if ndk_hit and arkts_hit:
+        return "both"
+    if ndk_hit:
+        return "ndk"
+    if arkts_hit:
+        return "arkts"
+    return DEFAULT_DOMAIN
+
+
 class ArkUIRetriever:
 
     DEFAULT_RERANK_WEIGHTS = {
@@ -108,6 +176,7 @@ class ArkUIRetriever:
         r"性能优化|性能\s*调优|performance",
         r"API\s*(version\s*)?12|API\s*(version\s*)?13|API\s*(version\s*)?14|API\s*(version\s*)?15",
         r"aboutToAppear|aboutToDisappear|onPageShow|onPageHide|生命周期",
+        r"NDK|capi|Native\s*Module|OH_NativeXComponent|ArkUI_Native|native_node|libace_ndk|XComponent",
     ]
 
     SHOULD_SEARCH_PATTERNS = [

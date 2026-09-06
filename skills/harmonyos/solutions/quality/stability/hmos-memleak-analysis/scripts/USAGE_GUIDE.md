@@ -23,7 +23,7 @@ python scripts/skill_main.py ./src --language=arkts --output=report.json
 # .git/hooks/pre-commit
 
 echo "检测内存泄漏..."
-python scripts/filter_on.py ./src --json --output=memleak_check.json
+python scripts/filter_on.py ./src --json > memleak_check.json
 
 # 检查是否有严重问题
 critical_count=$(cat memleak_check.json | python -c "import sys, json; print(len([i for i in json.load(sys.stdin)['issues'] if i['severity'] == 'Critical']))")

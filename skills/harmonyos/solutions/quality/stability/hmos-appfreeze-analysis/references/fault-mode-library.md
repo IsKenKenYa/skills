@@ -17,6 +17,8 @@
 | **同步 Binder 接口调用阻塞** | 1. 主线程调用栈位于 `OHOS::BinderInvoker::WaitForCompletion`；2. 通过 BinderCatcher 找到对应 `pid:tid`（tid == pid）的对端进程 PID |
 | **对端 Binder 满** | 1. 主线程调用栈位于 `OHOS::BinderInvoker::WaitForCompletion`；2. 通过 BinderCatcher 找到对应 `pid:tid` 调用栈；3. BinderCatcher 显示等待对端未分配出 tid 号 |
 | **阻塞 IO 操作** | 主线程调用栈位于 IO 操作：C 库 `ld-musl`：`open` / `read` / `write` / `close` |
+| **FFRT 同步等待阻塞** | 1. 主线程调用栈位于 `libffrt.so`（符号：`ffrt::ExecuteTask` / `ffrt::CPUWorker::RunTask` / `ffrt_wait` / `ffrt_mutex_lock_wait` / `ffrt_cond_wait`）；2. 通过 `FfrtCatcher` 段（`worker tid ... task is running`）定位卡住的 FFRT worker；3. 细分判定（worker 占满 / 任务超限 / 队列超时 / 原语死锁）见 `references/ffrt-freeze-analysis.md` |
+| **libuv EventLoop 阻塞** | 1. 主线程调用栈位于 `libuv.so`（符号：`uv_run` / `uv__io_poll` / `uv__run_idle` / `uv_queue_work` / `uv_close` / `uv__fs_work` / `uv_fs_sendfile` 等 `uv_fs_*`）；2. 采样栈高频命中 `uv_async_send` / `uv_ffrt_work` / `uv_queue_done`（按繁忙阈值 >30%）；3. 细分判定（阶段卡死 / 线程池耗尽 / async 滥用 / 生命周期不当 / uv_run 重入 / 同步阻塞调用）见 `references/libuv-freeze-analysis.md` |
 | **长时 GC 操作** | 栈顶(#00 #01)在pthread_condition_wait上的紧接(#02)着libark_jsruntime.so，可以认为虚拟机在GC；主线程调用栈位于 `panda::ecmascript::FullGC`（系统问题）；hilog 中存在 warning 级别 GC 进入前后的日志 |
 | **长时 Dump 操作** | 主线程调用栈位于 `DumpHeapSnapshot` |
 | **执行耗时操作** | 未匹配上述任何模式时，默认根因为执行耗时操作 |
@@ -50,6 +52,7 @@
 > SysEvent: `name_: APP_FREEZE / REASON: APP_INPUT_BLOCK`
 > AppEvent: `name: APP_FREEZE / exception: name: APP_INPUT_BLOCK`
 > 故障描述：用户输入处理超时，导致应用卡死
+> （SE：曾智 责任田：占澎洪）
 
 ### 二级：主线程阻塞
 > 判定特征：主线程调用栈或采样栈有一次不是 `OHOS::AppExecFwk::EventQueue::WaitUntilLocked`；或 3s、Input 的栈顶在**相同的栈**上
@@ -59,6 +62,8 @@
 | **等锁** | 主线程调用栈位于 `pthread_mutex` |
 | **对端 Binder 满** | 1. 主线程调用栈位于 Binder 调用：`OHOS::BinderInvoker::WaitForCompletion`；2. 通过 BinderCatcher 找到对应 `pid:tid` 的调用栈；3. BinderCatcher 信息显示等待对端未分配出 tid 号 |
 | **阻塞 IO 操作** | 主线程调用栈位于 IO 操作 |
+| **FFRT 同步等待阻塞** | 1. 主线程调用栈位于 `libffrt.so`（符号：`ffrt::ExecuteTask` / `ffrt::CPUWorker::RunTask` / `ffrt_wait` / `ffrt_mutex_lock_wait` / `ffrt_cond_wait`）；2. 通过 `FfrtCatcher` 段定位卡住的 FFRT worker；3. 细分判定见 `references/ffrt-freeze-analysis.md` |
+| **libuv EventLoop 阻塞** | 1. 主线程调用栈位于 `libuv.so`（符号：`uv_run` / `uv__io_poll` / `uv_queue_work` / `uv_close` / `uv__fs_work` / `uv_fs_sendfile` 等 `uv_fs_*`）；2. 采样栈高频命中 `uv_async_send` / `uv_ffrt_work` / `uv_queue_done`；3. 细分判定见 `references/libuv-freeze-analysis.md` |
 | **长时 GC 操作** | 主线程调用栈位于 `panda::ecmascript::FullGC`（系统问题）；hilog 补充 warning 级别的 GC 进入前后的日志 |
 | **长时 Dump 操作** | 主线程调用栈位于 heapdump：`DumpHeapSnapshot` |
 | **执行耗时操作** | 未匹配上述故障时，默认根因为执行耗时操作：① 仅包含主线程栈的场景，根据多份日志聚合主线程调用栈；② 包含采样栈的场景，根据多份采样栈聚合 |

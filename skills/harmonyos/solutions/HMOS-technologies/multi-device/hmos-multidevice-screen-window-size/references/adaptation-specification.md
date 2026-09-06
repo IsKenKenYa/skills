@@ -401,31 +401,8 @@ windowStage.loadContent('pages/Index', (err) => {
 });
 ```
 
-- BreakpointType 按断点分配单图基础宽度/高度尺寸，保证尺寸放大倍数不超过1.2：       
+- [BreakpointType](../assets/BreakpointType.ets) 按断点分配单图基础宽度/高度尺寸，保证尺寸放大倍数不超过1.2：       
 ```typescript
-export class BreakpointType<T> {
-   sm: T;
-   md: T;
-   lg: T;
-
-   constructor(sm: T, md: T, lg: T) {
-      this.sm = sm;
-      this.md = md;
-      this.lg = lg;
-   }
-
-   getValue(currentBreakpoint: WidthBreakpoint): T {
-      if (currentBreakpoint === WidthBreakpoint.WIDTH_MD) {
-         return this.md;
-      }
-      if (currentBreakpoint === WidthBreakpoint.WIDTH_LG) {
-         return this.lg;
-      } else {
-         return this.sm;
-      }
-   }
-}
-
 getSingleImageWidth(): number {
   const baseWidth: number = new BreakpointType<number>(320, 380, 450)
   .getValue(this.currentBreakpoint);
@@ -835,32 +812,39 @@ windowStage.loadContent('pages/Index', (err) => {
 - 配置断点枚举类:
 ```typescript
 export class BreakpointType<T> {
-  sm: T;
-  md: T;
-  lg: T;
+   sm: T;
+   md?: T;
+   lg?: T;
+   xl?: T;
 
-  constructor(sm: T, md: T, lg: T) {
-    this.sm = sm;
-    this.md = md;
-    this.lg = lg;
-  }
+   constructor(sm: T, md?: T, lg?: T, xl?: T) {
+      this.sm = sm;
+      this.md = md;
+      this.lg = lg;
+      this.xl = xl;
+   }
 
-  getValue(currentBreakpoint: WidthBreakpoint): T {
-    if (currentBreakpoint === WidthBreakpoint.WIDTH_MD) {
-      return this.md;
-    }
-    if (currentBreakpoint === WidthBreakpoint.WIDTH_LG) {
-      return this.lg;
-    } else {
-      return this.sm;
-    }
-  }
+   /**
+    * 根据断点获取对应值
+    */
+   getValue(breakpoint: WidthBreakpoint): T {
+      switch (breakpoint) {
+         case WidthBreakpoint.WIDTH_XL:
+            return this.xl ?? this.lg ?? this.md ?? this.sm;
+         case WidthBreakpoint.WIDTH_LG:
+            return this.lg ?? this.md ?? this.sm;
+         case WidthBreakpoint.WIDTH_MD:
+            return this.md ?? this.sm;
+         default:
+            return this.sm;
+      }
+   }
 }
 ```
 
 - 根据不同的断点值获取边距，保证各个断点边距值不超过屏幕宽度20%：
 ```typescript
-@StorageLink('currentWidthBreakpoint') currentBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_XS;
+@StorageLink('currentWidthBreakpoint') currentBreakpoint: WidthBreakpoint = WidthBreakpoint.WIDTH_SM;
 
 .padding({
    left: new BreakpointType($r('app.float.window_padding_left_sm'),
@@ -890,6 +874,18 @@ export class BreakpointType<T> {
 | 能力扩展 | 无扩展，仅位置变化 | 可扩展导航层级、增加导航选项、增加高频功能直达 |
 | 适用场景 | 仅位置变更时优先使用 | 需要增强信息架构与效率时优先使用 |
 
+**侧边导航方案选择规则**
+
+侧边导航的实现方式应根据**现有代码结构**判断，不要强行替换组件：
+
+| 现有代码结构 | 推荐方案 | 说明 |
+|-------------|---------|------|
+| 已使用 `Tabs` 组件承载底部导航 | **优先使用 Tabs 自身侧边能力** | 通过 `vertical(true)` + `barPosition(BarPosition.Start)` + `barWidth(按实际内容计算)` + `barHeight('100%')` 将底部 Tab 切换为侧边 Tab，无需引入新容器 |
+| 需要增强信息架构（分组、二级导航、高频入口） | 使用 `SideBarContainer` | 侧边栏内容与底部 Tab 不同，需要独立的导航面板 |
+| 自定义布局（非 Tabs、非 SideBarContainer） | 手动 `Row` + `Column` | 完全自定义侧边栏内容和交互 |
+
+> **关键约束**：当现有代码已使用 `Tabs` 且仅需位置变更（底部→侧边）时，**禁止**引入 `SideBarContainer` 或手动 `Row/Column` 替代 `Tabs`。应直接复用 `Tabs` 的 `.vertical()` / `.barPosition()` / `.barWidth()` / `.barHeight()` 属性实现侧边导航，保持导航状态连续性。
+
 **多设备体验标准**
 
 1. **[P1] 宽屏结构切换推荐**：当应用窗口宽度 **>= 840vp** （系统断点`lg`） 时，应用的底部导航栏切换为侧边导航栏。
@@ -899,6 +895,18 @@ export class BreakpointType<T> {
 3. **[P1] 侧边面板拖拽调整宽度**：侧边面板（导航、筛选、信息）支持拖拽调整宽度，允许用户根据使用偏好灵活调整侧边面板宽度。
 
 **解决方案**
+
+**侧边 Tab 栏宽度计算原则**：
+
+`barWidth` 应根据实际 tab 内容计算，而非使用固定值。计算方式取决于 tab 项的布局形态：
+
+| tab 项形态 | barWidth 计算方式 | 示例（4 个 tab） |
+|-----------|------------------|----------------|
+| 图标 + 文字（纵向排列） | 左右内边距 × 2 + max(图标宽度, 文字宽度) | padding × 2 + max(20vp, 文字宽度) ≈ 80vp |
+| 仅图标 | 左右内边距 × 2 + 图标宽度 | padding × 2 + 24vp ≈ 56vp |
+| 图标 + 文字（横向排列） | 需按最大 tab 内容宽度计算 | 不推荐，侧边空间有限 |
+
+> 上述示例值仅供参考，开发时应根据自身 UI 设计中实际的图标尺寸、字号、间距和内边距计算。
 
 - 使用 Tabs 组件基于断点切换底部/侧边导航：
 
@@ -926,7 +934,7 @@ Tabs({
     .tabBar(this.tabBuilder(this.firstTabList[3], 3))
 }
 .barBackgroundColor('#CCF1F3F5')
-.barWidth(this.mainWindowInfo.widthBp === WidthBreakpoint.WIDTH_LG ? 96 : '100%')
+.barWidth(this.mainWindowInfo.widthBp === WidthBreakpoint.WIDTH_LG ? this.sideBarWidth : '100%')
 .barHeight(this.mainWindowInfo.widthBp === WidthBreakpoint.WIDTH_LG ? '100%' : 56 + this.getUIContext().px2vp(this.mainWindowInfo.AvoidNavigationIndicator?.bottomRect.height))
 .barMode(this.mainWindowInfo.widthBp === WidthBreakpoint.WIDTH_LG ? BarMode.Scrollable : BarMode.Fixed,
   { nonScrollableLayoutStyle: LayoutStyle.ALWAYS_CENTER })
@@ -936,6 +944,23 @@ Tabs({
   this.firstLevelIndex = index;
 })
 ```
+
+> **⚠️ tabBuilder 中 layoutWeight 的方向陷阱（BarMode.Fixed / Scrollable 均适用）**：
+>
+> `layoutWeight(1)` 会沿**父容器的主轴方向**分配剩余空间。当 Tabs 从底部导航（`vertical(false)`）切换为侧边导航（`vertical(true)`）时，tabBar 的主轴方向从**水平**变为**垂直**，`layoutWeight(1)` 的效果也跟着从"水平均分宽度"变为"垂直均分高度"，导致每个 tab 项撑满整个屏幕高度。
+>
+> 在 `BarMode.Scrollable` 下问题更明显：每个 TabBar 项按实际布局尺寸渲染，不合适的尺寸配置会让 tab 项撑满整个布局方向的空间（纵向 Tabs 占满 barHeight，横向 Tabs 占满 barWidth）。
+>
+> **正确做法**：tabBuilder 中的 `layoutWeight` 必须根据当前导航方向条件判断，不能无条件设置。`BarMode.Scrollable` 下还推荐显式约束布局方向上的尺寸——垂直布局配置固定 `.height()`，水平布局配置固定 `.width()`。
+>
+> ```typescript
+> // ❌ 错误：无条件 layoutWeight(1)，侧边导航时撑满屏幕高度
+> .layoutWeight(1)
+>
+> // ✅ 正确：底部导航时水平均分，侧边导航时不参与垂直分配
+> .layoutWeight(this.isSideNav ? 0 : 1)
+> .height(56)
+> ```
 
 - 使用 SideBarContainer 实现侧边导航栏（参考 [侧边栏](./responsive_layout.md#1-侧边栏sidebarcontainer--断点)）：
 

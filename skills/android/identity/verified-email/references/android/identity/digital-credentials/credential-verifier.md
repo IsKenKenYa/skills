@@ -12,7 +12,7 @@ verifying digital credentials.
 
 ### Android version compatibility
 
-The Verifier API is supported on Android 9 (API level 28) and higher.
+The Verifier API is supported on Android 6 (API level 23) and higher.
 
 ### Implementation
 

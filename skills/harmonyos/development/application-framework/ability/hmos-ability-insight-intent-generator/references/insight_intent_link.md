@@ -202,7 +202,7 @@ export default class EntryAbility extends UIAbility {
   // ⚠️ 核心方法：解析 URI 并设置跳转参数
   private handleInsightIntent(want: Want): void {
     // 场景 1：Tab 页面切换
-    if (want.uri === 'app://mine') {
+    if (want.uri === 'myapp://mine') {
       this.targetPage = 'pages/Index';
       this.targetTab = 3;
       this.needReloadPage = true;
@@ -211,14 +211,14 @@ export default class EntryAbility extends UIAbility {
       hilog.info(0x0000, 'testTag', 'Handle intent: open mine tab');
     }
     // 场景 2：独立页面跳转
-    else if (want.uri === 'app://login') {
+    else if (want.uri === 'myapp://login') {
       this.targetPage = 'otherpages/login_page';
       this.targetTab = -1;
       this.needReloadPage = true;
       hilog.info(0x0000, 'testTag', 'Handle intent: open login page');
     }
     // 场景 3：NavDestination 跳转
-    else if (want.uri === 'app://detail') {
+    else if (want.uri === 'myapp://detail') {
       this.targetPage = 'pages/Index';
       this.navDestinationName = 'Detail';
       this.needReloadPage = true;
@@ -226,7 +226,7 @@ export default class EntryAbility extends UIAbility {
       hilog.info(0x0000, 'testTag', 'Handle intent: open detail page');
     }
     // 场景 4：带参数跳转
-    else if (want.uri === 'app://player') {
+    else if (want.uri === 'myapp://player') {
       this.targetPage = 'pages/Index';
       this.navDestinationName = 'Player';
       this.intentParams = { songId: '123', songName: '起风了' };
@@ -282,7 +282,7 @@ struct TaskEditPage {
 
 ```typescript
 // handleInsightIntent 中
-if (want.uri === 'app://task/edit') {
+if (want.uri === 'myapp://task/edit') {
   this.targetPage = 'pages/TaskEditPage';
   this.targetTab = -1;
   this.needReloadPage = true;
@@ -408,7 +408,7 @@ import { InsightIntentLink } from '@kit.AbilityKit';
   domain: 'NavigationDomain',
   intentVersion: '1.0.0',
   displayName: '打开我的',
-  uri: 'app://mine'
+  uri: 'myapp://mine'
 })
 export class OpenMineLink { }
 ```
@@ -432,8 +432,8 @@ export class OpenMineLink { }
             "entities": ["entity.system.home"],
             "actions": ["action.system.home"],
             "uris": [
-              { "scheme": "app", "host": "mine" },
-              { "scheme": "app", "host": "task", "path": "edit" }
+              { "scheme": "com.example.myapp", "host": "mine" },
+              { "scheme": "com.example.myapp", "host": "task", "path": "edit" }
             ]
           }
         ]
@@ -468,7 +468,7 @@ export class OpenMineLink { }
 | `domain`        | string | 域标识符                       | `"MusicDomain"`, `"ShoppingDomain"`        |
 | `intentVersion` | string | 语义化版本，三位数格式         | `"1.0.1"`                                  |
 | `displayName`   | string | 中文显示名称                   | `"播放音乐"`                               |
-| `uri`           | string | 应用的 uri 链接                | `"app://mine"` 或 `"https://example.com/"` |
+| `uri`           | string | 应用的 uri 链接                | `"myapp://mine"` 或 `"https://example.com/"` |
 
 ### @InsightIntentLink 可选字段
 
@@ -651,14 +651,14 @@ paramMappings: [
 **意图文件**：
 
 ```typescript
-@InsightIntentLink({ intentName: 'OpenMine', domain: 'NavigationDomain', intentVersion: '1.0.0', displayName: '打开我的', uri: 'app://mine' })
+@InsightIntentLink({ intentName: 'OpenMine', domain: 'NavigationDomain', intentVersion: '1.0.0', displayName: '打开我的', uri: 'myapp://mine' })
 export class OpenMineLink { }
 ```
 
 **EntryAbility 处理**：
 
 ```typescript
-if (want.uri === 'app://mine') {
+if (want.uri === 'myapp://mine') {
   this.targetPage = 'pages/Index';
   this.targetTab = 3;
   this.needReloadPage = true;
@@ -669,7 +669,7 @@ if (want.uri === 'app://mine') {
 ### 模板 2：打开独立页面（无参数）
 
 ```typescript
-if (want.uri === 'app://settings') {
+if (want.uri === 'myapp://settings') {
   this.targetPage = 'pages/Settings';
   this.targetTab = -1;
   this.needReloadPage = true;
@@ -679,7 +679,7 @@ if (want.uri === 'app://settings') {
 ### 模板 3：打开独立页面（需要参数，如编辑页面）
 
 ```typescript
-if (want.uri === 'app://task/edit') {
+if (want.uri === 'myapp://task/edit') {
   this.targetPage = 'pages/TaskEditPage';
   this.targetTab = -1;
   this.needReloadPage = true;
@@ -691,7 +691,7 @@ if (want.uri === 'app://task/edit') {
 ### 模板 4：打开 NavDestination
 
 ```typescript
-if (want.uri === 'app://detail') {
+if (want.uri === 'myapp://detail') {
   this.targetPage = 'pages/Index';
   this.navDestinationName = 'Detail';
   this.needReloadPage = true;

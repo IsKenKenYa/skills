@@ -743,7 +743,7 @@ struct Index {
 该示例通过fontFeature属性实现了文本在不同文字特性下的展示效果。
 
 ```ts
-​​​​import { AtomicServiceSearch } from '@kit.ArkUI';
+import { AtomicServiceSearch } from '@kit.ArkUI';
 
 @Entry
 @Component

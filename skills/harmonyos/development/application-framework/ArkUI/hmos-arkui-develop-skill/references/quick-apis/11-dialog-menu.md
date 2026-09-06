@@ -89,4 +89,64 @@ struct Parent {
 
 > **⚠️ $$ 双向绑定必须**：第一个参数必须用 `$$this.showXxx`，不能用 `this.showXxx`。只有用 $$ 绑定，设置 showXxx = false 时面板才会关闭。
 
+### 典型用法
+
+#### AlertDialog 三种按钮配置
+
+```ts
+// 双按钮确认
+this.getUIContext().showAlertDialog({
+  title: '删除确认',
+  message: '确定要删除吗？',
+  primaryButton: { value: '取消', action: () => {} },
+  secondaryButton: { value: '确定删除', action: () => {} }
+})
+
+// 单按钮提示
+this.getUIContext().showAlertDialog({
+  message: '网络连接失败',
+  confirm: { value: '重试', action: () => {} }
+})
+
+// 三按钮（buttons 数组）
+this.getUIContext().showAlertDialog({
+  title: '保存修改',
+  buttons: [
+    { value: '不保存', action: () => {} },
+    { value: '取消', action: () => {} },
+    { value: '保存', action: () => {} }
+  ]
+})
+```
+
+#### bindSheet 半模态
+
+```ts
+@State isShow: boolean = false
+
+@Builder sheetBuilder() { Column() { Text('内容') } }
+
+build() {
+  Button('打开')
+    .bindSheet($$this.isShow, this.sheetBuilder, {
+      height: SheetSize.MEDIUM,   // MEDIUM(半屏) / LARGE(近全屏)，无 HALF
+      dragBar: true,
+      showClose: true
+    })
+}
+```
+
+#### ActionSheet
+
+```ts
+this.getUIContext().showActionSheet({
+  title: '分享到',
+  sheets: [
+    { title: '微信', action: () => {} },
+    { title: 'QQ', action: () => {} }
+  ] as Array<SheetInfo>,
+  cancel: () => {}
+})
+```
+
 ---

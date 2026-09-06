@@ -1,5 +1,8 @@
 <br />
 
+[Engage SDK](https://developer.android.com/guide/playcore/engage) lets you deliver personalized recommendations
+and continuation content directly to users on Google TV.
+
 This guide covers how to get started with Engage SDK integrations for TV. After
 you complete the pre-work on this page, you can integrate one or more
 of the TV features:
@@ -12,7 +15,7 @@ of the TV features:
 
 Before you begin, complete the following steps:
 
-1. [Express interest in developing with Engage](http://g.co/tv/vda) to enroll in
+1. [Express interest in developing with Engage SDK](http://g.co/tv/engage) to enroll in
    the program, if eligible.
 
 2. Verify that your app targets Android 4.4 (API level 19) or higher for this
@@ -26,13 +29,13 @@ Before you begin, complete the following steps:
    ### Mobile
 
        dependencies {
-         implementation 'com.google.android.engage:engage-core:1.5.12'
+         implementation 'com.google.android.engage:engage-core:1.6.0'
        }
 
    ### TV
 
        dependencies {
-         implementation 'com.google.android.engage:engage-tv:1.0.6'
+         implementation 'com.google.android.engage:engage-tv:1.1.0'
        }
 
 4. Add permission for `WRITE_EPG_DATA` for TV APK
@@ -45,12 +48,18 @@ Before you begin, complete the following steps:
 6. Test your implementation using the verification app as outlined in the
    [Testing section](https://developer.android.com/guide/playcore/engage/tv/getting-started#testing).
 
-7. In your production app, set the Engage service environment to production in
-   the `AndroidManifest.xml` file.
+7. In your production app, set the Engage service environment to production by
+   adding the `<meta-data>` element directly under the `<application>` tag
+   in your `AndroidManifest.xml` file.
+   Don't place this tag inside an `<activity>`.
 
-       <meta-data
-           android:name="com.google.android.engage.service.ENV"
-           android:value="PRODUCTION" />
+       <application ...>
+           <!-- Other application configurations -->
+
+           <meta-data
+               android:name="com.google.android.engage.service.ENV"
+               android:value="PRODUCTION" />
+       </application>
 
    > [!IMPORTANT]
    > **Important:** The Engage service environment declaration is only needed for your release build. For your local testing with the verification app, don't include this element.
@@ -62,11 +71,34 @@ Before you begin, complete the following steps:
 Use `AppEngagePublishClient` to interact with the service. Always check if the
 service is available before publishing.
 
+You can check the service availability for every cluster type that you intend to
+publish. The `isServiceAvailable` API accepts a request object,
+`ServiceAvailabilityRequest`, which contains the cluster types for which service
+availability needs to be checked. You can find the `ClusterType` enum values
+required for `ServiceAvailabilityRequest` from the following table.
+
+| Cluster Type | Cluster Type Constant | Integer Value |
+|---|---|---|
+| Unknown | `TYPE_UNKNOWN` | 0 |
+| Recommendation Cluster | `TYPE_RECOMMENDATION` | 1 |
+| Continuation Cluster | `TYPE_CONTINUATION` | 3 |
+
     val client = AppEngagePublishClient(context)
 
-    client.isServiceAvailable().addOnCompleteListener { task ->
-      if (task.isSuccessful && task.result) {
-        // Service is available, proceed with publishing
+    val request = ServiceAvailabilityRequest.Builder()
+        .addIntendedClusterType(ClusterType.TYPE_CONTINUATION)
+        .addIntendedClusterType(ClusterType.TYPE_RECOMMENDATION)
+        .build()
+
+    client.isServiceAvailable(request).addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val availabilityMap = task.result
+        if (availabilityMap[ClusterType.TYPE_CONTINUATION] == true) {
+          // Proceed with publishing continuation content
+        }
+        if (availabilityMap[ClusterType.TYPE_RECOMMENDATION] == true) {
+          // Proceed with publishing recommendation content
+        }
       } else {
         // Service is not available or call failed
       }
@@ -165,6 +197,6 @@ This is the Android Software Development Kit License Agreement
 
 ### 14. General Legal Terms
 
-14.1 The License Agreement constitutes the whole legal agreement between you and Google and governs your use of the SDK (excluding any services which Google may provide to you under a separate written agreement), and completely replaces any prior agreements between you and Google in relation to the SDK. 14.2 You agree that if Google does not exercise or enforce any legal right or remedy which is contained in the License Agreement (or which Google has the benefit of under any applicable law), this will not be taken to be a formal waiver of Google's rights and that those rights or remedies will still be available to Google. 14.3 If any court of law, having the jurisdiction to decide on this matter, rules that any provision of the License Agreement is invalid, then that provision will be removed from the License Agreement without affecting the rest of the License Agreement. The remaining provisions of the License Agreement will continue to be valid and enforceable. 14.4 You acknowledge and agree that each member of the group of companies of which Google is the parent will be third party beneficiaries to the License Agreement and that such other companies will be entitled to directly enforce, and rely upon, any provision of the License Agreement that confers a benefit on (or rights in favor of) them. Other than this, no other person or company will be third party beneficiaries to the License Agreement. 14.5 EXPORT RESTRICTIONS. THE SDK IS SUBJECT TO UNITED STATES EXPORT LAWS AND REGULATIONS. YOU MUST COMPLY WITH ALL DOMESTIC AND INTERNATIONAL EXPORT LAWS AND REGULATIONS THAT APPLY TO THE SDK. THESE LAWS INCLUDE RESTRICTIONS ON DESTINATIONS, END USERS AND END USE. 14.6 The rights granted in the License Agreement may not be assigned or transferred by either you or Google without the prior written approval of the other party. Neither you nor Google will be permitted to delegate their responsibilities or obligations under the License Agreement without the prior written approval of the other party. 14.7 The License Agreement, and your relationship with Google under the License Agreement, will be governed by the laws of the State of California without regard to its conflict of laws provisions. You and Google agree to submit to the exclusive jurisdiction of the courts located within the county of Santa Clara, California to resolve any legal matter arising from the License Agreement. Notwithstanding this, you agree that Google will still be allowed to apply for injunctive remedies (or an equivalent type of urgent legal relief) in any jurisdiction. *April 28, 2026* I have read and agree with the above terms and conditions <button class="button button-disabled"> Download </button> [Download](https://dl.google.com/developers/android/channels/verify_app_multiplatform_public_20251215.apk)
+14.1 The License Agreement constitutes the whole legal agreement between you and Google and governs your use of the SDK (excluding any services which Google may provide to you under a separate written agreement), and completely replaces any prior agreements between you and Google in relation to the SDK. 14.2 You agree that if Google does not exercise or enforce any legal right or remedy which is contained in the License Agreement (or which Google has the benefit of under any applicable law), this will not be taken to be a formal waiver of Google's rights and that those rights or remedies will still be available to Google. 14.3 If any court of law, having the jurisdiction to decide on this matter, rules that any provision of the License Agreement is invalid, then that provision will be removed from the License Agreement without affecting the rest of the License Agreement. The remaining provisions of the License Agreement will continue to be valid and enforceable. 14.4 You acknowledge and agree that each member of the group of companies of which Google is the parent will be third party beneficiaries to the License Agreement and that such other companies will be entitled to directly enforce, and rely upon, any provision of the License Agreement that confers a benefit on (or rights in favor of) them. Other than this, no other person or company will be third party beneficiaries to the License Agreement. 14.5 EXPORT RESTRICTIONS. THE SDK IS SUBJECT TO UNITED STATES EXPORT LAWS AND REGULATIONS. YOU MUST COMPLY WITH ALL DOMESTIC AND INTERNATIONAL EXPORT LAWS AND REGULATIONS THAT APPLY TO THE SDK. THESE LAWS INCLUDE RESTRICTIONS ON DESTINATIONS, END USERS AND END USE. 14.6 The rights granted in the License Agreement may not be assigned or transferred by either you or Google without the prior written approval of the other party. Neither you nor Google will be permitted to delegate their responsibilities or obligations under the License Agreement without the prior written approval of the other party. 14.7 The License Agreement, and your relationship with Google under the License Agreement, will be governed by the laws of the State of California without regard to its conflict of laws provisions. You and Google agree to submit to the exclusive jurisdiction of the courts located within the county of Santa Clara, California to resolve any legal matter arising from the License Agreement. Notwithstanding this, you agree that Google will still be allowed to apply for injunctive remedies (or an equivalent type of urgent legal relief) in any jurisdiction. *April 28, 2026* I have read and agree with the above terms and conditions <button class="button button-disabled"> Download </button> [Download](https://dl.google.com/developers/android/channels/verify_app_multiplatform_public_20260701.apk)
 
-*verify_app_multiplatform_public_20251215.apk*
+*verify_app_multiplatform_public_20260701.apk*

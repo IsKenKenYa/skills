@@ -51,7 +51,7 @@
     "code": "5400107",
     "message": "Audio Interrupted",
     "source_file": "frameworks/native/common/media_errors.cpp",
-    "description": "音频被中断。由 MSERR_AUD_INTERRUPT 映射而来。通常由其他音频应用（如电话、闹钟）抢占音频焦点导致，属于正常业务场景，需监听 audioInterrupt 事件进行处理。",
+    "description": "音频被中断。由 MSERR_AUD_INTERRUPT 映射而来。通常由其它音频应用（如电话、闹钟）抢占音频焦点导致，属于正常业务场景，需监听 audioInterrupt 事件进行处理。",
     "internal_code": "MSERR_EXT_API9_AUDIO_INTERRUPTED",
     "layer": "API9"
   },
@@ -115,7 +115,7 @@
     "code": "5411008",
     "message": "IO SSL Client Cert Needed",
     "source_file": "frameworks/native/common/media_errors.cpp",
-    "description": "需要 SSL 客户端证书。服务器要求双向 TLS 认证但客户端未提供证书。",
+    "description": "需要 SSL 客户端证书。服务器要求双向 TLS 认 证但客户端未提供证书。",
     "internal_code": "MSERR_EXT_API14_IO_SSL_CLIENT_CERT_NEEDED",
     "layer": "API9"
   },

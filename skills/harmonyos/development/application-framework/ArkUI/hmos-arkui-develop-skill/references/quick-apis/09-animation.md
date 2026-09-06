@@ -39,13 +39,20 @@
 > **注意：** `curves.springCurve` 需要 **4 个参数** `(velocity, mass, stiffness, damping)`，如 `curves.springCurve(10, 1, 228, 30)`，不能只传 2 个。不存在 `curves.easeInOut()`，缓动用 `curves.initCurve(Curve.EaseInOut)`。
 >
 > **命名空间区别**：`curves.*`（如 curves.springCurve）需要 `import { curves } from '@kit.ArkUI'`；`Curve.*`（如 Curve.EaseInOut）是全局枚举，不需要 import。
+>
+> **⚠️ 高频臆造 API：**
+> - ❌ `Curve.springMotion()` — 不存在！用 `curves.springCurve(velocity, mass, stiffness, damping)` 替代
+> - ❌ `Curve.cubicBezierCurve()` — 不存在！用 `curves.cubicBezierCurve(x1, y1, x2, y2)` 替代（需 import）
+> - ❌ `Curve.springCurve()` — 不存在！`springCurve` 在 `curves` 命名空间下
+> - ✅ `Curve.springMotion` 作为枚举值不存在，但 `Curve.springMotion()` 作为函数不存在于 Curve 上。如果确实需要弹簧动画，用 `curves.springCurve`。
 
 | 曲线 | 签名 | 说明 |
 |------|------|------|
 | **预设曲线** | `Curve.Linear/Ease/EaseIn/EaseOut/EaseInOut/FastOutSlowIn/...` | 13种预设 |
-| **贝塞尔** | `Curve.cubicBezierCurve(x1,y1,x2,y2)` | 三阶贝塞尔 |
-| **弹簧** | `curves.springCurve(velocity,mass,stiffness,damping)` | **必须 4 参数**，需 `import { curves } from '@kit.ArkUI'` |
-| **弹簧运动** | `Curve.springMotion(response?,dampingFraction?,velocity?)` | 弹簧物理运动 |
+| **贝塞尔** | `Curve.cubicBezierCurve(x1,y1,x2,y2)` | 三阶贝塞尔。注意：`Curve.cubicBezierCurve` 是函数，不是 Curve 枚举值 |
+| **贝塞尔（curves）** | `curves.cubicBezierCurve(x1,y1,x2,y2)` | 三阶贝塞尔（需 `import { curves }`），推荐写法 |
+| **弹簧** | `curves.springCurve(velocity,mass,stiffness,damping)` | **必须 4 参数**，需 `import { curves } from '@kit.ArkUI'`。示例：`curves.springCurve(1, 1, 228, 30)` |
+| **弹簧运动** | `Curve.springMotion(response?,dampingFraction?,velocity?)` | 弹簧物理运动。注意：`Curve.springMotion` 是函数，**不是 Curve 枚举值**，可以作为 curve 参数传入 |
 | **响应弹簧** | `Curve.responsiveSpringMotion(response?,dampingFraction?,velocity?)` | 响应式 |
 | **插值弹簧** | `Curve.interpolatingSpring(velocity,mass,stiffness,damping)` | 插值弹簧 |
 | **自定义** | `Curve.customCurve(interpolate: (t) => number)` | 自定义 |

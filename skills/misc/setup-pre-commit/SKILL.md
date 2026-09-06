@@ -1,8 +1,7 @@
 ---
 name: setup-pre-commit
-description: 在当前仓库设置带 lint-staged（Prettier）、类型检查和测试的 Husky pre-commit 钩子。当用户想添加 pre-commit 钩子、设置 Husky、配置 lint-staged，或在提交时加入格式化/类型检查/测试时使用。
+description: Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.
 ---
-
 # Setup Pre-Commit Hooks
 
 ## What This Sets Up
@@ -82,7 +81,7 @@ Only create if no Prettier config exists. Use these defaults:
 
 Stage all changed/created files and commit with message: `Add pre-commit hooks (husky + lint-staged + prettier)`
 
-This will run through the new pre-commit hooks — a good smoke test that everything works.
+This will run through the new pre-commit hooks: a good smoke test that everything works.
 
 ## Notes
 

@@ -66,7 +66,7 @@
 
 ## 3. 损坏模式与 hilog 日志对应关系速查表
 
-以下速查表基于 `scenario_logs.json` 中验证通过的故障场景（status=PASS），以及 `common_issues.md` 中的问题模式归纳。
+以下速查表基于 `common_issues.md` 中的问题模式归纳。
 
 **速查表使用方式：** Agent 在阶段 1 提取到 hilog 日志后，用日志中的关键字匹配下表「典型 hilog 关键字」列，确定属于哪种损坏模式，再结合脚本分析结论交叉验证。
 

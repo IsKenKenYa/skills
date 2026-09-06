@@ -1,10 +1,11 @@
 ---
 name: camerax
-description: 提供使用 CameraX 进行 Android 相机开发的技术指导。当实现相机功能、处理异步录制生命周期、使用 CameraX 进行底层硬件互操作，或集成 ML Kit 或 Media3 特效时使用。
+description: 提供 Android CameraX 相机开发的技术指导。当实现相机功能、处理异步录制生命周期、使用 CameraX 对接底层硬件互操作（hardware interop），或集成 ML Kit 或 Media3 特效时使用。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-07-02'
+  last-updated: '2026-08-14'
   keywords:
   - recipe
   - Android
@@ -23,8 +24,9 @@ metadata:
   - ImageAnalysis.
 ---
 
-此 skill 提供在 Android 上构建相机应用的过程指导和标准模式，重点是 CameraX，包括其
-`Camera2Interop` 工具和 Media3 集成。
+This skill provides procedural guidance and standard patterns for building
+camera applications on Android, with a focus on CameraX, including its
+`Camera2Interop` utilities, and Media3 integrations.
 
 ## Core workflows
 
@@ -63,6 +65,13 @@ run {
 <br />
 
 See [immutability](references/immutability.md) for a list of affected classes.
+
+### Migrating to CameraX
+
+When migrating legacy camera codebases to the CameraX Jetpack library:
+
+- **Camera1 to CameraX** : For migrating legacy `android.hardware.Camera` implementations, surface handling, and manual lifecycles, see the [Camera1 migration guide](references/camera1-to-camerax.md).
+- **Camera2 to CameraX** : For migrating more recent but verbose `android.hardware.camera2` implementations, session state callbacks, and interop patterns, see the [Camera2 migration guide](references/camera2-to-camerax.md).
 
 ### Comprehensive feature blueprinting
 

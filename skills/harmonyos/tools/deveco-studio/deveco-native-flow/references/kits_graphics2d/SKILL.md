@@ -1,6 +1,6 @@
 ---
 name: kits_graphics2d
-description: "HarmonyOS ArkGraphics2D 2D图形能力集使用规范。包含 drawing 绑制、effectKit 特效、colorSpaceManager 色彩空间、displaySync 显示同步等2D图形绑制能力。Use when: (1) 自定义绑制，(2) Canvas绘图，(3) 图像特效，(4) 颜色管理。Triggers: drawing、Canvas、绑定、graphic、effectKit、颜色空间、colorSpace、displaySync、2D图形、自定义渲染。"
+description: "HarmonyOS ArkGraphics2D 2D图形能力集使用规范。包含 drawing 绘制、effectKit 特效、colorSpaceManager 色彩空间、displaySync 显示同步等2D图形绘制能力。Use when: (1) 自定义绘制，(2) Canvas绘图，(3) 图像特效，(4) 颜色管理。Triggers: drawing、Canvas、绑定、graphic、effectKit、颜色空间、colorSpace、displaySync、2D图形、自定义渲染。"
 user-invocable: false
 metadata:
   internal: true
@@ -14,7 +14,7 @@ metadata:
 
 | 模块 | 导入方式 | 用途 |
 |------|----------|------|
-| drawing | @ohos.graphics.drawing | 2D绑制 |
+| drawing | @ohos.graphics.drawing | 2D绘制 |
 | effectKit | @ohos.effectKit | 图像特效 |
 | colorSpaceManager | @ohos.graphics.colorSpaceManager | 颜色空间管理 |
 | displaySync | @ohos.graphics.displaySync | 显示同步 |
@@ -22,7 +22,7 @@ metadata:
 
 ## 快速索引
 
-### drawing 基础绑制
+### drawing 基础绘制
 
 ```typescript
 import drawing from '@ohos.graphics.drawing';
@@ -35,7 +35,7 @@ let pen = new drawing.Pen();
 pen.setColor({ alpha: 255, red: 255, green: 0, blue: 0 }); // 红色
 pen.setStrokeWidth(5); // 线宽
 
-// 绑制线条
+// 绘制线条
 canvas.attachPen(pen);
 canvas.drawLine(0, 0, 100, 100);
 
@@ -43,22 +43,22 @@ canvas.drawLine(0, 0, 100, 100);
 let brush = new drawing.Brush();
 brush.setColor({ alpha: 255, red: 0, green: 255, blue: 0 }); // 绿色
 
-// 绑制矩形
+// 绘制矩形
 canvas.attachBrush(brush);
 canvas.drawRect({ left: 50, top: 50, right: 200, bottom: 200 });
 
-// 绑制圆形
+// 绘制圆形
 canvas.drawCircle(300, 300, 50);
 
-// 绑制椭圆
+// 绘制椭圆
 canvas.drawOval({ left: 400, top: 100, right: 600, bottom: 200 });
 
-// 绑制圆角矩形
+// 绘制圆角矩形
 let roundRect = new drawing.RoundRect({ left: 100, top: 400, right: 300, bottom: 500 }, 20, 20);
 canvas.drawRoundRect(roundRect);
 ```
 
-### drawing 路径绑制
+### drawing 路径绘制
 
 ```typescript
 import drawing from '@ohos.graphics.drawing';
@@ -82,7 +82,7 @@ path.arcTo(300, 50, 400, 150, 0, 180); // 弧线
 // 闭合路径
 path.close();
 
-// 绑制路径
+// 绘制路径
 let pen = new drawing.Pen();
 pen.setColor({ alpha: 255, red: 0, green: 0, blue: 255 });
 pen.setStrokeWidth(3);
@@ -90,7 +90,7 @@ canvas.attachPen(pen);
 canvas.drawPath(path);
 ```
 
-### drawing 文本绑制
+### drawing 文本绘制
 
 ```typescript
 import drawing from '@ohos.graphics.drawing';
@@ -103,15 +103,15 @@ font.setSize(24);
 let textStyle = new drawing.TextStyle();
 textStyle.color = { alpha: 255, red: 0, green: 0, blue: 0 };
 
-// 绑制简单文本
+// 绘制简单文本
 canvas.drawSimpleText('Hello HarmonyOS', 100, 100, font);
 
-// 绑制带样式的文本
-let textBlob = drawing.TextBlob.makeFromString('Hello World', font, drawing	TextEncoding.UTF8);
+// 绘制带样式的文本
+let textBlob = drawing.TextBlob.makeFromString('Hello World', font, drawing.TextEncoding.UTF8);
 canvas.drawTextBlob(textBlob, 100, 200);
 ```
 
-### drawing 图片绑制
+### drawing 图片绘制
 
 ```typescript
 import drawing from '@ohos.graphics.drawing';
@@ -119,13 +119,13 @@ import drawing from '@ohos.graphics.drawing';
 // 创建图片
 let image = drawing.ImageMakeFromData(pixelMap);
 
-// 绑制图片
+// 绘制图片
 canvas.drawImageRect(image,
   { left: 0, top: 0, right: imageWidth, bottom: imageHeight }, // 源区域
   { left: 100, top: 100, right: 300, bottom: 300 } // 目标区域
 );
 
-// 绑制缩放图片
+// 绘制缩放图片
 canvas.drawImage(image, 100, 100);
 ```
 
@@ -148,7 +148,7 @@ canvas.skew(0.5, 0);
 
 // 保存/恢复状态
 canvas.save();
-// ... 绑制操作
+// ... 绘制操作
 canvas.restore();
 ```
 
@@ -319,7 +319,7 @@ sync.start();
 
 // 监听帧回调
 sync.on('frame', (timestamp: number) => {
-  // 每帧执行绑制
+  // 每帧执行绘制
   drawFrame(timestamp);
 });
 
@@ -340,9 +340,9 @@ import drawing from '@ohos.graphics.drawing';
 let layer = new drawing.PictureRecorder();
 let recorderCanvas = layer.beginRecording({ left: 0, top: 0, right: 500, bottom: 500 });
 
-// 在图层上绑制
+// 在图层上绘制
 recorderCanvas.drawRect({ left: 0, top: 0, right: 500, bottom: 500 });
-// ... 更多绑制
+// ... 更多绘制
 
 // 结束录制
 let picture = layer.finishRecording();
@@ -456,7 +456,7 @@ struct CustomDrawPage {
     canvas.attachBrush(bgBrush);
     canvas.drawRect({ left: 0, top: 0, right: this.context.width, bottom: this.context.height });
 
-    // 绑制渐变圆形
+    // 绘制渐变圆形
     let shader = drawing.Shader.createRadialGradient(
       200, 200, 0,
       200, 200, 100,
@@ -471,7 +471,7 @@ struct CustomDrawPage {
     canvas.attachBrush(circleBrush);
     canvas.drawCircle(200, 200, 100);
 
-    // 绑制文字
+    // 绘制文字
     let font = new drawing.Font();
     font.setSize(32);
     canvas.drawSimpleText('HarmonyOS', 100, 350, font);
@@ -497,7 +497,7 @@ class DrawingCache {
     let recorder = new drawing.PictureRecorder();
     let canvas = recorder.beginRecording({ left: 0, top: 0, right: width, bottom: height });
 
-    // 绑制复杂图形
+    // 绘制复杂图形
     this.drawComplexGraphics(canvas);
 
     this.cachedImage = recorder.finishRecordingAsImage();

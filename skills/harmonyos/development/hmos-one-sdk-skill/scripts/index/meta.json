@@ -1,0 +1,19 @@
+{
+  "built_at": "2026-09-04T03:05:16",
+  "built_at_epoch": 1788491116.06,
+  "total_docs": 290,
+  "avg_doc_length": 6158.87,
+  "vocabulary_size": 76243,
+  "postings_format": "flat_number_array_interleaved",
+  "max_tf": 295,
+  "k1": 1.5,
+  "b": 0.75,
+  "title_weight": 5,
+  "description_weight": 3,
+  "breadcrumb_weight": 2,
+  "body_weight": 1,
+  "path_weight": 1,
+  "skipped": 0,
+  "compression": "gzip",
+  "references_dir": "."
+}

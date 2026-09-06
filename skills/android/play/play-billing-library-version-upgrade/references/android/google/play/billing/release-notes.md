@@ -1,5 +1,40 @@
 This document contains release notes for the Google Play Billing Library.
 
+
+## Android skills
+
+[View on GitHub](https://github.com/android/skills/tree/main/play/play-billing-library-version-upgrade)
+
+### Upgrade Play Billing Library
+
+Use the Play Billing Library [Android skill](https://developer.android.com/tools/agents/android-skills) to automate your upgrade to the latest version. To install the skill from the [Android CLI](https://developer.android.com/tools/agents/android-cli), run:
+
+    android skills add --skill play-billing-library-version-upgrade
+
+To activate the skill, try the following prompt:
+
+    Help me upgrade my Play Billing Library implementation.
+
+<br />
+
+## Google Play Billing Library 9.1.0 Release (2026-06-18)
+
+Version 9.1.0 of the Google Play Billing Library and Kotlin extensions are now available.
+
+### Summary of changes
+
+- New APIs for [Billing Choice](https://developer.android.com/google/play/billing/billingchoice):
+  - Added [`BillingClient.getBillingChoiceInfoAsync()`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient#getBillingChoiceInfoAsync(com.android.billingclient.api.GetBillingChoiceInfoParams,com.android.billingclient.api.BillingChoiceInfoResponseListener)) to retrieve information about billing choices available to the user.
+  - Added [`BillingChoiceInfo`](https://developer.android.com/reference/com/android/billingclient/api/BillingChoiceInfo) class which contains the response details, including image URLs and loyalty information.
+  - Added [`GetBillingChoiceInfoParams`](https://developer.android.com/reference/com/android/billingclient/api/GetBillingChoiceInfoParams) to configure the request.
+  - Added [`BillingChoiceInfoResponseListener`](https://developer.android.com/reference/com/android/billingclient/api/BillingChoiceInfoResponseListener) to receive the callback.
+  - Added Kotlin extension [`BillingClient.getBillingChoiceInfo()`](https://developer.android.com/reference/kotlin/com/android/billingclient/api/package-summary#(com.android.billingclient.api.BillingClient).getBillingChoiceInfo(com.android.billingclient.api.GetBillingChoiceInfoParams)) suspend function.
+  - Added [`BillingClient.showBillingProgramInformationDialog()`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient#showBillingProgramInformationDialog(android.app.Activity,com.android.billingclient.api.BillingProgramInformationDialogParams,com.android.billingclient.api.BillingProgramInformationDialogListener)) to show an information dialog for a billing program.
+  - Added [`BillingProgramInformationDialogParams`](https://developer.android.com/reference/com/android/billingclient/api/BillingProgramInformationDialogParams) to configure the dialog.
+  - Added [`BillingProgramInformationDialogListener`](https://developer.android.com/reference/com/android/billingclient/api/BillingProgramInformationDialogListener) to receive the callback.
+  - Added [`BillingProgramAvailabilityDetails.BillingChoiceAvailabilityDetails`](https://developer.android.com/reference/com/android/billingclient/api/BillingProgramAvailabilityDetails.BillingChoiceAvailabilityDetails) to provide details about billing choice availability.
+  - Added [`ChoiceScreenType`](https://developer.android.com/reference/com/android/billingclient/api/BillingProgramAvailabilityDetails.BillingChoiceAvailabilityDetails.ChoiceScreenType) to specify the type of choice screen.
+
 ## Google Play Billing Library 9.0.0 Release (2026-05-19)
 
 Version 9.0.0 of the Google Play Billing Library and Kotlin extensions are

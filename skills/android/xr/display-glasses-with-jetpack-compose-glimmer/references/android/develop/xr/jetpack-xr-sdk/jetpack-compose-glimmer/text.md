@@ -15,12 +15,18 @@ the content color provided by the nearest surface that it's sitting on.
 
 ## Example: Create a text heading in a box
 
-    @Composable
-    fun TextSample() {
-          Text(
-          text = "This is a sample heading",
-          style = GlimmerTheme.typography.titleLarge )
-    }
+
+```kotlin
+@Composable
+fun TextSample() {
+    Text(
+        text = "Hello Glimmer",
+        style = GlimmerTheme.typography.titleLarge
+    )
+}
+```
+
+<br />
 
 ### Key points about the code
 
@@ -54,15 +60,10 @@ displayed on display glasses.
 To use Google Sans Flex, [add the `glimmer-google-fonts` library to your app's
 dependencies](https://developer.android.com/develop/xr/jetpack-xr-sdk/set-up-sdk#augmented), then apply the font globally to the `GlimmerTheme`:
 
-
-```kotlin
-@Composable
-fun GoogleSansFlexTypographySample() {
-    val typography = createGoogleSansFlexTypography()
-    GlimmerTheme(typography = typography) {
-        Text("Hello World", style = GlimmerTheme.typography.titleLarge)
+    @Composable
+    fun GoogleSansFlexTypographySample() {
+        val typography = createGoogleSansFlexTypography()
+        GlimmerTheme(typography = typography) {
+            Text("Hello World", style = GlimmerTheme.typography.titleLarge)
+        }
     }
-}
-```
-
-<br />

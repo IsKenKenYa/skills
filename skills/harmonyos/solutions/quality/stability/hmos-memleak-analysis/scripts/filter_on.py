@@ -6,8 +6,8 @@ This script is part of the appcheck-memleak skill for analyzing HarmonyOS applic
 to detect potential memory leaks caused by unmatched event listeners.
 
 Usage:
-    python filter_on.py <directory> [--json] [--output=<file>]
-    
+    python filter_on.py <directory> [--json] [--skill]
+
 Integration:
     This script can be called from the main skill analyzer to detect JS/TS/ArkTS
     event listener memory leaks as part of a comprehensive memory leak analysis.
@@ -19,7 +19,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import List, Tuple, Dict, Any, Optional
+from typing import List, Dict, Any
 
 def white_list(pre_part: str) -> bool:
     """Check if the object is in the whitelist (known safe cases)"""
@@ -177,15 +177,14 @@ def analyze_file(file_path: Path) -> List[List[Any]]:
         print(f"process {file_path} error: {e}")
         return []
 
-def search_code(code_dir: str, output_format: str = "console", output_file: Optional[str] = None) -> Dict[str, Any]:
+def search_code(code_dir: str, output_format: str = "console") -> Dict[str, Any]:
     """
     搜索指定目录中的JS/TS文件，检测可能存在内存泄漏的.on()事件注册
-    
+
     Args:
         code_dir: 要扫描的代码目录路径
         output_format: 输出格式 ("console", "json", "skill")
-        output_file: 输出文件路径（可选）
-        
+
     Returns:
         分析结果字典
     """
@@ -225,7 +224,7 @@ def search_code(code_dir: str, output_format: str = "console", output_file: Opti
     if output_format == "console":
         print_console_output(final_results, stats)
     elif output_format == "json":
-        output_json_results(final_results, stats, output_file if output_file else "memleak_report.json")
+        output_json_results(final_results, stats)
     elif output_format == "skill":
         return format_skill_output(final_results, stats)
     
@@ -255,13 +254,13 @@ def print_console_output(results: List[List[Any]], stats: Dict[str, Any]) -> Non
     else:
         print("\n No Found Leak!")
 
-def output_json_results(results: List[List[Any]], stats: Dict[str, Any], output_file: str) -> None:
-    """输出JSON格式结果"""
+def output_json_results(results: List[List[Any]], stats: Dict[str, Any]) -> None:
+    """直接输出JSON格式结果到标准输出"""
     json_results = {
         'scan_stats': stats,
         'issues': []
     }
-    
+
     for item in results:
         file_path, line_num, object_name, event_type, callback, code_line = item
         json_results['issues'].append({
@@ -280,10 +279,8 @@ def output_json_results(results: List[List[Any]], stats: Dict[str, Any], output_
 this.object.off('eventType', callback);
 '''
         })
-    
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(json_results, f, ensure_ascii=False, indent=2)
-    print(f"\n结果已保存到 {output_file}")
+
+    print(json.dumps(json_results, ensure_ascii=False, indent=2))
 
 def format_skill_output(results: List[List[Any]], stats: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -357,19 +354,17 @@ def main() -> None:
 示例:
   python filter_on.py ./src
   python filter_on.py ./src --json
-  python filter_on.py ./src --json --output=custom_report.json
   python filter_on.py ./src --skill
         """
     )
-    
+
     parser.add_argument('directory', help='要扫描的源代码目录')
-    parser.add_argument('--json', action='store_true', help='输出JSON格式报告')
-    parser.add_argument('--output', help='指定输出文件路径（仅用于JSON格式）')
+    parser.add_argument('--json', action='store_true', help='输出JSON格式报告（直接打印到标准输出）')
     parser.add_argument('--skill', action='store_true', help='输出Skill集成格式')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
-    
+
     args = parser.parse_args()
-    
+
     # 确定输出格式
     if args.skill:
         output_format = "skill"
@@ -377,10 +372,10 @@ def main() -> None:
         output_format = "json"
     else:
         output_format = "console"
-    
+
     # 执行分析
-    result = search_code(args.directory, output_format, args.output)
-    
+    result = search_code(args.directory, output_format)
+
     # 对于skill格式，返回结果而不是打印
     if output_format == "skill":
         print(json.dumps(result, ensure_ascii=False, indent=2))

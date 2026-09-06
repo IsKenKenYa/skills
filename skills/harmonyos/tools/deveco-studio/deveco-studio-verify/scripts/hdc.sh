@@ -28,7 +28,7 @@ print_help() {
     echo "应用管理:"
     echo "  apps <device>           列出已安装应用"
     echo "  install <device> <hap>  安装应用"
-    echo "  uninstall <device> <bundle>  卸载应用"
+    echo "  uninstall <device> <bundle> [-y]  卸载应用（-y/--force 跳过确认）"
     echo "  launch <device> <bundle>  启动应用"
     echo "  stop <device> <bundle>  停止应用"
     echo ""
@@ -419,8 +419,20 @@ case "$1" in
         ;;
     uninstall)
         if [ -z "$2" ] || [ -z "$3" ]; then
-            echo -e "${RED}错误: 用法: uninstall <device> <bundle>${NC}"
+            echo -e "${RED}错误: 用法: uninstall <device> <bundle> [-y|--force]${NC}"
             exit 1
+        fi
+        # -y / --force 跳过确认（用于脚本化/自动化场景）
+        skip_confirm=false
+        if [ "$4" = "-y" ] || [ "$4" = "--force" ]; then
+            skip_confirm=true
+        fi
+        if [ "$skip_confirm" = false ]; then
+            read -r -p "确认卸载应用 $3？此操作不可逆 [y/N] " confirm || { echo "已取消"; exit 0; }
+            if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+                echo "已取消"
+                exit 0
+            fi
         fi
         hdc -t $2 uninstall "$3"
         ;;

@@ -42,6 +42,17 @@
 
 ### 布尔值 (boolean)
 
+> ⚠️ **兼容性警告**：部分 SDK 版本对 `type: 'boolean'` 的参数注入存在兼容性问题，`onExecute` 可能静默不执行。
+> **建议改用 `string` + `enum` 替代**：
+> ```typescript
+> {
+>   'type': 'string',
+>   'description': '是否开启，true为开启，false为关闭',
+>   'enum': ['true', 'false']
+> }
+> ```
+> 然后在 `onExecute` 内转 `boolean`：`const enabled: boolean = this.enable === 'true';`
+
 ```typescript
 {
   'type': 'boolean',
@@ -254,6 +265,7 @@ result: {
 
 1. **使用单引号**：JsonSchema 定义中使用单引号包裹属性名
 2. **类型限制**：只支持 `string`、`number`、`boolean`、`array`、`object`，**不支持 `integer`、`null` 等类型**
+3. **`boolean` 避坑**：部分 SDK 对 `boolean` 参数注入兼容性不佳，`onExecute` 可能静默不执行。优先使用 `string` + `enum: ['true', 'false']` 替代，在 `onExecute` 内手动转 `boolean`。
 3. **required 数组**：明确指定必填字段
 4. **description**：每个字段都应包含描述，便于 LLM 理解
 5. **default**：可选字段可以提供默认值

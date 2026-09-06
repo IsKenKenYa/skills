@@ -655,6 +655,14 @@ Text组件支持创建自定义文本样式，以下为修改文本样式的主�
   }
   ```
 
+## 属性字符串（StyledString / MutableStyledString）
+
+属性字符串用于在**字符或段落级别**上设置文本样式，支持调整字号、添加字体颜色、文本阴影、装饰线、段落样式等。详细用法请参考[属性字符串](arkts-styled-string.md)。
+
+## 图文混排
+
+图文混排是指图片与文字混合排列，支持两种方式：Span + ImageSpan 方式（简单混排）和属性字符串方式（复杂混排）。详细用法请参考[图文混排](arkts-text-image-layout.md)。
+
 ## 添加事件
 
 Text组件可以添加通用事件，可以绑定[onClick](../reference/apis-arkui/arkui-ts/ts-universal-events-click.md#onclick)、[onTouch](../reference/apis-arkui/arkui-ts/ts-universal-events-touch.md#ontouch)等事件来响应操作。

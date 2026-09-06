@@ -145,6 +145,22 @@ cmd_elements() {
 
     echo -e "${YELLOW}正在获取页面元素...${NC}"
 
+    # ⚠️ 警告：即将在设备上启用测试模式（persist.ace.testmode.enabled）
+    # 该参数为持久化系统参数，设备重启后仍生效，非临时变更。
+    # 获取元素树后会自动重置为关闭，但若脚本被中断，测试模式可能在重启后仍保持激活，
+    # 届时需手动执行关闭：hdc -t $device shell param set persist.ace.testmode.enabled 0
+    echo -e "${YELLOW}⚠️ 警告: 即将启用测试模式（持久化，重启后仍生效）${NC}"
+    echo -e "${YELLOW}   获取元素后将自动重置；若脚本被中断，请手动执行：${NC}"
+    echo -e "${YELLOW}   hdc -t $device shell param set persist.ace.testmode.enabled 0${NC}"
+
+    # 设置 EXIT trap：确保脚本被中断/异常退出时也尝试重置测试模式
+    _TM_DEVICE="$device"
+    _reset_testmode() {
+        hdc -t "$_TM_DEVICE" shell param set persist.ace.testmode.enabled 0 2>/dev/null || true
+        echo -e "${GREEN}已重置测试模式（persist.ace.testmode.enabled = 0）${NC}"
+    }
+    trap _reset_testmode EXIT
+
     # 开启测试模式
     hdc -t $device shell param set persist.ace.testmode.enabled 1 2>/dev/null
 
@@ -153,7 +169,7 @@ cmd_elements() {
 
     if [ -z "$window_id" ]; then
         echo -e "${RED}错误: 无法获取窗口 ID${NC}"
-        exit 1
+        exit 1  # trap 会在退出时自动重置测试模式
     fi
 
     echo -e "${GREEN}窗口 ID: $window_id${NC}"
@@ -161,6 +177,10 @@ cmd_elements() {
 
     # 获取元素树
     hdc -t $device shell hidumper -s WindowManagerService -a "-w $window_id -inspector" 2>/dev/null
+
+    # 清理：显式重置测试模式并清除 trap（避免重复执行）
+    trap - EXIT
+    _reset_testmode
 }
 
 # 获取日志

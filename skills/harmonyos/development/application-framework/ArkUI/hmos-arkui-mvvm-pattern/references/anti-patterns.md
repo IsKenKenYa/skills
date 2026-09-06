@@ -148,5 +148,4 @@ struct TaskPage {
 | 2 | ViewModel 文件是否 import 了 UI 组件 | `grep -r "@Component\|struct.*build()" viewmodel/` |
 | 3 | V1/V2 装饰器是否混用 | 检查 `@Component` 内是否出现 `@Local/@Param`，`@ComponentV2` 内是否出现 `@State/@Prop/@Link` |
 | 4 | Page 内是否有数据处理逻辑 | 检查 Page struct 的 build() 外方法 |
-| 5 | V1 嵌套对象是否正确使用 @ObjectLink 链 | 见 [v1-nested-observation.md](v1-nested-observation.md) |
-| 6 | V1 数组 push/splice 是否触发更新 | 见 [v1-v2-mapping.md](v1-v2-mapping.md) 数组行为差异 |
+| 5 | V1 数组 push/splice 是否触发更新 | 见 [v1-v2-mapping.md](v1-v2-mapping.md) 数组行为差异 |

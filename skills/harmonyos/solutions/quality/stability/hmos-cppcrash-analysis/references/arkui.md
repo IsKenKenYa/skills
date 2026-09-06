@@ -45,7 +45,7 @@ ECMA VM不支持多线程运行，应用在子线程调用了promptAction相关�
 **案例**
 
 ```
-Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x006be9d6f7046c95 
+Reason:Signal:SIGSEGV(SEGV_MAPERR)@0x006be9d6f7046c95
 #00 pc 000000000004ef7c /system/lib64/libace_ndk.z.so
 #01 pc 0000000000bc5f00 /data/storage/el1/bundle/libs/arm64
 ```
@@ -78,7 +78,7 @@ libace_ndk.z.so是CAPI接口的桥接层，接口使用的都是C接口，存在
 **案例**
 
 ```
-LastFatalMessage:[OnSurfaceCreated] crash occured on callback: 
+LastFatalMessage:[OnSurfaceCreated] crash occured on callback:
 #00 pc 00000000013dbc30 /system/lib64/platformsdk/libace_compatible.z.so(OHOS::Ace::NG::XComponentPattern::OnSurfaceCreated()+612)(1b707a6d9e59cf48f4887c9571aa4b64)
 ```
 
@@ -211,7 +211,7 @@ Tid:6860, Name:.huajiao.huawei
 **案例**
 
 ```
-Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x0000005af2393068 
+Reason:Signal:SIGSEGV(SEGV_ACCERR)@0x0000005af2393068
 Fault thread info:
 #00 pc 00000000006d6068 [anon:native_heap:jemalloc]
 #01 pc 0000000000065864 /system/lib64/libace_ndk.z.so(OHOS::Ace::NodeModel::HandleInnerEvent(ArkUINodeEvent*)+164)(2cbf0c174bc34cd60ea9a3c357d90328)

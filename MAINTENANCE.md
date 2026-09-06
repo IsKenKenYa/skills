@@ -125,12 +125,15 @@ npm run install-runtime-deps   # clone OpenHarmony 定制版 TypeScript 4.9.5-r4
 
 `skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/heap_cluster*`（4 个平台二进制，93–116MB）**未入库**，原因：单文件超过 GitHub 100MB 硬限制，push 会被拒。
 
-处理方式：
-- 这些二进制在 `.gitignore` 中排除，不会进入仓库。
-- skill 的 `scripts/` 下保留了体积较小的 `rawheap_translator*`（<1MB，入库）。
-- `hmos-jsleak-analysis/SKILL.md` 的 Step 0 已说明：若 `heap_cluster` 缺失，从上游 [harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) 的 `03-solutions/quality/stability/hmos-jsleak-analysis/scripts/<平台>/` 获取并放回本 skill 同名目录。
+上游（v1.3.0 起）的处理：heap_cluster 预编译二进制已转 **Git LFS** 存储，并新增 `scripts/node/` **纯 JS 源码版**（`heap_cluster.js`，功能完整：单快照、批处理、多快照总榜、版本对比）。上游 SKILL.md 的 Step -0.5 / Step 0 已全面转向 Node 源码版优先。
 
-同步上游更新时注意：若上游的 heap_cluster 二进制有更新，不要复制进本仓库（会触发 GitHub 大文件拒绝），保持 .gitignore 排除即可，文档指引不变。
+本仓库的处理方式：
+- **首选方案（已入库）**：`scripts/node/` 源码版随仓库分发，按 SKILL.md Step -0.5 检查 Node 22.5+/pnpm 并 `pnpm install` 后即可使用。
+- LFS 指针文件（134 字节）与预编译二进制不入库（`.gitignore` 排除 `heap_cluster`、`heap_cluster_*`、`heap_cluster.exe`；注意 `scripts/node/heap_cluster.js` 源码不受影响，正常入库）。
+- skill 的 `scripts/` 下保留了体积较小的 `rawheap_translator*`（<1MB，入库）。
+- 如确需预编译版：装 git-lfs 后从上游 [harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) 拉取。
+
+同步上游更新时注意：同步脚本从 git 对象复制上游文件，若上游 heap_cluster 又变回真二进制（>100MB），复制后 `.gitignore` 会阻止其入库，但需手动删除工作区中的实体文件再提交（`git status` 确认）。
 
 ## description 翻译规范
 

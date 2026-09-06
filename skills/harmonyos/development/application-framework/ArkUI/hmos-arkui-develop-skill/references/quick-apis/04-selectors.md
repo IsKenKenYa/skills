@@ -74,3 +74,36 @@
 **属性方法：** `.autoReset(boolean)` `.challengeResult(PatternLockChallengeResult)`
 
 **事件：** `.onPatternComplete(callback: (input: number[]) => void)`
+
+### 典型用法
+
+#### DatePicker 回调注意
+
+```ts
+// ✅ 推荐：onDateChange 回调参数是 Date，可直接用
+DatePicker({ selected: this.selectedDate })
+  .onDateChange((value: Date) => {
+    this.year = value.getFullYear()
+    this.month = value.getMonth() + 1   // getMonth() 是 0-based
+    this.day = value.getDate()
+  })
+
+// ❌ onDateChange 传 value 是 Date，不是 DatePickerResult
+```
+
+#### TimePicker
+
+```ts
+TimePicker({ selected: new Date(), useMilitaryTime: false })
+```
+
+#### TextPicker 回调联合类型
+
+```ts
+// 回调参数是联合类型，勿收窄
+TextPicker({ range: this.options, selected: this.index })
+  .onChange((value: string | string[], index: number | number[]) => {
+    const v = Array.isArray(value) ? value[0] : value
+    const i = Array.isArray(index) ? index[0] : index
+  })
+```
