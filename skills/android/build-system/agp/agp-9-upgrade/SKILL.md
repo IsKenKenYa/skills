@@ -1,8 +1,7 @@
 ---
 name: agp-9-upgrade
-description: Upgrades, or migrates, an Android project to use Android Gradle Plugin
-  (AGP) version 9. Do not use this skill for migrating Kotlin Multiplatform (KMP)
-  projects.
+description: 升级或迁移 Android 项目以使用 Android Gradle Plugin (AGP) 版本 9。不要用此 skill 迁移 Kotlin Multiplatform (KMP) 项目。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

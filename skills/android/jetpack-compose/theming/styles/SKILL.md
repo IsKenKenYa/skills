@@ -1,14 +1,11 @@
 ---
 name: styles
-description: Use this skill to integrate the Jetpack Compose Styles API into an Android
-  project. This skill guides you through upgrading dependencies, setting up component
-  themes, making custom components styleable, and migrating existing layout properties
-  to use unified styles. Migrate custom design system components, replace hard coded
-  parameters with Style attributes, and use Modifier.styleable for interaction states.
+description: 使用此 skill 将 Jetpack Compose Styles API 集成到 Android 项目。引导你升级依赖、设置组件主题、让自定义组件可样式化，以及将现有布局属性迁移到统一样式。迁移自定义设计系统组件、用 Style 属性替换硬编码参数、使用 Modifier.styleable 处理交互状态。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-08'
   keywords:
   - Jetpack Compose
   - Styles

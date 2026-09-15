@@ -1,13 +1,11 @@
 ---
 name: edge-to-edge
-description: Use this skill to migrate your Jetpack Compose app to add adaptive edge-to-edge
-  support and troubleshoot common issues. Use this skill to fix UI components (like
-  buttons or lists) that are obscured by or overlapping with the navigation bar or
-  status bar, fix IME insets, and fix system bar legibility.
+description: 使用此 skill 迁移 Jetpack Compose 应用以添加自适应 edge-to-edge 支持，并排查常见问题。用于修复被导航栏或状态栏遮挡/重叠的 UI 组件（如按钮或列表）、修复 IME insets、以及修复系统栏可读性。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-08-24'
   keywords:
   - android
   - compose
@@ -185,7 +183,7 @@ applied twice, once with innerPadding, which contains IME insets from the passed
 
 ```kotlin
 // WRONG
-Scaffold( contentWindowInsets = WindowInsets.safeDrawing ) { innerPadding ->
+Scaffold(contentWindowInsets = WindowInsets.safeDrawing) { innerPadding ->
     Column(
         modifier = Modifier
             .padding(innerPadding)

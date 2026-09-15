@@ -1,9 +1,7 @@
 ---
 name: camerax
-description: Provide technical guidance for Android camera development with CameraX.
-  Use when implementing camera features, handling asynchronous recording lifecycles,
-  wiring low-level hardware interop using CameraX, or integrating ML Kit or Media3
-  effects.
+description: 提供 Android CameraX 相机开发的技术指导。当实现相机功能、处理异步录制生命周期、使用 CameraX 对接底层硬件互操作（hardware interop），或集成 ML Kit 或 Media3 特效时使用。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

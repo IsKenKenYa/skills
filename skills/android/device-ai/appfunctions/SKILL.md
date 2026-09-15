@@ -1,11 +1,7 @@
 ---
 name: appfunctions
-description: Analyzes Android apps to identify key user workflows for AppFunctions
-  such as creating a note, playing media, or sending an automated or AI agent triggered
-  message, voice commands, or system shortcuts, without needing to open the app UI.
-  Generates Kotlin code to expose these workflows to the Android system, allowing
-  agents to discover and execute them on-device. Also refines KDoc documentation to
-  ensure AI agents correctly understand and use the provided functionality.
+description: 分析 Android 应用，识别可用于 AppFunctions 的关键用户工作流（如创建笔记、播放媒体，或发送由自动化或 AI agent 触发的消息、语音命令、系统快捷方式，而无需打开应用 UI）。生成 Kotlin 代码将这些工作流暴露给 Android 系统，使 agent 能在设备端发现并执行它们。同时优化 KDoc 文档，确保 AI agent 正确理解并使用所提供的功能。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

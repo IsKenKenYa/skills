@@ -1,12 +1,11 @@
 ---
 name: testing-setup
-description: Analyze and create a testing strategy for native Android apps - install
-  testing libraries, set up test infrastructure, create harnesses for unit tests,
-  UI tests, screenshot tests, and end-to-end tests.
+description: 为原生 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、为单元测试、UI 测试、截图测试和端到端测试创建测试桩。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-03'
   keywords:
   - android
   - testing

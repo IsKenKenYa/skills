@@ -1,16 +1,11 @@
 ---
 name: adaptive
-description: Instructions to make or update an app's UI so that it adapts to different
-  Android devices including phones, tablets, foldables, laptops, desktop, TV, Auto
-  and XR. It includes how to handle different window sizes, pointing devices (such
-  as mouse) and text entry devices (such as keyboard) using the Compose MediaQuery
-  API. It also covers multi-pane layouts using Navigation3 Scenes, adaptive UI components
-  (such as buttons) with varying target sizes, and adaptive layouts (including navigation
-  areas - nav rails and nav bars) using the Compose Grid and FlexBox APIs.
+description: 提供让应用 UI 适配不同 Android 设备（手机、平板、折叠屏、笔记本、桌面、TV、Auto 和 XR）的说明。涵盖使用 Compose MediaQuery API 处理不同窗口尺寸、指针设备（如鼠标）和文本输入设备（如键盘）；使用 Navigation3 Scenes 实现多窗格布局；使用 Compose Grid 和 FlexBox API 实现随目标尺寸变化的自适应 UI 组件（如按钮）和自适应布局（含导航区——nav rails 和 nav bars）。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-20'
+  last-updated: '2026-08-27'
   keywords:
   - android
   - ui

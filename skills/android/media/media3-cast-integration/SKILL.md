@@ -1,10 +1,7 @@
 ---
 name: media3-cast-integration
-description: Implements Google Cast support in Android apps using Jetpack Media3.
-  Handles adding build dependencies, updating manifest, configuring OptionsProvider,
-  and managing CastPlayer or RemoteCastPlayer for playback in both Compose and View-based
-  UIs. Use when adding Cast functionality or migrating from legacy Cast SDK to Media3
-  Cast.
+description: 使用 Jetpack Media3 在 Android 应用中实现 Google Cast 支持。处理添加构建依赖、更新 manifest、配置 OptionsProvider，以及在 Compose 和 View 两种 UI 中管理 CastPlayer 或 RemoteCastPlayer 播放。当添加 Cast 功能或从旧版 Cast SDK 迁移到 Media3 Cast 时使用。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

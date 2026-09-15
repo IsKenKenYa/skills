@@ -28,7 +28,7 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 118 个）
+## Skill 清单（共 122 个）
 
 ## 一、mattpocock 通用 Skills（37 个，description 已中文化）
 
@@ -41,17 +41,17 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|---------|
 | [`/ask-matt`](./skills/engineering/ask-matt/SKILL.md) | 用户调用 | 询问哪种 skill 或流程适合你的场景。是本仓库中全部 skill 的路由器。 |
 | [`/code-review`](./skills/engineering/code-review/SKILL.md) | 模型/用户调用 | 沿两条轴线审查自某个固定点（提交、分支、标签或 merge-base）以来的变更——标准（代码是否遵循本仓库文档化的编码规范？）与规格（代码是否符合原始 issue/spec 的要求？）。两个审查由并行子代理执行并并排汇报。当用户想审查一个分支、PR、进行中的改动，或要求“自 X 起审查”（review since X）时使用。 |
-| [`/codebase-design`](./skills/engineering/codebase-design/SKILL.md) | 模型/用户调用 | Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary. |
-| [`/diagnosing-bugs`](./skills/engineering/diagnosing-bugs/SKILL.md) | 模型/用户调用 | Diagnosis loop for hard bugs and performance regressions. Use when the user says "diagnose"/"debug this", or reports something broken/throwing/failing/slow. |
+| [`/codebase-design`](./skills/engineering/codebase-design/SKILL.md) | 模型/用户调用 | 设计深层模块（deep module）的共享词汇。当用户想设计或改进模块接口、寻找深化机会、决定接缝（seam）位置、让代码更易测试或更易被 AI 导航，或当其他 skill 需要深层模块词汇时使用。 |
+| [`/diagnosing-bugs`](./skills/engineering/diagnosing-bugs/SKILL.md) | 模型/用户调用 | 针对疑难 bug 和性能回归的诊断循环。当用户说"诊断"/"调试这个"，或报告某东西坏了/抛异常/失败/变慢时使用。 |
 | [`/domain-modeling`](./skills/engineering/domain-modeling/SKILL.md) | 模型/用户调用 | 构建并打磨项目的领域模型。当讨论代码库术语、撰写或编辑 CONTEXT.md、记录或编辑 ADR 时使用。 |
-| [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md) | 用户调用 | A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go. |
+| [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md) | 用户调用 | 一场无情的访谈，用来打磨计划或设计，同时会顺势产出文档（ADR 和术语表）。 |
 | [`/implement`](./skills/engineering/implement/SKILL.md) | 用户调用 | 基于规格（spec）或一组 ticket 实现一项工作。 |
-| [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) | 用户调用 | Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick. |
+| [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) | 用户调用 | 扫描代码库寻找深化机会，以可视化 HTML 报告呈现，然后针对你选中的那一个进行 grill 访谈。 |
 | [`/prototype`](./skills/engineering/prototype/SKILL.md) | 模型/用户调用 | 构建一次性原型来回答设计问题。当用户想验证状态模型或逻辑是否合理，或探索 UI 应该长什么样时使用。 |
 | [`/research`](./skills/engineering/research/SKILL.md) | 模型/用户调用 | 针对一个问题调研高可信度的一手资料，并把发现整理为仓库中的 Markdown 文件。当用户想调研某个主题、收集文档或 API 事实，或把阅读跑腿工作交给后台代理时使用。 |
-| [`/resolving-merge-conflicts`](./skills/engineering/resolving-merge-conflicts/SKILL.md) | 模型/用户调用 | Use when you need to resolve an in-progress git merge/rebase conflict. |
+| [`/resolving-merge-conflicts`](./skills/engineering/resolving-merge-conflicts/SKILL.md) | 模型/用户调用 | 当你需要解决进行中的 git merge/rebase 冲突时使用。 |
 | [`/setup-matt-pocock-skills`](./skills/engineering/setup-matt-pocock-skills/SKILL.md) | 用户调用 | 为工程类 skill 配置本仓库：设置 issue 追踪器、triage 标签词汇和领域文档布局。在其他工程类 skill 首次使用前运行一次。 |
-| [`/tdd`](./skills/engineering/tdd/SKILL.md) | 模型/用户调用 | Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests. |
+| [`/tdd`](./skills/engineering/tdd/SKILL.md) | 模型/用户调用 | 测试驱动开发（TDD）。当用户想以测试优先的方式构建功能或修 bug、提到"red-green-refactor"，或想要集成测试时使用。 |
 | [`/to-spec`](./skills/engineering/to-spec/SKILL.md) | 用户调用 | 把当前对话转化为规格（spec）并发布到项目 issue 追踪器：无需访谈，只是对已讨论内容的综合提炼。 |
 | [`/to-tickets`](./skills/engineering/to-tickets/SKILL.md) | 用户调用 | 把计划、规格或当前对话拆解为一组示踪子弹（tracer-bullet）ticket，每个 ticket 声明自己的阻塞关系，发布到配置好的追踪器（本地模式下阻塞关系以文本写在每个 ticket 文件里，真实追踪器上则用原生的阻塞链接）。 |
 | [`/triage`](./skills/engineering/triage/SKILL.md) | 用户调用 | 让 issue 和外部 PR 经过一组 triage 角色的状态机——分类、验证、必要时 grill 访谈，并撰写代理可直接执行的简报（brief）。 |
@@ -65,10 +65,10 @@ npx skills@latest add IsKenKenYa/skills
 
 | skill | 调用方式 | 中文介绍 |
 |-------|---------|---------|
-| [`/grill-me`](./skills/productivity/grill-me/SKILL.md) | 用户调用 | A relentless interview to sharpen a plan or design. |
+| [`/grill-me`](./skills/productivity/grill-me/SKILL.md) | 用户调用 | 一场无情的访谈，用来打磨计划或设计。 |
 | [`/grilling`](./skills/productivity/grilling/SKILL.md) | 模型/用户调用 | 就一个计划、决策或想法对用户进行无情的访谈。当用户想压力测试自己的思路，或使用任何 'grill' 触发短语时使用。 |
-| [`/handoff`](./skills/productivity/handoff/SKILL.md) | 用户调用 | Compact the current conversation into a handoff document for another agent to pick up. |
-| [`/teach`](./skills/productivity/teach/SKILL.md) | 用户调用 | Teach the user a new skill or concept, within this workspace. |
+| [`/handoff`](./skills/productivity/handoff/SKILL.md) | 用户调用 | 把当前对话压缩成一份交接（handoff）文档，供另一个代理接手。 |
+| [`/teach`](./skills/productivity/teach/SKILL.md) | 用户调用 | 在当前工作区内，教会用户一项新 skill 或概念。 |
 | [`/to-questionnaire`](./skills/productivity/to-questionnaire/SKILL.md) | 用户调用 | 把你无法独自回答的决策转化成一份问卷，交给别人填写。 |
 | [`/wait-what`](./skills/productivity/wait-what/SKILL.md) | 用户调用 | 停。上一条消息没讲明白：换个说法再讲一遍。 |
 | [`/writing-for-agents`](./skills/productivity/writing-for-agents/SKILL.md) | 模型/用户调用 | 为 agent 撰写文档。当创建或编辑 skill、修改 AGENTS.md 或 CLAUDE.md 时使用。 |
@@ -80,10 +80,10 @@ npx skills@latest add IsKenKenYa/skills
 
 | skill | 调用方式 | 中文介绍 |
 |-------|---------|---------|
-| [`/git-guardrails-claude-code`](./skills/misc/git-guardrails-claude-code/SKILL.md) | 模型/用户调用 | Set up Claude Code hooks to block dangerous git commands (push, reset --hard, clean, branch -D, etc.) before they execute. Use when user wants to prevent destructive git operations, add git safety hooks, or block git push/reset in Claude Code. |
-| [`/migrate-to-shoehorn`](./skills/misc/migrate-to-shoehorn/SKILL.md) | 模型/用户调用 | Migrate test files from `as` type assertions to @total-typescript/shoehorn. Use when user mentions shoehorn, wants to replace `as` in tests, or needs partial test data. |
-| [`/scaffold-exercises`](./skills/misc/scaffold-exercises/SKILL.md) | 模型/用户调用 | Create exercise directory structures with sections, problems, solutions, and explainers that pass linting. Use when user wants to scaffold exercises, create exercise stubs, or set up a new course section. |
-| [`/setup-pre-commit`](./skills/misc/setup-pre-commit/SKILL.md) | 模型/用户调用 | Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing. |
+| [`/git-guardrails-claude-code`](./skills/misc/git-guardrails-claude-code/SKILL.md) | 模型/用户调用 | 设置 Claude Code 钩子，在危险的 git 命令（push、reset --hard、clean、branch -D 等）执行前拦截。当用户想防止破坏性 git 操作、添加 git 安全钩子，或在 Claude Code 中阻止 git push/reset 时使用。 |
+| [`/migrate-to-shoehorn`](./skills/misc/migrate-to-shoehorn/SKILL.md) | 模型/用户调用 | 把测试文件从 `as` 类型断言迁移到 @total-typescript/shoehorn。当用户提到 shoehorn、想替换测试里的 `as`，或需要部分测试数据时使用。 |
+| [`/scaffold-exercises`](./skills/misc/scaffold-exercises/SKILL.md) | 模型/用户调用 | 创建带章节、题目、解答和讲解的练习目录结构，且能通过 lint。当用户想脚手架化练习、创建练习桩，或搭建新课程章节时使用。 |
+| [`/setup-pre-commit`](./skills/misc/setup-pre-commit/SKILL.md) | 模型/用户调用 | 在当前仓库设置带 lint-staged（Prettier）、类型检查和测试的 Husky pre-commit 钩子。当用户想添加 pre-commit 钩子、设置 Husky、配置 lint-staged，或在提交时加入格式化/类型检查/测试时使用。 |
 
 ### In-progress — 进行中（8）
 
@@ -101,7 +101,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/writing-fragments`](./skills/in-progress/writing-fragments/SKILL.md) | 用户调用 | 写作·探索（explore）：挖掘原始片段，暂不构建结构。 |
 | [`/writing-shape`](./skills/in-progress/writing-shape/SKILL.md) | 用户调用 | 写作·利用（exploit）：把原始素材逐段塑造成文章。 |
 
-## 二、HarmonyOS（鸿蒙）Skills（57 个，上游原生中文原样保留）
+## 二、HarmonyOS（鸿蒙）Skills（59 个，上游原生中文原样保留）
 
 ### design — 设计（1）
 
@@ -133,7 +133,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-native-memleak-analysis`](./skills/harmonyos/solutions/quality/stability/hmos-native-memleak-analysis/SKILL.md) | 自动分析 HarmonyOS / OpenHarmony Native内存泄漏问题，基于 sample 采样文件、smaps 文件、profiler 火焰图等信息定位泄漏根因并输出完整证据链。 当用户提供 sample 采样文件、smaps 文件、profiler 火焰图、NMD 数据，或询问应用内存泄漏/内存增长/OOM问题的根因 即使用户只说"帮我分析这个内存泄漏"、"应用内存一直涨"、"native泄漏分析"、"PSS泄漏"、"DMA泄漏"、"GPU泄漏"，也应立即触发此技能。  |
 | [`/hmos-runtime-fix-skill`](./skills/harmonyos/solutions/quality/stability/hmos-runtime-fix-skill/SKILL.md) | Load for ArkTS/JavaScript jscrash, runtime crash, uncaught exception, stack trace, faultlog, or hilog diagnosis. Also load when the app 闪退/崩溃/白屏, exits after 点击/启动/launch, or build succeeds but runtime fails (no compile error). Use before broad Read/Glob on crash-only tasks. |
 
-### development — 开发（27）
+### development — 开发（29）
 
 
 | skill | 中文介绍 |
@@ -153,10 +153,12 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-ascf-convert-uniapp`](./skills/harmonyos/development/application-framework/atomic-service/hmos-ascf-convert-uniapp/SKILL.md) | 辅助开发者将 uni-app 项目适配(转换)为 ASCF 元服务。当需要使用 uni-app（HBuilderX 或 CLI）开发 HarmonyOS 元服务（MP-HARMONY），或将现有 uni-app 项目迁移(转换)到 ASCF 时使用此技能。提供完整的环境搭建、HBuilderX 开发流程、CLI 配置、常见问题排查和上架审核指引。 |
 | [`/hmos-atomicservice-assistant`](./skills/harmonyos/development/application-framework/atomic-service/hmos-atomicservice-assistant/SKILL.md) | 辅助鸿蒙开发者构建元服务（Atomic Service / 免安装应用）。只要用户提到元服务、atomicService、免安装、atomic service，或遇到以下任意问题，都必须使用本 Skill：创建/改造元服务项目、@atomicservice API 报错、配置隐私托管、设置可信域名、静默登录/免密登录、接入鸿蒙支付、包大小超限、AtomicServiceEnhancedWeb vs ArkWeb、Navigation 分包路由、睫毛图标、ICP备案、上架审核被拒。提供规范说明、合规检查清单、代码示例和上架最佳实践。 |
 | [`/hmos-account-kit-quicklogin-client`](./skills/harmonyos/development/application-services/account-kit/hmos-account-kit-quicklogin-client/SKILL.md) | 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成。支持获取匿名手机号后一键登录页面跳转、失败Toast提示等。在用户提及"华为账号一键登录"、"接入华为账号一键登录"、"Account Kit一键登录"或要求实现华为账号一键登录功能时使用（当前仅支持原生ArkTS框架） |
+| [`/hmos-ads-kit-access`](./skills/harmonyos/development/application-services/ads-kit/hmos-ads-kit-access/SKILL.md) | HarmonyOS Ads Kit 广告服务开发指南 — 涵盖6种广告形式(横幅/原生/激励/插屏/开屏/贴片)的完整接入文档、代码模板、自动化场景识别与植入决策引擎。触发关键词：广告接入, Ads Kit, 流量变现, 横幅广告, 原生广告, 激励广告, 插屏广告, 开屏广告, 贴片广告, OAID, 广告自动化接入, 广告植入, RTB, 广告错误排查 |
 | [`/hmos-live-view-kit-build-location`](./skills/harmonyos/development/application-services/live-view-kit/hmos-live-view-kit-build-location/SKILL.md) | HarmonyOS实况窗（LiveView）代码生成助手，支持创建、更新、停止实况窗。用户输入创建/更新/结束/完整/补全实况窗代码时触发，覆盖即时配送、打车、排队、计时、航班、高铁、共享租赁、运动锻炼、导航九大场景。 |
 | [`/hmos-map-kit-map-creation`](./skills/harmonyos/development/application-services/map-kit/hmos-map-kit-map-creation/SKILL.md) | HarmonyOS Map Kit地图创建开发指南，支持地图组件创建、覆盖物管理、相机控制、图层配置等能力。 适用情形：用户要求创建/绘制/展示地图、添加地图标记、绘制图形、管理覆盖物交互、控制相机位置等。  |
 | [`/hmos-map-kit-poi-search`](./skills/harmonyos/development/application-services/map-kit/hmos-map-kit-poi-search/SKILL.md) | HarmonyOS Map Kit位置搜索与POI检索开发指南。当用户明确要求开发实现（如"编写代码"、"开发功能"等）位置搜索、POI检索、地理编码、逆地理编码等功能代码时触发。适用于直接调用本地SDK接口获取地图元素的场景。 适用情形：关键字搜索地点、周边地点检索、地点详情查询、地址与坐标转换。  |
 | [`/hmos-map-kit-route-planning`](./skills/harmonyos/development/application-services/map-kit/hmos-map-kit-route-planning/SKILL.md) | HarmonyOS Map Kit路径规划开发指南。 适用情形：用户明确要求开发实现（如"编写代码"、"开发功能"等）路径规划、批量算路、轨迹纠偏等功能代码时触发。  |
+| [`/hmos-payment-kit-huawei-payment-integration`](./skills/harmonyos/development/application-services/payment-kit/hmos-payment-kit-huawei-payment-integration/SKILL.md) | 本技能面向 HarmonyOS Payment Kit 华为 / 鸿蒙支付接入排障，覆盖基础支付、签约代扣、平台合单、回调验签、沙盒联调、SpringBoot 服务端与 ArkTS 客户端适配，包含官方 Java‑SDK、Maven 构建、配置校验、常见报错排查，命中指定关键词即启用，输出接入指引与问题修复方案。 |
 | [`/hmos-push-kit`](./skills/harmonyos/development/application-services/push-kit/hmos-push-kit/SKILL.md) | 华为Push Kit推送服务集成助手（Master Skill/大路由）。帮助开发者快速集成HarmonyOS推送功能，获取Push Token， 配置推送服务，开通场景化消息权益。支持发送通知消息、应用内通话消息、后台消息等场景。  ============================================================ 触发条件（只有满足以下意图时才触发）： ============================================================  ✅ 正确触发场景（开发者需要接入/开发推送功能）： - "帮我在项目中接入华为推送" - "我要实现推送通知功能" - "如何接入push kit" - "帮我接入voip消息" - "接入后台消息" - "发送推送通知" - "获取push token" - "配置推送服务" - "开通推送消息权益"  ❌ 不触发场景（仅为询问、比较、测试、排查等）： - 询问对比/优缺点："鸿蒙push和苹果push区别"、"推送有什么优点" - 否定意图："我不想接入推送"、"不需要推送" - 仅输入关键词："推送"、"消息"、"后台" - 测试/调试："push通知测试"、"push调试" - 问题排查："push失败"、"推送异常" - 配置咨询："token怎么配置" - 带引号输入："push通知"、"推送消息"  路由规则： - 若开发者需要单独获取Push Token → 路由到 hmos-push-kit-token - 若开发者需要发送通知消息 → 路由到 hmos-push-kit-notification（先检查Token状态） - 若开发者需要实现voip/应用内通话 → 路由到 hmos-push-kit-voip（先检查Token状态） - 若开发者需要接入后台消息 → 路由到 hmos-push-kit-background（先检查Token状态） - 若开发者请求模糊（未明确场景）→ 必须先询问具体场景，再路由到对应子Skill  ⚠️ 重要：主Skill不生成任何场景化消息的具体代码！当开发者请求模糊时，必须先询问具体场景，再路由到对应子Skill生成完整代码。  此技能能够为开发者生成可直接编译通过的ArkTS代码，没有语法错误。 |
 | [`/hmos-push-kit-background`](./skills/harmonyos/development/application-services/push-kit/hmos-push-kit/hmos-push-kit-background/SKILL.md) | 推送后台消息助手。当开发者需要实现后台消息接收、数据静默更新、或消息缓存功能时触发。  ============================================================ 触发条件（只有满足以下意图时才触发）： ============================================================  ✅ 正确触发场景： - "帮接入后台消息" - "实现数据静默更新" - "添加推送后台消息功能" - "推送后台消息" - "消息缓存到数据库" - "进程不在前台接收消息" - "需要接入后台消息功能"  ❌ 不触发场景： - 询问/概念："后台消息是什么" - 否定意图："不需要后台消息" - 仅输入关键词："后台"、"消息" - 测试/调试："后台消息测试" - 带引号输入："后台消息" - 配置咨询："后台消息怎么配置"  ⚠️ 重要提醒： - 只要需要接入后台消息功能，**必须加载本 skill** - 本 skill 提供完整的后台消息接入指导，包括消息接收、数据处理、缓存策略等 - 后台消息接入涉及数据静默更新、缓存策略等完整流程，不能凭其他 skill 的通用说明（如"同一 ability 接收多种消息类型"）自行编写  此 Skill 专注于帮助开发者实现推送后台消息的接收和配置。  前置检查： - 在继续之前，会自动检查开发者是否已接入Push Token - 如果未接入Token，会引导开发者先使用 hmos-push-kit-token Skill |
 | [`/hmos-push-kit-notification`](./skills/harmonyos/development/application-services/push-kit/hmos-push-kit/hmos-push-kit-notification/SKILL.md) | 发送通知消息助手。当开发者需要实现推送通知功能、发送消息提醒、配置通知样式或点击动作时触发。  ============================================================ 触发条件（只有满足以下意图时才触发）： ============================================================  ✅ 正确触发场景： - "帮我在项目中接入推送通知" - "实现推送消息功能" - "添加推送消息功能" - "接入通知消息" - "发送通知消息" - "配置推送前台接收"  ❌ 不触发场景： - 询问/概念："通知消息是什么"、"推送有啥优点" - 否定意图："不需要通知消息" - 仅输入关键词："通知"、"推送消息" - 测试/调试："测试推送通知" - 问题排查："推送失败"、"通知异常" - 带引号输入："推送通知" - 配置咨询："通知怎么配置"  此 Skill 专注于帮助开发者实现通知消息的发送和配置。  前置检查： - 在继续之前，会自动检查开发者是否已接入Push Token - 如果未接入Token，会引导开发者先使用 hmos-push-kit-token Skill |
@@ -202,35 +204,133 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/app-metadata-audit-skill`](./skills/harmonyos/launch-and-distribute/app-metadata-audit-skill/SKILL.md) | 开发者在app开发提交agc前，可利用该skill规范对应用市场的元数据（名称、描述、关键词、隐私链接等）进行自动化合规性审查。支持华为应用市场审核规范，防止因低级错误导致被拒。 |
 
-## 三、Android Skills（22 个，description 已中文化）
+## 三、Android Skills（24 个，description 已中文化）
 
-### android（22）
+### build-system（1）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/agp-9-upgrade`](./skills/android/build-system/agp/agp-9-upgrade/SKILL.md) | Upgrades, or migrates, an Android project to use Android Gradle Plugin (AGP) version 9. Do not use this skill for migrating Kotlin Multiplatform (KMP) projects. |
-| [`/camerax`](./skills/android/camera/camerax/SKILL.md) | Provide technical guidance for Android camera development with CameraX. Use when implementing camera features, handling asynchronous recording lifecycles, wiring low-level hardware interop using CameraX, or integrating ML Kit or Media3 effects. |
-| [`/appfunctions`](./skills/android/device-ai/appfunctions/SKILL.md) | Analyzes Android apps to identify key user workflows for AppFunctions such as creating a note, playing media, or sending an automated or AI agent triggered message, voice commands, or system shortcuts, without needing to open the app UI. Generates Kotlin code to expose these workflows to the Android system, allowing agents to discover and execute them on-device. Also refines KDoc documentation to ensure AI agents correctly understand and use the provided functionality. |
-| [`/android-cli`](./skills/android/devtools/android-cli/SKILL.md) | Provides instructions for installing and using the `android` CLI. The `android` command-line tool is a critical tool for Android development and helps you create new Android projects, run Android apps on devices, manage and interact with Android virtual devices (including screenshots and UI inspection), manage Android SDK components, look up official Android documentation, and discover and install official Android skills. |
-| [`/restore-credentials`](./skills/android/identity/restore-credentials/SKILL.md) | Provides knowledge and workflows to implement Android's Restore Credentials feature using the androidx.credentials library. Use this skill to create, sign in with, and delete restore keys, enabling silent user sign-in on new devices after a restore. It covers version compatibility, dependencies, server-side prerequisites, and the complete client-side implementation for creating, retrieving, and clearing restore keys. |
-| [`/verified-email`](./skills/android/identity/verified-email/SKILL.md) | Provides a complete workflow for implementing verified email retrieval on Android Credential Manager API. Use this skill to integrate a secure, OTP-less email verification flow into an Android app. This skill solves the problem of high-friction sign-up processes by leveraging cryptographically verified credentials from trusted providers like Google. |
-| [`/adaptive`](./skills/android/jetpack-compose/adaptive/SKILL.md) | Instructions to make or update an app's UI so that it adapts to different Android devices including phones, tablets, foldables, laptops, desktop, TV, Auto and XR. It includes how to handle different window sizes, pointing devices (such as mouse) and text entry devices (such as keyboard) using the Compose MediaQuery API. It also covers multi-pane layouts using Navigation3 Scenes, adaptive UI components (such as buttons) with varying target sizes, and adaptive layouts (including navigation areas - nav rails and nav bars) using the Compose Grid and FlexBox APIs. |
-| [`/migrate-xml-views-to-jetpack-compose`](./skills/android/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/SKILL.md) | Provides a structured workflow for migrating an Android XML View to Jetpack Compose. This skill details the step-by-step process, from planning and dependency setup, to theming and layout migration, validation and XML cleanup. Use this skill when you need to migrate an XML View to Jetpack Compose in an Android project. It solves the problem of converting the UI of a legacy XML View into modern, declarative Compose components while maintaining interoperability. |
-| [`/styles`](./skills/android/jetpack-compose/theming/styles/SKILL.md) | Use this skill to integrate the Jetpack Compose Styles API into an Android project. This skill guides you through upgrading dependencies, setting up component themes, making custom components styleable, and migrating existing layout properties to use unified styles. Migrate custom design system components, replace hard coded parameters with Style attributes, and use Modifier.styleable for interaction states. |
-| [`/media3-cast-integration`](./skills/android/media/media3-cast-integration/SKILL.md) | Implements Google Cast support in Android apps using Jetpack Media3. Handles adding build dependencies, updating manifest, configuring OptionsProvider, and managing CastPlayer or RemoteCastPlayer for playback in both Compose and View-based UIs. Use when adding Cast functionality or migrating from legacy Cast SDK to Media3 Cast. |
-| [`/navigation-3`](./skills/android/navigation/navigation-3/SKILL.md) | Learn how to install and migrate to Jetpack Navigation 3, and how to implement features and patterns such as deep links, multiple backstacks, scenes (dialogs, bottom sheets, list-detail, two-pane, supporting pane), conditional navigation (such as logged-in navigation versus anonymous), returning results from flows, integration with Hilt, ViewModel, Kotlin, and view interoperability. |
-| [`/r8-analyzer`](./skills/android/performance/r8-analyzer/SKILL.md) | Analyzes Android build files and R8 keep rules to identify redundancies, broad package-wide rules, and rules that subsume library consumer keep rules. Use when developers want to optimize their app's size, remove redundant or overly broad keep rules, or troubleshoot Proguard configurations. |
-| [`/engage-sdk-integration`](./skills/android/play/engage-sdk-integration/SKILL.md) | Helps developers integrate, debug, and resolve Play Engage SDK implementation issues. Use when adding Engage SDK support, generating publishing code, mapping data classes to entities, or fixing SDK-related errors. |
-| [`/play-billing-library-version-upgrade`](./skills/android/play/play-billing-library-version-upgrade/SKILL.md) | Use this skill when upgrading or migrating an Android project from any legacy Google Play Billing Library (PBL) version to the latest stable version of PBL. |
-| [`/play-policy-insights`](./skills/android/play/play-policy-insights/SKILL.md) | Automated auditor designed to verify Android applications against Google Play Policy domains. It cross-references static code analysis with Play Store declarations to generate deterministic compliance reports, identifying undeclared data collection, architectural risks, and missing disclosures across Permissions and APIs Hygiene, User Account and Identity, and Data Safety and Privacy domains. |
-| [`/android-profiler`](./skills/android/profilers/android-profiler/SKILL.md) | Manages Android performance profiling and debugging. Triggers when the user asks to record or analyze Android performance data, such as system traces, heap dumps, method recordings, callstack samples, memory allocations, or investigate bottlenecks, jank, memory leaks, and app startup issues on Android, or when the user asks to write, debug, or execute ad-hoc SQL queries. Applies to both user and system apps or services.  |
-| [`/android-intent-security`](./skills/android/security/android-intent-security/SKILL.md) | Best practices for Android Intent security. Use this skill when auditing component configurations in AndroidManifest.xml activities, services, receivers) or source code handling incoming Intents (getIntent, getParcelableExtra) to prevent Intent Redirection and unauthorized access. |
-| [`/edge-to-edge`](./skills/android/system/edge-to-edge/SKILL.md) | Use this skill to migrate your Jetpack Compose app to add adaptive edge-to-edge support and troubleshoot common issues. Use this skill to fix UI components (like buttons or lists) that are obscured by or overlapping with the navigation bar or status bar, fix IME insets, and fix system bar legibility. |
-| [`/testing-setup`](./skills/android/testing/testing-setup/SKILL.md) | Analyze and create a testing strategy for native Android apps - install testing libraries, set up test infrastructure, create harnesses for unit tests, UI tests, screenshot tests, and end-to-end tests. |
-| [`/leanback-to-compose-tv-migration`](./skills/android/tv/leanback-to-compose-tv-migration/SKILL.md) | Provides instructions and architectural patterns for migrating Android TV applications from legacy Leanback UI Toolkit, Android Views, or Support Fragments to Jetpack Compose for TV (androidx.tv). Use this skill for Leanback to Compose migrations, including browse screen, settings screen, authentication screen, login screen, or video playback screen migrations, or when replacing BrowseSupportFragment, LeanbackSettingsFragment, PreferenceFragment, BaseLeanbackPreferenceFragmentCompat, VideoSupportFragment, GuidedStepSupportFragment, SearchSupportFragment, VerticalGridSupportFragment, Presenter, ArrayObjectAdapter, or CursorMapper with modern Compose equivalents, implementing immersive carousels with focus memory, Media3 video playback with PlayerSurface, or custom 10-foot hero layouts. |
-| [`/wear-compose-m3`](./skills/android/wear/wear-compose-m3/SKILL.md) | Expert guidance for working with Wear OS Compose Material3. Use this skill when creating, updating, or migrating Wear OS projects. This includes the androidx.wear.compose.material3, androidx.wear.compose.foundation, and androidx.wear.compose.navigation3 libraries. Also working with core components such as AppScaffold, ScreenScaffold, and TransformingLazyColumn, and core Wear OS concepts such as ambient mode. Migration from lower versions such as Material 2.5 and Horologist. |
-| [`/display-glasses-with-jetpack-compose-glimmer`](./skills/android/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md) | Provides guidelines for developing projected Android XR apps for display glasses using the Jetpack Compose Glimmer UI toolkit. This skill covers foundational Glimmer design principles, workflows for implementing Jetpack Compose Glimmer, and interaction models for the glasses form factor. Use this skill to build an Android XR Augmented Experience app with Jetpack Compose Glimmer that adheres to the Glimmer design system for optimized glasses styling. |
+| [`/agp-9-upgrade`](./skills/android/build-system/agp/agp-9-upgrade/SKILL.md) | 升级或迁移 Android 项目以使用 Android Gradle Plugin (AGP) 版本 9。不要用此 skill 迁移 Kotlin Multiplatform (KMP) 项目。 |
+
+### camera（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/camerax`](./skills/android/camera/camerax/SKILL.md) | 提供 Android CameraX 相机开发的技术指导。当实现相机功能、处理异步录制生命周期、使用 CameraX 对接底层硬件互操作（hardware interop），或集成 ML Kit 或 Media3 特效时使用。 |
+
+### device-ai（2）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/appfunctions`](./skills/android/device-ai/appfunctions/SKILL.md) | 分析 Android 应用，识别可用于 AppFunctions 的关键用户工作流（如创建笔记、播放媒体，或发送由自动化或 AI agent 触发的消息、语音命令、系统快捷方式，而无需打开应用 UI）。生成 Kotlin 代码将这些工作流暴露给 Android 系统，使 agent 能在设备端发现并执行它们。同时优化 KDoc 文档，确保 AI agent 正确理解并使用所提供的功能。 |
+| [`/ml-kit-genai-prompt-api`](./skills/android/device-ai/ml-kit-genai-prompt-api/SKILL.md) | 分析 Android 代码库以实现 ML Kit GenAI Prompt API。使用此 skill 在设备端向 Gemini Nano 发送自然语言请求、使用 Prompt API 的结构化输出、实现前缀缓存、优化当前提示词，或应用最佳实践。 |
+
+### devtools（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/android-cli`](./skills/android/devtools/android-cli/SKILL.md) | 提供安装和使用 `android` CLI 的说明。`android` 命令行工具是 Android 开发的关键工具，帮助你创建新 Android 项目、在设备上运行 Android 应用、管理和交互 Android 虚拟设备（含截图和 UI 检查）、管理 Android SDK 组件、查询官方 Android 文档，以及发现和安装官方 Android skills。 |
+
+### identity（2）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/restore-credentials`](./skills/android/identity/restore-credentials/SKILL.md) | 提供使用 androidx.credentials 库实现 Android 恢复凭证（Restore Credentials）功能的知识与工作流。使用此 skill 创建恢复密钥、用其登录、删除恢复密钥，在设备恢复后实现新设备上的静默登录。涵盖版本兼容性、依赖、服务端前提条件，以及创建、读取、清除恢复密钥的完整客户端实现。 |
+| [`/verified-email`](./skills/android/identity/verified-email/SKILL.md) | 提供基于 Android Credential Manager API 实现已验证邮箱获取的完整工作流。使用此 skill 向 Android 应用集成安全、免 OTP 的邮箱验证流程。该 skill 利用来自 Google 等可信提供商的加密验证凭证，解决注册流程摩擦过大的问题。 |
+
+### jetpack-compose（3）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/adaptive`](./skills/android/jetpack-compose/adaptive/SKILL.md) | 提供让应用 UI 适配不同 Android 设备（手机、平板、折叠屏、笔记本、桌面、TV、Auto 和 XR）的说明。涵盖使用 Compose MediaQuery API 处理不同窗口尺寸、指针设备（如鼠标）和文本输入设备（如键盘）；使用 Navigation3 Scenes 实现多窗格布局；使用 Compose Grid 和 FlexBox API 实现随目标尺寸变化的自适应 UI 组件（如按钮）和自适应布局（含导航区——nav rails 和 nav bars）。 |
+| [`/migrate-xml-views-to-jetpack-compose`](./skills/android/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/SKILL.md) | 提供将 Android XML View 迁移到 Jetpack Compose 的结构化工作流。该 skill 详述从规划和依赖设置，到主题和布局迁移、验证及 XML 清理的分步流程。当需要在 Android 项目中把 XML View 迁移到 Jetpack Compose 时使用。它解决将旧版 XML View 的 UI 转换为现代声明式 Compose 组件、同时保持互操作性的问题。 |
+| [`/styles`](./skills/android/jetpack-compose/theming/styles/SKILL.md) | 使用此 skill 将 Jetpack Compose Styles API 集成到 Android 项目。引导你升级依赖、设置组件主题、让自定义组件可样式化，以及将现有布局属性迁移到统一样式。迁移自定义设计系统组件、用 Style 属性替换硬编码参数、使用 Modifier.styleable 处理交互状态。 |
+
+### media（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/media3-cast-integration`](./skills/android/media/media3-cast-integration/SKILL.md) | 使用 Jetpack Media3 在 Android 应用中实现 Google Cast 支持。处理添加构建依赖、更新 manifest、配置 OptionsProvider，以及在 Compose 和 View 两种 UI 中管理 CastPlayer 或 RemoteCastPlayer 播放。当添加 Cast 功能或从旧版 Cast SDK 迁移到 Media3 Cast 时使用。 |
+
+### navigation（2）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/navigation-3`](./skills/android/navigation/navigation-3/SKILL.md) | 学习如何安装并迁移到 Jetpack Navigation 3，以及如何实现 deep links、多个 backstack、scenes（对话框、底部表、list-detail、two-pane、supporting pane）、条件导航（如已登录导航与匿名导航的区别）、从流程返回结果、与 Hilt/ViewModel/Kotlin/View 互操作集成等功能和模式。 |
+| [`/navigation-event`](./skills/android/navigation/navigation-event/SKILL.md) | 在 Compose Android 中使用 NavigationEvent（androidx.navigationevent）库拦截返回手势并运行预测性返回（Predictive Back）动画。处理 Activity 配置、`ViewPagers` 或标签页中的父子分发器作用域、Compose `NavigationBackHandler`，以及 SDK 36+ 上从旧版 `BackHandler` 的迁移。 |
+
+### performance（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/r8-analyzer`](./skills/android/performance/r8-analyzer/SKILL.md) | 分析 Android 构建文件和 R8 keep 规则，识别冗余、过宽的包级规则，以及吞没了库消费者 keep 规则的规则。当开发者想优化应用体积、移除冗余或过宽的 keep 规则，或排查 Proguard 配置时使用。 |
+
+### play（3）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/engage-sdk-integration`](./skills/android/play/engage-sdk-integration/SKILL.md) | 帮助开发者集成、调试和解决 Play Engage SDK 实现问题。当添加 Engage SDK 支持、生成发布代码、将数据类映射到实体，或修复 SDK 相关错误时使用。 |
+| [`/play-billing-library-version-upgrade`](./skills/android/play/play-billing-library-version-upgrade/SKILL.md) | 当从任意旧版 Google Play Billing Library (PBL) 升级或迁移 Android 项目到最新稳定版 PBL 时使用此 skill。 |
+| [`/play-policy-insights`](./skills/android/play/play-policy-insights/SKILL.md) | 自动化审计器，用于对照 Google Play 政策域验证 Android 应用。它将静态代码分析与 Play Store 声明交叉核对，生成确定性的合规报告，在权限与 API 卫生（Permissions and APIs Hygiene）、用户账号与身份（User Account and Identity）、数据安全与隐私（Data Safety and Privacy）三个域中识别未声明的数据收集、架构风险和缺失披露。 |
+
+### profilers（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/android-profiler`](./skills/android/profilers/android-profiler/SKILL.md) | 管理 Android 性能剖析与调试。当用户要求录制或分析 Android 性能数据（如系统 trace、堆转储、方法录制、调用栈采样、内存分配），排查 Android 上的瓶颈、卡顿（jank）、内存泄漏、应用启动问题，或要求编写、调试、执行临时 SQL 查询时触发。适用于用户应用和系统应用/服务。 |
+
+### security（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/android-intent-security`](./skills/android/security/android-intent-security/SKILL.md) | Android Intent 安全最佳实践。当审计 AndroidManifest.xml 中的组件配置（activities、services、receivers）或处理传入 Intent 的源码（getIntent、getParcelableExtra）以防止 Intent 重定向（Intent Redirection）和未授权访问时使用此 skill。 |
+
+### system（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/edge-to-edge`](./skills/android/system/edge-to-edge/SKILL.md) | 使用此 skill 迁移 Jetpack Compose 应用以添加自适应 edge-to-edge 支持，并排查常见问题。用于修复被导航栏或状态栏遮挡/重叠的 UI 组件（如按钮或列表）、修复 IME insets、以及修复系统栏可读性。 |
+
+### testing（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/testing-setup`](./skills/android/testing/testing-setup/SKILL.md) | 为原生 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、为单元测试、UI 测试、截图测试和端到端测试创建测试桩。 |
+
+### tv（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/leanback-to-compose-tv-migration`](./skills/android/tv/leanback-to-compose-tv-migration/SKILL.md) | 提供把 Android TV 应用从旧版 Leanback UI Toolkit、Android Views 或 Support Fragments 迁移到 Jetpack Compose for TV（androidx.tv）的说明与架构模式。用于 Leanback 到 Compose 的迁移，包括浏览页、设置页、认证页、登录页或视频播放页迁移，或用现代 Compose 等价物替换 BrowseSupportFragment、LeanbackSettingsFragment、PreferenceFragment、VideoSupportFragment、GuidedStepSupportFragment、SearchSupportFragment、VerticalGridSupportFragment、Presenter、ArrayObjectAdapter、CursorMapper 等，实现带焦点记忆的沉浸式轮播、使用 PlayerSurface 的 Media3 视频播放，或自定义 10 英尺 hero 布局。 |
+
+### wear（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/wear-compose-m3`](./skills/android/wear/wear-compose-m3/SKILL.md) | 使用 Wear OS Compose Material3 的专家指导。当创建、更新或迁移 Wear OS 项目时使用。涵盖 androidx.wear.compose.material3、androidx.wear.compose.foundation 和 androidx.wear.compose.navigation3 库，AppScaffold、ScreenScaffold、TransformingLazyColumn 等核心组件，以及 ambient mode 等 Wear OS 核心概念。含从早期版本（如 Material 2.5 和 Horologist）的迁移。 |
+
+### xr（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/display-glasses-with-jetpack-compose-glimmer`](./skills/android/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md) | 提供使用 Jetpack Compose Glimmer UI 工具包为显示眼镜开发投影式 Android XR 应用的指南。涵盖 Glimmer 基础设计原则、实现 Jetpack Compose Glimmer 的工作流，以及眼镜形态的交互模型。使用此 skill 构建遵循 Glimmer 设计系统、针对眼镜样式优化的 Android XR Augmented Experience 应用。 |
 
 ## 四、安装指导 Skills（2 个）
 

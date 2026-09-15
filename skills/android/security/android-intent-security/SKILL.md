@@ -1,9 +1,7 @@
 ---
 name: android-intent-security
-description: Best practices for Android Intent security. Use this skill when auditing
-  component configurations in AndroidManifest.xml activities, services, receivers)
-  or source code handling incoming Intents (getIntent, getParcelableExtra) to prevent
-  Intent Redirection and unauthorized access.
+description: Android Intent 安全最佳实践。当审计 AndroidManifest.xml 中的组件配置（activities、services、receivers）或处理传入 Intent 的源码（getIntent、getParcelableExtra）以防止 Intent 重定向（Intent Redirection）和未授权访问时使用此 skill。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

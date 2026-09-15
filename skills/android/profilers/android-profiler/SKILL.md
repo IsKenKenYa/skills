@@ -1,12 +1,7 @@
 ---
 name: android-profiler
-description: >
-  Manages Android performance profiling and debugging. Triggers when the user
-  asks to record or analyze Android performance data, such as system traces,
-  heap dumps, method recordings, callstack samples, memory allocations, or
-  investigate bottlenecks, jank, memory leaks, and app startup issues on
-  Android, or when the user asks to write, debug, or execute ad-hoc SQL
-  queries. Applies to both user and system apps or services.
+description: 管理 Android 性能剖析与调试。当用户要求录制或分析 Android 性能数据（如系统 trace、堆转储、方法录制、调用栈采样、内存分配），排查 Android 上的瓶颈、卡顿（jank）、内存泄漏、应用启动问题，或要求编写、调试、执行临时 SQL 查询时触发。适用于用户应用和系统应用/服务。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC

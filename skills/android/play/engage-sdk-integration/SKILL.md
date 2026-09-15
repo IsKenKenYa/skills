@@ -1,12 +1,11 @@
 ---
 name: engage-sdk-integration
-description: Helps developers integrate, debug, and resolve Play Engage SDK implementation
-  issues. Use when adding Engage SDK support, generating publishing code, mapping
-  data classes to entities, or fixing SDK-related errors.
+description: 帮助开发者集成、调试和解决 Play Engage SDK 实现问题。当添加 Engage SDK 支持、生成发布代码、将数据类映射到实体，或修复 SDK 相关错误时使用。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-19'
+  last-updated: '2026-09-01'
   keywords:
   - android
   - engage

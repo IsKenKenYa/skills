@@ -1,14 +1,11 @@
 ---
 name: navigation-3
-description: Learn how to install and migrate to Jetpack Navigation 3, and how to
-  implement features and patterns such as deep links, multiple backstacks, scenes
-  (dialogs, bottom sheets, list-detail, two-pane, supporting pane), conditional navigation
-  (such as logged-in navigation versus anonymous), returning results from flows, integration
-  with Hilt, ViewModel, Kotlin, and view interoperability.
+description: 学习如何安装并迁移到 Jetpack Navigation 3，以及如何实现 deep links、多个 backstack、scenes（对话框、底部表、list-detail、two-pane、supporting pane）、条件导航（如已登录导航与匿名导航的区别）、从流程返回结果、与 Hilt/ViewModel/Kotlin/View 互操作集成等功能和模式。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-10'
   keywords:
   - recipe
   - Android
@@ -64,7 +61,7 @@ Code examples showcasing common patterns.
 ### Deep links
 
 - *[Static URI](references/android/guide/navigation/navigation-3/recipes/deeplinks-staticuri.md)*: Shows how to handle simple static URI deep links.
-- *[URI with Arguments](references/android/guide/navigation/navigation-3/recipes/deeplinks-uriarguments.md)*: Shows how to parse path and query arguments from a deep link.
+- *[URI with Arguments](https://developer.android.com/guide/navigation/navigation-3/recipes/deeplinks-uriarguments)*: Shows how to parse path and query arguments from a deep link.
 - *[Synthetic BackStack](references/android/guide/navigation/navigation-3/recipes/deeplinks-syntheticbackstack.md)*: Shows how to handle deep links with a synthetic back stack.
 - *[Custom Matcher](references/android/guide/navigation/navigation-3/recipes/deeplinks-custommatcher.md)*: Shows how to implement custom deep link matching logic.
 

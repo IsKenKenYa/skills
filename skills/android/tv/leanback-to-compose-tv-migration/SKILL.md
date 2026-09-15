@@ -1,19 +1,11 @@
 ---
 name: leanback-to-compose-tv-migration
-description: Provides instructions and architectural patterns for migrating Android
-  TV applications from legacy Leanback UI Toolkit, Android Views, or Support Fragments
-  to Jetpack Compose for TV (androidx.tv). Use this skill for Leanback to Compose
-  migrations, including browse screen, settings screen, authentication screen, login
-  screen, or video playback screen migrations, or when replacing BrowseSupportFragment,
-  LeanbackSettingsFragment, PreferenceFragment, BaseLeanbackPreferenceFragmentCompat,
-  VideoSupportFragment, GuidedStepSupportFragment, SearchSupportFragment, VerticalGridSupportFragment,
-  Presenter, ArrayObjectAdapter, or CursorMapper with modern Compose equivalents,
-  implementing immersive carousels with focus memory, Media3 video playback with PlayerSurface,
-  or custom 10-foot hero layouts.
+description: 提供把 Android TV 应用从旧版 Leanback UI Toolkit、Android Views 或 Support Fragments 迁移到 Jetpack Compose for TV（androidx.tv）的说明与架构模式。用于 Leanback 到 Compose 的迁移，包括浏览页、设置页、认证页、登录页或视频播放页迁移，或用现代 Compose 等价物替换 BrowseSupportFragment、LeanbackSettingsFragment、PreferenceFragment、VideoSupportFragment、GuidedStepSupportFragment、SearchSupportFragment、VerticalGridSupportFragment、Presenter、ArrayObjectAdapter、CursorMapper 等，实现带焦点记忆的沉浸式轮播、使用 PlayerSurface 的 Media3 视频播放，或自定义 10 英尺 hero 布局。
+
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-21'
+  last-updated: '2026-09-03'
   keywords:
   - Android TV
   - Jetpack Compose
