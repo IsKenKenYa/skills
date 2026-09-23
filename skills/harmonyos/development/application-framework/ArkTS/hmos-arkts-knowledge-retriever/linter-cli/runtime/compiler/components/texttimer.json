@@ -1,4 +1,0 @@
-{
-    "name": "TextTimer",
-    "attrs": ["format", "fontColor", "fontSize", "fontStyle", "fontWeight", "fontFamily", "onTimer"]
-}

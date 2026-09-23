@@ -1,7 +1,0 @@
-{
-  "name": "Stepper",
-  "children": ["StepperItem"],
-  "attrs": [
-    "onFinish", "onSkip", "onChange", "onNext", "onPrevious"
-  ]
-}
