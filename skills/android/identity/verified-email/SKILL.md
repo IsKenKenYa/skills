@@ -5,7 +5,7 @@ description: 提供基于 Android Credential Manager API 实现已验证邮箱�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-04'
+  last-updated: '2026-09-16'
   keywords:
   - implementation
   - Android
@@ -233,26 +233,28 @@ a `GetCredentialRequest`, and call `getCredential()`.
 
 Present the user with the request, using the Credential Manager built-in UI.
 
-    try {
-        // Requesting Digital Credential from user...
-        val result = credentialManager.getCredential(activity, request)
+    coroutineScope {
+        try {
+            // Requesting Digital Credential from user...
+            val result = credentialManager.getCredential(activity, request)
 
-        when (val credential = result.credential) {
-            is DigitalCredential -> {
-                val responseJsonString = credential.credentialJson
+            when (val credential = result.credential) {
+                is DigitalCredential -> {
+                    val responseJsonString = credential.credentialJson
 
-                // Successfully received digital credential response.
+                    // Successfully received digital credential response.
 
-                // Next, parse this response and send it to your server.
-                // ...
+                    // Next, parse this response and send it to your server.
+                    // ...
+                }
+
+                else -> {
+                    // handle Unexpected State() - Up to the developer
+                }
             }
-
-            else -> {
-                // handle Unexpected State() - Up to the developer
-            }
+        } catch (e: Exception) {
+            // handle exceptions - Up to the developer
         }
-    } catch (e: Exception) {
-        // handle exceptions - Up to the developer
     }
 
 > [!NOTE]

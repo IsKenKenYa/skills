@@ -5,7 +5,7 @@ description: 升级或迁移 Android 项目以使用 Android Gradle Plugin (AGP)
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-18'
+  last-updated: '2026-09-18'
   keywords:
   - Android Gradle Plugin 9
   - AGP 9

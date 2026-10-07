@@ -45,6 +45,10 @@ from freeze.stack import ThreadStack, extract_stack_errors, parse_thread_stacks
 _SEPARATOR_RE = re.compile(r'^\*{3,}\s*$')
 # 主进程堆栈区段的结束标志（防止误把 binder 对端堆栈并进来）
 _STACK_END_RE = r'Catche stack trace end time:|BinderCatcher --|PeerBinderCatcher|^-{5,}\s*$'
+_FREEZE_REASON_RE = re.compile(
+    r'(?:APP_FREEZE|SYS_FREEZE|APP_INPUT_BLOCK|THREAD_BLOCK|BUSINESS_THREAD_BLOCK|'
+    r'BUSSINESS_THREAD_BLOCK|LIFECYCLE_(?:HALF_)?TIMEOUT|APP_HICOLLIE|SERVICE_BLOCK)'
+)
 
 
 @dataclass
@@ -108,13 +112,14 @@ def parse_freeze_log(file_path) -> FreezeLog:
     lines = read_lines(file_path)
     if not lines:
         raise ValueError(f'文件不存在或为空: {file_path}')
+    assert_freeze_input(lines, file_path)
     freeze = FreezeLog(path=Path(file_path))
     freeze.header = parse_header(lines)
 
     warning_lines, block_lines = _split_parts(lines)
     freeze.warning = _parse_part(warning_lines)
     if block_lines:
-        freeze.block = _parse_part(block_lines)
+        freeze.block = _parse_part(block_lines, len(lines) - len(block_lines) + 1)
     freeze.reason = freeze.header.reason or freeze.warning.msg.event_name
 
     # binder / CPU / 内存 / 热等级 / 整机采样 / ffrt 在整个文件中只出现一次，
@@ -130,6 +135,38 @@ def parse_freeze_log(file_path) -> FreezeLog:
     return freeze
 
 
+def assert_freeze_input(lines: List[str], file_path) -> None:
+    """拒绝 Crash 或无法证明为 AppFreeze 的输入。"""
+    log_type = _detect_log_type(lines)
+    if log_type == 'APPFREEZE':
+        return
+    routes = {
+        'CPP_CRASH': '请改用 cppcrash-analysis skill',
+        'JS_CRASH': '请改用 jscrash-analysis skill',
+    }
+    route = routes.get(log_type, '请先确认日志类型，信息不足时补充完整故障日志')
+    raise ValueError(
+        f'入口断言失败：{file_path} 不是 AppFreeze 日志，识别结果为 {log_type}；{route}')
+
+
+def _detect_log_type(lines: List[str]) -> str:
+    header = '\n'.join(lines[:300])
+    reason_match = re.search(r'^Reason:\s*(.*)$', header, re.MULTILINE)
+    reason = reason_match.group(1).strip() if reason_match else ''
+    if reason.startswith('Signal:') or 'Reason:GWP-ASAN' in header:
+        return 'CPP_CRASH'
+    if _FREEZE_REASON_RE.search(reason):
+        return 'APPFREEZE'
+    events = re.findall(r'EVENTNAME\s*=\s*(\S+)', header)
+    if any(_FREEZE_REASON_RE.search(event) for event in events):
+        return 'APPFREEZE'
+    if 'Error name:' in header or 'Error message:' in header:
+        return 'JS_CRASH'
+    if 'Fault thread info:' in header or 'Registers:' in header:
+        return 'CPP_CRASH'
+    return 'UNKNOWN'
+
+
 def _split_parts(lines: List[str]):
     """按星号分隔行拆出 warning / block 两部分。
 
@@ -143,7 +180,7 @@ def _split_parts(lines: List[str]):
     return lines, []
 
 
-def _parse_part(lines: List[str]) -> FreezePart:
+def _parse_part(lines: List[str], start_line: int = 1) -> FreezePart:
     """解析一次上报的内容：MSG、EventHandler、线程堆栈。"""
     part = FreezePart()
     part.msg = parse_msg(lines)
@@ -152,7 +189,7 @@ def _parse_part(lines: List[str]) -> FreezePart:
 
     stack_lines, start_index = find_section(
         lines, r'^Tid:\d+(?:,|\s)+Name:', _STACK_END_RE)
-    part.stacks = parse_thread_stacks(stack_lines)
+    part.stacks = parse_thread_stacks(stack_lines, start_line + start_index)
     part.stack_errors = extract_stack_errors(stack_lines)
     # 抓栈时间在堆栈区段之前的 'Catche stack trace start time:' 或 'Timestamp:' 行
     head = lines[:start_index] if start_index > 0 else lines

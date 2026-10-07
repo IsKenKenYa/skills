@@ -1,6 +1,6 @@
 ---
 name: domain-modeling
-description: 构建并打磨项目的领域模型。当讨论代码库术语、撰写或编辑 CONTEXT.md、记录或编辑 ADR 时使用。
+description: 构建并打磨项目的领域模型。当讨论代码库术语、撰写或编辑 GLOSSARY.md 术语表、记录或编辑 ADR 时使用。
 
 ---
 

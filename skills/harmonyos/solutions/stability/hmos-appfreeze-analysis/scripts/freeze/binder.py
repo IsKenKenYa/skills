@@ -209,11 +209,37 @@ def _dst_node(trans: BinderTrans) -> Node:
     return trans.dst_pid, trans.dst_tid
 
 
+def _matches_src(trans: BinderTrans, node: Node) -> bool:
+    """匹配调用方；tid 为 0 的节点表示该进程全部 binder 工作线程。"""
+    if trans.src_pid != node[0]:
+        return False
+    return trans.src_tid == node[1] or node[1] == '0'
+
+
 def _matches_dst(trans: BinderTrans, node: Node) -> bool:
     """trans 的对端是否落在 node 上；dst_tid 为 0（IPC FULL）时按进程匹配。"""
     if trans.dst_pid != node[0]:
         return False
     return trans.dst_tid == node[1] or trans.dst_tid == '0'
+
+
+def _record_actual_source(trans: BinderTrans, current: Node,
+                          visited: set, reached: List[Node]):
+    actual_src = _src_node(trans)
+    if actual_src == current or actual_src in visited:
+        return
+    visited.add(actual_src)
+    reached.append(actual_src)
+
+
+def _next_node(trans: BinderTrans, current: Node, forward: bool) -> Optional[Node]:
+    if forward:
+        if _matches_src(trans, current):
+            return _dst_node(trans)
+        return None
+    if _matches_dst(trans, current):
+        return _src_node(trans)
+    return None
 
 
 def build_propagation(binder: BinderInfo, fault_pid: str, fault_tid: str) -> Propagation:
@@ -250,7 +276,7 @@ def build_propagation(binder: BinderInfo, fault_pid: str, fault_tid: str) -> Pro
 
 
 def _walk(sync: List[BinderTrans], starts: List[Node], forward: bool):
-    """从 starts 出发单向遍历，返回 (经过的边, 新到达的节点[不含起点])。"""
+    """从 starts 单向遍历；tid=0 作为进程 binder 工作线程通配节点。"""
     visited = set(starts)
     stack = list(starts)
     edges: List[BinderTrans] = []
@@ -258,12 +284,11 @@ def _walk(sync: List[BinderTrans], starts: List[Node], forward: bool):
     while stack:
         node = stack.pop()
         for trans in sync:
-            if forward and _src_node(trans) == node:
-                nxt = _dst_node(trans)
-            elif not forward and _matches_dst(trans, node):
-                nxt = _src_node(trans)
-            else:
+            nxt = _next_node(trans, node, forward)
+            if nxt is None:
                 continue
+            if forward:
+                _record_actual_source(trans, node, visited, reached)
             if trans not in edges:
                 edges.append(trans)
             if nxt not in visited:

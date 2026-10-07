@@ -1,5 +1,37 @@
 # 更新日志
 
+## [1.4.0] - 2026-09-28
+
+### 新增
+- 新增 `references/react_native.md` React Native / RNOH JsCrash 案例库，覆盖 ArkTS TurboModule 返回值非 Promise 导致 "Failed to retrieve property from object" 崩溃场景，包含堆栈模式、HiLog 证据规则、根因分析和修复建议。
+- `SKILL.md` 输出模板新增第 4 条修复建议格式要求：涉及代码修改的建议，每条修改使用一个 diff 代码块展示。
+- `SKILL.md` 新增「修复建议 diff 格式示例」段，给出基于真实证据的 diff 代码块书写示意。
+- 新增 SourceMap 反解前 UUID / 构建指纹校验门禁：反解前必须比对故障日志中的 `Fingerprint` 与 SourceMap 产物携带的构建指纹，一致才允许反解。
+- `references/sourcemap-symbolication.md` 新增 UUID / 构建指纹校验要求：明确日志与产物指纹的来源和比对时机。
+- 新增两种降级处理：日志缺少 `Fingerprint`/UUID 字段或产物缺少构建指纹时标记"无法校验"；日志与产物指纹不一致时标记"UUID/构建指纹不匹配"。
+
+### 变更
+- skill版本号升级至 v1.4.0
+- `SKILL.md` 工作流步骤4（匹配错误模式）新增 RN/RNOH 专项路由：堆栈出现 `librnoh.so`、TurboModule、NAPI Promise 相关帧时，优先读取 `references/react_native.md` 匹配 RN/RNOH 案例库。
+- `SKILL.md` 参考文件列表新增 `references/react_native.md` 条目。
+- `SKILL.md` 证据链/输出模板新增「修复建议 diff 展示」规则：涉及代码修改的修复建议必须使用以 `diff` 为语言标记的围栏代码块，只展示增删行，不展示文件头和行号标注。
+- `SKILL.md` 工作流步骤2（SourceMap 反解门禁）新增源码可达性检测：在当前工作目录查找 `build-profile.json5` 等文件，读取 `bundleName` 与故障进程名对比，一致即源码可达。
+- `SKILL.md` 工作流步骤6（形成根因）新增源码级修复建议要求：当 SourceMap 已反解并定位到源码位置时，必须给出源码级修复建议。
+- `SKILL.md` 输出格式模板的【修复建议】标题增加"源码可达时需给出源码级修复建议"标注。
+- `SKILL.md` 输出格式要求新增可信度判定指引和多假设保留规则。
+- `SKILL.md` 输出模板根因判断新增"可信度"字段（HIGH/MEDIUM/LOW）。
+- `SKILL.md` 输出模板根本原因字段增加多假设要求。
+- `SKILL.md` 输出模板关键证据链第 3 项调用栈证据改为分层展示。
+- `SKILL.md` 输出格式要求新增 Error code 系统含义要求。
+- `SKILL.md` 输出格式要求新增调用栈全帧展示要求（帧数≤15 时展示全部帧并逐帧注释）。
+- `SKILL.md` 输出格式要求新增调用方向明确展示要求。
+- `SKILL.md` 输出格式要求新增末尾补充说明要求。
+- `SKILL.md` 输出模板末尾新增补充说明段。
+- 分析报告模板新增"日志 Fingerprint（构建指纹/UUID）"和"UUID 校验"字段。
+- 证据链"SourceMap 映射证据"增加日志指纹与产物指纹的比对结果。
+- SourceMap 匹配要求由版本等字段扩展为同时要求构建指纹匹配。
+- 反解结果校验将 UUID / 构建指纹校验列为前置步骤，指纹不一致的结果一律不得作为证据。
+
 ## [1.3.0] - 2026-09-01
 
 ### 新增

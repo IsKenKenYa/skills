@@ -5,7 +5,7 @@ description: 提供将 Android XML View 迁移到 Jetpack Compose 的结构化�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-18'
   keywords:
   - Jetpack Compose
   - migration

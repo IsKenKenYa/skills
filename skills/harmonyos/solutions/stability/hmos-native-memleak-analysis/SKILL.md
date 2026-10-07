@@ -4,9 +4,9 @@ description: >
   自动分析 HarmonyOS / OpenHarmony Native内存泄漏问题，基于 sample 采样文件、smaps 文件、profiler 火焰图等信息定位泄漏根因并输出完整证据链。
   当用户提供 sample 采样文件、smaps 文件、profiler 火焰图、NMD 数据，或询问应用内存泄漏/内存增长/OOM问题的根因
   即使用户只说"帮我分析这个内存泄漏"、"应用内存一直涨"、"native泄漏分析"、"PSS泄漏"、"DMA泄漏"、"GPU泄漏"，也应立即触发此技能。
-metadata: 
-    author: Huawei Reliability Technology Lab 
-    version: 1.3.0
+metadata:
+   author: Huawei Reliability Technology Lab
+   version: 1.4.0
 ---
 
 # Native Memory Leak Analysis Skill

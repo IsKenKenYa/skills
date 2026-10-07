@@ -5,7 +5,7 @@ description: 提供让应用 UI 适配不同 Android 设备（手机、平板、
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-27'
+  last-updated: '2026-09-22'
   keywords:
   - android
   - ui

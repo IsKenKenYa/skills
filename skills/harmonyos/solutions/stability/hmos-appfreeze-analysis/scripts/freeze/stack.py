@@ -51,6 +51,45 @@ class StackFrame:
     function_name: str = ''
     is_native: bool = True
     area: str = 'other'  # system / app / other，用于过滤系统帧
+    module: str = ''
+    pc: int = None
+    build_id: str = ''
+    original_symbol: str = ''
+    aligned_symbol: str = ''
+    alignment_status: str = 'unmatched'
+    symbol_sources: List[dict] = field(default_factory=list)
+    source_line: int = None
+
+    @property
+    def symbol_key(self):
+        """Only a complete module/BuildID/relative-PC identity can be aligned."""
+        if self.module and self.build_id and self.pc is not None:
+            return self.module, self.build_id, self.pc
+        return None
+
+    @property
+    def effective_brief(self) -> str:
+        if not self.is_native or not self.module:
+            return self.brief
+        symbol = self.effective_symbol
+        if symbol:
+            return f'{self.module}({symbol})'
+        # Keep distinct unresolved addresses distinct during clustering.
+        return f'{self.module}(pc 0x{self.pc:x})' if self.pc is not None else self.brief
+
+    @property
+    def effective_symbol(self) -> str:
+        symbol = self.aligned_symbol or self.original_symbol
+        if re.match(r'^(?:\?+|unknown|<unknown>)(?:\+.*)?$', symbol, re.I):
+            return ''
+        return symbol
+
+    @property
+    def cluster_key(self):
+        if not self.is_native or not self.module:
+            return ('text', self.brief)
+        return ('native', self.module, self.build_id,
+                self.effective_symbol or self.pc)
 
     @staticmethod
     def build(line: str) -> 'StackFrame':
@@ -64,6 +103,18 @@ class StackFrame:
         return frame
 
     def _build_native(self, parts: List[str]):
+        match = re.match(r'^#\d+\s+pc\s+(?:0[xX])?([\da-fA-F]+)\s+([^\s(]+)(.*)$',
+                         self.raw.strip())
+        if match:
+            self.pc = int(match.group(1), 16)
+            self.module = match.group(2)
+            suffix = match.group(3).strip()
+            build = re.search(r'\(([\da-fA-F]{16,})\)$', suffix)
+            if build:
+                self.build_id = build.group(1).lower()
+                suffix = suffix[:build.start()].strip()
+            if suffix.startswith('(') and suffix.endswith(')'):
+                self.original_symbol = suffix[1:-1]
         # 去掉 '#NN pc xxxxxxxx' 前缀和末尾 '(buildid)' 后缀
         brief = re.sub(r'^#\d+ pc \w+', '', self.raw)
         brief = re.sub(r'\([\da-fA-F]{16,}\)', '', brief).strip()
@@ -126,20 +177,22 @@ class ThreadStack:
                     and re.search(r'libipc_(core|single)\.z\.so.*(TransactWithDriver|WaitForCompletion)', text))
 
 
-def parse_frames(lines: List[str]) -> List[StackFrame]:
+def parse_frames(lines: List[str], start_line: int = 1) -> List[StackFrame]:
     """从若干行文本中解析出所有栈帧（native + js）。"""
     frames = []
-    for line in lines:
+    for line_no, line in enumerate(lines, start_line):
         if NATIVE_FRAME_RE.search(line) or JS_FRAME_RE.search(line):
-            frames.append(StackFrame.build(line))
+            frame = StackFrame.build(line)
+            frame.source_line = line_no
+            frames.append(frame)
     return frames
 
 
-def parse_thread_stacks(lines: List[str]) -> Dict[str, ThreadStack]:
+def parse_thread_stacks(lines: List[str], start_line: int = 1) -> Dict[str, ThreadStack]:
     """把一段堆栈文本按 'Tid:xxx, Name:yyy' 拆分为 {tid: ThreadStack}。"""
     stacks: Dict[str, ThreadStack] = {}
     current: ThreadStack = None
-    for line in lines:
+    for line_no, line in enumerate(lines, start_line):
         header_match = THREAD_HEADER_RE.search(line)
         if header_match:
             current = ThreadStack(tid=header_match.group('tid'),
@@ -147,7 +200,9 @@ def parse_thread_stacks(lines: List[str]) -> Dict[str, ThreadStack]:
             stacks[current.tid] = current
             continue
         if current and (NATIVE_FRAME_RE.search(line) or JS_FRAME_RE.search(line)):
-            current.frames.append(StackFrame.build(line))
+            frame = StackFrame.build(line)
+            frame.source_line = line_no
+            current.frames.append(frame)
     return stacks
 
 

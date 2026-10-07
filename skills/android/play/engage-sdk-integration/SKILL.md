@@ -5,7 +5,7 @@ description: 帮助开发者集成、调试和解决 Play Engage SDK 实现问�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-01'
+  last-updated: '2026-09-22'
   keywords:
   - android
   - engage

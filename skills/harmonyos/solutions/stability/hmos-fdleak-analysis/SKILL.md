@@ -3,7 +3,7 @@ name: hmos-fdleak-analysis
 description: DFX Skills，分析 FD Leak、句柄泄漏和文件描述符泄漏日志，提取泄漏快照、句柄类型与目录分布、专项维测明细及 FdTrack 申请栈热点，并依据证据链定位根因。当用户提供 `[pid]_fd_leak.txt`、`RESOURCE_OVERLIMIT_[TIMESTAMP]_[PID].log`，或输入包含 `leaked fd nums`、`Leaked fd Top 10`、`LOGGER_MEMCHECK_FD_STACK_INFO`、`FdTrack Stack` 时使用。
 metadata:
   author: Huawei Reliability Technology Lab
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # FD Leak 分析 Skill

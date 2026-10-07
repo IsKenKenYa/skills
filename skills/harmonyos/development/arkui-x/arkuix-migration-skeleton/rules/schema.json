@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "arkuix-migration-skeleton/skeleton-result.schema.json",
+  "title": "SkeletonResult",
+  "description": "ArkUI-X 迁移骨架生成结果（F1 SkeletonResult 契约，spec SKRS-1 v1.1，schema_version=1）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "platform",
+    "shared_arkts_dir",
+    "environment"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "契约版本；演进向后兼容（只增可选字段）"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "modify",
+        "new"
+      ],
+      "description": "骨架生成模式"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "both",
+        "android",
+        "ios"
+      ],
+      "description": "平台选项（骨架生成前用户选择，默认 both；v1.1）"
+    },
+    "android_shell": {
+      "type": "string",
+      "description": "Android 壳目录相对路径（modify=工程根下 .arkui-x/android；new=输出目录下 .arkui-x/android（ace 26.0.0 实测布局）；platform ∈ {both, android} 时必填）"
+    },
+    "ios_shell": {
+      "type": "string",
+      "description": "iOS 壳目录相对路径（规则同 android_shell；platform ∈ {both, ios} 时必填）"
+    },
+    "shared_arkts_dir": {
+      "type": "string",
+      "description": "共享 ArkTS 目录相对路径（modify=原工程 entry（就地）；new=ets_stage/source/entry）"
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "android",
+        "ios",
+        "arkui_x_sdk"
+      ],
+      "properties": {
+        "android": {
+          "$ref": "#/definitions/platformStatus"
+        },
+        "ios": {
+          "$ref": "#/definitions/platformStatus"
+        },
+        "arkui_x_sdk": {
+          "$ref": "#/definitions/arkuiXSdkStatus"
+        }
+      },
+      "description": "开发环境检测结果（R-1/R-2；两平台均检测与 platform 选择无关；不阻断骨架生成）"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "platform": {
+            "enum": [
+              "both",
+              "android"
+            ]
+          }
+        },
+        "required": [
+          "platform"
+        ]
+      },
+      "then": {
+        "required": [
+          "android_shell"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "platform": {
+            "enum": [
+              "both",
+              "ios"
+            ]
+          }
+        },
+        "required": [
+          "platform"
+        ]
+      },
+      "then": {
+        "required": [
+          "ios_shell"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "platformStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ready",
+        "missing"
+      ],
+      "properties": {
+        "ready": {
+          "type": "boolean",
+          "description": "平台编译环境是否就绪"
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "缺失项清单（如 Android SDK/Gradle/JDK、Xcode/CocoaPods；非 macOS 时 ios 注明）"
+        }
+      }
+    },
+    "arkuiXSdkStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detected",
+        "version",
+        "modify_available"
+      ],
+      "properties": {
+        "detected": {
+          "type": "boolean",
+          "description": "ArkUI-X SDK（ace tool）是否检出"
+        },
+        "version": {
+          "type": "string",
+          "description": "检出的 ArkUI-X SDK 版本（ace check 版本行或路径版本目录）"
+        },
+        "modify_available": {
+          "type": "boolean",
+          "description": "API 24+ 门槛判定（ace modify 自 API 24 起提供）"
+        }
+      }
+    }
+  }
+}

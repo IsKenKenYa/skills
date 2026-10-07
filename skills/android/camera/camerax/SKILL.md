@@ -5,7 +5,7 @@ description: 提供 Android CameraX 相机开发的技术指导。当实现相�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-24'
   keywords:
   - recipe
   - Android

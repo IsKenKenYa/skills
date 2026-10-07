@@ -59,11 +59,17 @@ def _classify(path: Path, result: CollectResult):
         result.sample_stacks.append(path)
         return
     name_match = _FAULTLOG_NAME_RE.search(path.name)
-    if name_match:
+    if name_match or _sniff_is_freeze_log(path):
         result.faultlogs.append(path)
-        return
-    if _sniff_is_freeze_log(path):
-        result.faultlogs.append(path)
+        # HiAppEvent can append the sample section to the faultlog itself.
+        # Keep the original path so sample/donor provenance uses original lines.
+        in_samples = False
+        for line in read_lines(path):
+            if re.match(r'^#ThreadInfos\s+Tid:\s*\d+', line):
+                in_samples = True
+            elif in_samples and re.match(r'^(?:SnapshotTime|Timestamp):', line):
+                result.sample_stacks.append(path)
+                break
 
 
 def _sniff_is_freeze_log(path: Path) -> bool:

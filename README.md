@@ -28,11 +28,11 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 125 个）
+## Skill 清单（共 128 个）
 
 ## 一、mattpocock 通用 Skills（38 个，description 已中文化）
 
-### Engineering — 工程类（18）
+### Engineering — 工程类（20）
 
 *日常编码工作*
 
@@ -43,13 +43,15 @@ npx skills@latest add IsKenKenYa/skills
 | [`/code-review`](./skills/engineering/code-review/SKILL.md) | 模型/用户调用 | 沿两条轴线审查自某个固定点（提交、分支、标签或 merge-base）以来的变更——标准（代码是否遵循本仓库文档化的编码规范？）与规格（代码是否符合原始 issue/spec 的要求？）。两个审查由并行子代理执行并并排汇报。当用户想审查一个分支、PR、进行中的改动，或要求“自 X 起审查”（review since X）时使用。 |
 | [`/codebase-design`](./skills/engineering/codebase-design/SKILL.md) | 模型/用户调用 | 设计深层模块（deep module）的共享词汇。当用户想设计或改进模块接口、寻找深化机会、决定接缝（seam）位置、让代码更易测试或更易被 AI 导航，或当其他 skill 需要深层模块词汇时使用。 |
 | [`/diagnosing-bugs`](./skills/engineering/diagnosing-bugs/SKILL.md) | 模型/用户调用 | 针对疑难 bug 和性能回归的诊断循环。当用户说"诊断"/"调试这个"，或报告某东西坏了/抛异常/失败/变慢时使用。 |
-| [`/domain-modeling`](./skills/engineering/domain-modeling/SKILL.md) | 模型/用户调用 | 构建并打磨项目的领域模型。当讨论代码库术语、撰写或编辑 CONTEXT.md、记录或编辑 ADR 时使用。 |
+| [`/domain-modeling`](./skills/engineering/domain-modeling/SKILL.md) | 模型/用户调用 | 构建并打磨项目的领域模型。当讨论代码库术语、撰写或编辑 GLOSSARY.md 术语表、记录或编辑 ADR 时使用。 |
 | [`/grill-with-docs`](./skills/engineering/grill-with-docs/SKILL.md) | 用户调用 | 一场无情的访谈，用来打磨计划或设计，同时会顺势产出文档（ADR 和术语表）。 |
 | [`/implement`](./skills/engineering/implement/SKILL.md) | 用户调用 | 基于规格（spec）或一组 ticket 实现一项工作。 |
+| [`/implement-spec`](./skills/engineering/implement-spec/SKILL.md) | 用户调用 | 把 /to-spec 和 /to-tickets 的产出实现为代码。 |
 | [`/improve-codebase-architecture`](./skills/engineering/improve-codebase-architecture/SKILL.md) | 用户调用 | 扫描代码库寻找深化机会，以可视化 HTML 报告呈现，然后针对你选中的那一个进行 grill 访谈。 |
+| [`/pr`](./skills/engineering/pr/SKILL.md) | 模型/用户调用 | 撰写 PR 描述（PR body）时使用。 |
 | [`/prototype`](./skills/engineering/prototype/SKILL.md) | 模型/用户调用 | 构建一次性原型来回答设计问题。当用户想验证状态模型或逻辑是否合理，或探索 UI 应该长什么样时使用。 |
 | [`/research`](./skills/engineering/research/SKILL.md) | 模型/用户调用 | 针对一个问题调研高可信度的一手资料，并把发现整理为仓库中的 Markdown 文件。当用户想调研某个主题、收集文档或 API 事实，或把阅读跑腿工作交给后台代理时使用。 |
-| [`/resolving-merge-conflicts`](./skills/engineering/resolving-merge-conflicts/SKILL.md) | 模型/用户调用 | 当你需要解决进行中的 git merge/rebase 冲突时使用。 |
+| [`/retro`](./skills/engineering/retro/SKILL.md) | 用户调用 | 对一次编码会话进行复盘（retrospective）。 |
 | [`/setup-matt-pocock-skills`](./skills/engineering/setup-matt-pocock-skills/SKILL.md) | 用户调用 | 为工程类 skill 配置本仓库：设置 issue 追踪器、triage 标签词汇和领域文档布局。在其他工程类 skill 首次使用前运行一次。 |
 | [`/tdd`](./skills/engineering/tdd/SKILL.md) | 模型/用户调用 | 测试驱动开发（TDD）。当用户想以测试优先的方式构建功能或修 bug、提到"red-green-refactor"，或想要集成测试时使用。 |
 | [`/to-spec`](./skills/engineering/to-spec/SKILL.md) | 用户调用 | 把当前对话转化为规格（spec）并发布到项目 issue 追踪器：无需访谈，只是对已讨论内容的综合提炼。 |
@@ -85,24 +87,22 @@ npx skills@latest add IsKenKenYa/skills
 | [`/scaffold-exercises`](./skills/misc/scaffold-exercises/SKILL.md) | 模型/用户调用 | 创建带章节、题目、解答和讲解的练习目录结构，且能通过 lint。当用户想脚手架化练习、创建练习桩，或搭建新课程章节时使用。 |
 | [`/setup-pre-commit`](./skills/misc/setup-pre-commit/SKILL.md) | 模型/用户调用 | 在当前仓库设置带 lint-staged（Prettier）、类型检查和测试的 Husky pre-commit 钩子。当用户想添加 pre-commit 钩子、设置 Husky、配置 lint-staged，或在提交时加入格式化/类型检查/测试时使用。 |
 
-### In-progress — 进行中（9）
+### In-progress — 进行中（7）
 
 *尚未定稿的草稿*
 
 
 | skill | 调用方式 | 中文介绍 |
 |-------|---------|---------|
+| [`/chief-of-staff`](./skills/in-progress/chief-of-staff/SKILL.md) | 用户调用 | 在单次会话中通过协调多个子代理（subagent），持续推进一个长期目标。 |
 | [`/claude-handoff`](./skills/in-progress/claude-handoff/SKILL.md) | 用户调用 | 把当前对话移交给一个全新的后台代理，让它立即接手工作。 |
-| [`/implement-spec`](./skills/in-progress/implement-spec/SKILL.md) | 用户调用 | 把规格（spec）实现为代码。 |
 | [`/loop-me`](./skills/in-progress/loop-me/SKILL.md) | 用户调用 | 在本工作区内，就我想构建的工作流的规格（spec）对我进行 grill 访谈。 |
-| [`/pr`](./skills/in-progress/pr/SKILL.md) | 模型/用户调用 | 撰写 PR 描述（PR body）时使用。 |
-| [`/retro`](./skills/in-progress/retro/SKILL.md) | 用户调用 | 对一次编码会话进行复盘（retrospective）。 |
 | [`/setup-ts-deep-modules`](./skills/in-progress/setup-ts-deep-modules/SKILL.md) | 用户调用 | 把 dependency-cruiser 接入 TypeScript 仓库，让每个包都成为深层模块（deep module）——实现隐藏在子文件夹中，只能通过入口文件访问。用户调用。 |
 | [`/writing-beats`](./skills/in-progress/writing-beats/SKILL.md) | 用户调用 | 写作·利用（exploit）：把原始素材组装成一段节拍（beat）之旅，在每个节拍依赖某个术语之前先把它讲透。 |
 | [`/writing-fragments`](./skills/in-progress/writing-fragments/SKILL.md) | 用户调用 | 写作·探索（explore）：挖掘原始片段，暂不构建结构。 |
 | [`/writing-shape`](./skills/in-progress/writing-shape/SKILL.md) | 用户调用 | 写作·利用（exploit）：把原始素材逐段塑造成文章。 |
 
-## 二、HarmonyOS（鸿蒙）Skills（61 个，上游原生中文原样保留）
+## 二、HarmonyOS（鸿蒙）Skills（63 个，上游原生中文原样保留）
 
 ### design — 设计（1）
 
@@ -135,7 +135,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-native-memleak-analysis`](./skills/harmonyos/solutions/stability/hmos-native-memleak-analysis/SKILL.md) | 自动分析 HarmonyOS / OpenHarmony Native内存泄漏问题，基于 sample 采样文件、smaps 文件、profiler 火焰图等信息定位泄漏根因并输出完整证据链。 当用户提供 sample 采样文件、smaps 文件、profiler 火焰图、NMD 数据，或询问应用内存泄漏/内存增长/OOM问题的根因 即使用户只说"帮我分析这个内存泄漏"、"应用内存一直涨"、"native泄漏分析"、"PSS泄漏"、"DMA泄漏"、"GPU泄漏"，也应立即触发此技能。  |
 | [`/hmos-runtime-fix-skill`](./skills/harmonyos/solutions/stability/hmos-runtime-fix-skill/SKILL.md) | Load for ArkTS/JavaScript jscrash, runtime crash, uncaught exception, stack trace, faultlog, or hilog diagnosis. Also load when the app 闪退/崩溃/白屏, exits after 点击/启动/launch, or build succeeds but runtime fails (no compile error). Use before broad Read/Glob on crash-only tasks. |
 
-### development — 开发（29）
+### development — 开发（31）
 
 
 | skill | 中文介绍 |
@@ -146,6 +146,8 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-arkts-deprecated-interface-checker`](./skills/harmonyos/development/arkts/hmos-arkts-deprecated-interface-checker/SKILL.md) | 检查 HarmonyOS 项目中的废弃 SDK 接口并提供修复建议。当需要清理废弃 API、升级 API 版本、优化代码质量或进行静态语法检查时使用。提供详细的迁移方案、修复优先级分类和代码示例。 |
 | [`/hmos-arkts-knowledge-retriever`](./skills/harmonyos/development/arkts/hmos-arkts-knowledge-retriever/SKILL.md) | Retrieve grounded ArkTS references for pure non-UI ArkTS work and ArkTS API usage. Use this skill whenever the user is writing, reviewing, testing, validating, running, or debugging ArkTS code and the answer should be backed by repository sources such as `docs/ArkTS-Language-Guide/`, `docs/ArkTS-API-Reference/`, the linter-derived `docs/linter/ArkTS_Syntax_Knowledge_From_Linter.md`, and the bundled lightweight lint tool docs `docs/linter/linter-cli.md` plus `linter-cli/` instead of model memory. This skill is especially useful for syntax rules, ArkTS-specific restrictions, API/module/member lookup, common-library usage, lightweight lint workflow lookup, runnable example lookup, snippet validation context, and figuring out which repository section to trust before suggesting code or fixes. |
 | [`/hmos-arkts-syntax-checker`](./skills/harmonyos/development/arkts/hmos-arkts-syntax-checker/SKILL.md) | 检查并修复 HarmonyOS 项目的 ArkTS 语法错误，自动化构建项目。当需要编译项目、修复编译错误、生成 HAP/App 产物时使用。提供静态语法检查、错误自动修复、循环构建直到成功的完整工作流程。支持错误优先级分类（P0/P1/P2）、最大重试机制、构建产物自动定位。 |
+| [`/arkuix-interface-scan`](./skills/harmonyos/development/arkui-x/arkuix-interface-scan/SKILL.md) | 扫描 OpenHarmony Stage 工程全部 @ohos.*/@hms.* 接口引用与 Native NDK C-API 引用（头文件包含与 OH_* 符号），按 ArkUI-X 适配性六分类（完整直用/有损直用/等价桥接/降级桥接/平台裁剪/业务决策，unknown 兜底）产出 ScanReport(JSON) 与迁移建议报告(Markdown)。开发者在评估 OH 应用迁移 ArkUI-X、需要接口适配清单或迁移画像时使用；FA 模型工程将被告知不支持。 |
+| [`/arkuix-migration-skeleton`](./skills/harmonyos/development/arkui-x/arkuix-migration-skeleton/SKILL.md) | 为 OpenHarmony Stage 工程生成 ArkUI-X 跨平台骨架（按平台选项的 Android/iOS 壳 + 共享 ArkTS）。提供 modify（经 ace tool modify 就地改造原工程）与 new（ace create 新建 scaffold 后迁入源码）双模式；消费 F2 ScanReport 判定工程模型（FA 直接拒绝）；检测 Android/iOS 编译环境与 ArkUI-X SDK（API 24+ 门槛）并生成编译验证辅助。开发者在 OH 应用迁移 ArkUI-X 需要搭建跨平台工程结构时使用。 |
 | [`/hmos-arkui-develop-skill`](./skills/harmonyos/development/arkui/hmos-arkui-develop-skill/SKILL.md) | REQUIRED before writing the first .ets file of a session. Fatal gotchas list + API quick-reference for HarmonyOS ArkTS/ArkUI development. Load this skill when writing or modifying .ets files, porting TypeScript to ArkTS, or building any ArkUI page, component, layout, navigation, dialog, state-driven UI, or animation. Covers ArkTS linter rules, forbidden syntax, null safety, struct/@Component constraints, V1/V2 state management, rendering control, API parameter correctness, and UI quality. Triggers — .ets, ArkTS, ArkUI, HarmonyOS, struct, @Component, TS-to-ArkTS migration, ArkUI build error, runtime crash. |
 | [`/hmos-arkui-knowledge-retriever`](./skills/harmonyos/development/arkui/hmos-arkui-knowledge-retriever/SKILL.md) | ArkUI 知识检索层，按问题语境自动路由到 ArkTS 声明式或 NDK(C-API)知识库进行精准检索，不涉及代码生成或修改。触发场景：(1) 用户查询 ArkUI/ArkTS API 用法、参数细节或版本支持 (2) 验证组件/装饰器的正确用法 (3) 排查 ArkUI 编译错误码或运行时异常 (4) 询问状态管理 V1/V2 差异或迁移 (5) 查询 NDK / Native / C-API 接口或头文件 (6) 其他 skill 调用检索获取 API 证据。 |
 | [`/hmos-arkui-longtake-transition`](./skills/harmonyos/development/arkui/hmos-arkui-longtake-transition/SKILL.md) | 为鸿蒙(HarmonyOS)应用添加一镜到底转场效果。当用户提到一镜到底、转场动画、页面跳转动画、Navigation转场、卡片展开动画、图片查看大图动画、ezcustomtransition、自定义NavContentTransition、longtake、连续转场、沉浸式转场等关键词时，务必使用此skill。也适用于用户想要在鸿蒙应用中实现类似iOS的卡片展开、图片预览等流畅过渡效果的场景，即使他们没有明确提到"一镜到底"这个术语。 |
@@ -207,7 +209,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/app-metadata-audit-skill`](./skills/harmonyos/launch-and-distribute/app-metadata-audit-skill/SKILL.md) | 开发者在app开发提交agc前，可利用该skill规范对应用市场的元数据（名称、描述、关键词、隐私链接等）进行自动化合规性审查。支持华为应用市场审核规范，防止因低级错误导致被拒。 |
 | [`/hmos-connect-api-cli-skill`](./skills/harmonyos/launch-and-distribute/hmos-connect-api-cli-skill/SKILL.md) | 用本 skill 内嵌的 connect-api-cli 脚本（scripts/，无需 npm 安装）操作华为 AppGallery Connect / AGC：登录登出、创建应用/元服务、查询 App ID、上传 APP（非 HAP）/APK、发布审核、邀请/公开测试、证书与 Profile、ACL、域名，以及 CSR/P12、assembleApp/assembleHap、encrypt-pwd、真机 hdc 安装。Use when 用户提到 AGC、AppGallery Connect、华为应用市场、hmos-connect-api-cli-skill、connect-api-cli、登录、退出登录、创建应用、创建元服务、上架、上传 APP、构建 app/release/debug 包、assembleApp、assembleHap、运行到手机、真机运行、hdc、发布/调试证书、Profile、p7b、csr、encrypt-pwd、ACL、邀请测试或公开测试。 |
 
-## 三、Android Skills（24 个，description 已中文化）
+## 三、Android Skills（25 个，description 已中文化）
 
 ### build-system（1）
 
@@ -293,12 +295,13 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/android-profiler`](./skills/android/profilers/android-profiler/SKILL.md) | 管理 Android 性能剖析与调试。当用户要求录制或分析 Android 性能数据（如系统 trace、堆转储、方法录制、调用栈采样、内存分配），排查 Android 上的瓶颈、卡顿（jank）、内存泄漏、应用启动问题，或要求编写、调试、执行临时 SQL 查询时触发。适用于用户应用和系统应用/服务。 |
 
-### security（1）
+### security（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/android-intent-security`](./skills/android/security/android-intent-security/SKILL.md) | Android Intent 安全最佳实践。当审计 AndroidManifest.xml 中的组件配置（activities、services、receivers）或处理传入 Intent 的源码（getIntent、getParcelableExtra）以防止 Intent 重定向（Intent Redirection）和未授权访问时使用此 skill。 |
+| [`/android-permissions-security`](./skills/android/security/android-permissions-security/SKILL.md) | 审计、发现缺口并修复 Android 权限与 IPC 组件安全漏洞。当审查 AndroidManifest.xml、定义权限、暴露组件（activity/service/receiver/provider）或加固 IPC 攻击面时使用。 |
 
 ### system（1）
 
@@ -312,7 +315,7 @@ npx skills@latest add IsKenKenYa/skills
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/testing-setup`](./skills/android/testing/testing-setup/SKILL.md) | 为原生 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、为单元测试、UI 测试、截图测试和端到端测试创建测试桩。 |
+| [`/testing-setup`](./skills/android/testing/testing-setup/SKILL.md) | 为 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、创建测试桩。 |
 
 ### tv（1）
 

@@ -5,7 +5,7 @@ description: 学习如何安装并迁移到 Jetpack Navigation 3，以及如何�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-10'
+  last-updated: '2026-09-24'
   keywords:
   - recipe
   - Android
@@ -61,7 +61,7 @@ Code examples showcasing common patterns.
 ### Deep links
 
 - *[Static URI](references/android/guide/navigation/navigation-3/recipes/deeplinks-staticuri.md)*: Shows how to handle simple static URI deep links.
-- *[URI with Arguments](https://developer.android.com/guide/navigation/navigation-3/recipes/deeplinks-uriarguments)*: Shows how to parse path and query arguments from a deep link.
+- *[URI with Arguments](references/android/guide/navigation/navigation-3/recipes/deeplinks-uriarguments.md)*: Shows how to parse path and query arguments from a deep link.
 - *[Synthetic BackStack](references/android/guide/navigation/navigation-3/recipes/deeplinks-syntheticbackstack.md)*: Shows how to handle deep links with a synthetic back stack.
 - *[Custom Matcher](references/android/guide/navigation/navigation-3/recipes/deeplinks-custommatcher.md)*: Shows how to implement custom deep link matching logic.
 

@@ -1,6 +1,6 @@
 ---
 name: testing-setup
-description: 为原生 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、为单元测试、UI 测试、截图测试和端到端测试创建测试桩。
+description: 为 Android 应用分析并制定测试策略——安装测试库、搭建测试基础设施、创建测试桩。
 
 license: Complete terms in LICENSE.txt
 metadata:

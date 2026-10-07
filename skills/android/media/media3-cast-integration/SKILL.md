@@ -5,7 +5,7 @@ description: 使用 Jetpack Media3 在 Android 应用中实现 Google Cast 支�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-14'
+  last-updated: '2026-09-16'
   keywords:
   - Android
   - Media3
@@ -42,7 +42,7 @@ To complete this step, you **MUST** ensure the following:
 - In the app-level build file, declare the `media3-cast` dependency version
   1.9.0 or higher.
 
-      implementation("androidx.media3:media3-cast:1.11.0")
+      implementation("androidx.media3:media3-cast:1.11.1")
 
 - Ensure required Media3 dependencies are present:
 

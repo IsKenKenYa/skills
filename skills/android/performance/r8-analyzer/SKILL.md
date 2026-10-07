@@ -5,7 +5,7 @@ description: 分析 Android 构建文件和 R8 keep 规则，识别冗余、过�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-08-28'
+  last-updated: '2026-09-22'
   keywords:
   - R8
   - proguard

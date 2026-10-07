@@ -3,7 +3,7 @@ name: hmos-jsleak-analysis
 description: DFX Skills，分析 HarmonyOS/ArkTS rawheap、heapsnapshot 和 Heap Cluster 报告，识别疑似 JS 内存泄漏；支持 rawheap 转换、单快照聚类、目录批处理、多快照总榜、双版本增长对比、测试版对象差值对比，以及 GlobalHandler对象关联native堆栈。当用户提供 .rawheap、.heapsnapshot、聚类报告、native hook DB，或 rawheap + htrace + js_map 三合一日志，要求运行 heap_cluster、多快照、版本对比或 GlobalHandler对象关联native堆栈，或询问哪些对象未释放、内存为何增长时使用。
 metadata:
    author: Huawei Reliability Technology Lab
-   version: 1.3.0
+   version: 1.4.0
 ---
 
 # JSLeak Analysis

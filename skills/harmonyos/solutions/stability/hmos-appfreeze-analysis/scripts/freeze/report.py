@@ -667,7 +667,10 @@ def _render_attachments(freeze: FreezeLog, sample_stacks: List[Path],
         lines.append(_title('采样栈文件'))
         for path in sample_stacks:
             lines.append(f'检测到采样栈文件：{path}')
-        lines.append('请执行 python "scripts/sample_stack_analyzer.py" <采样栈文件路径> 分析热点函数')
+        lines.append('采样来源可能就是当前 faultlog：内嵌 Snapshot 时直接传入完整原文件，无需手动拆分。')
+        lines.append('请执行 python "scripts/sample_stack_analyzer.py" "<采样栈文件路径>" '
+                     '分析热点函数；脚本自动发现配套 appfreeze/sysfreeze，'
+                     '先关联事件并对齐符号，再聚类分析，无需额外命令或参数')
     if other_faultlogs:
         lines.append(_title('其他未分析的faultlog'))
         lines += [f'{path}' for path in other_faultlogs]
