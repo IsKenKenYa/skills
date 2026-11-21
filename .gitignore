@@ -41,7 +41,8 @@ skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap
 skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster_*
 skills/harmonyos/solutions/quality/stability/hmos-jsleak-analysis/scripts/*/heap_cluster.exe
 
-# ── references/（submodule 工作区，仅 upstream-refs 分支追踪）──
+# ── references/ 的 gitlink 已由 main 与 upstream-refs 追踪 ──
+# 此规则仅用于挡散文件（如 .DS_Store）误入；对已追踪的 submodule gitlink 无影响。
 references/
 
 # ── 注意：不要加全局 node_modules/ 规则 ────────
