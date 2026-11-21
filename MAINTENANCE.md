@@ -2,10 +2,10 @@
 
 本仓库采用**双轨结构**：
 
-- `main` 分支：只含面向用户的 skills（中文化的 / 原生中文的 / 自建的），是 `npx skills add IsKenKenYa/skills` 扫描的分支。
-- `upstream-refs` 分支：把各上游仓库作为 git submodule 放在 `references/` 下，用于追踪上游更新。
+- `main` 分支：只含面向用户的 skills（中文化的 / 原生中文的 / 自建的），是 `npx skills add IsKenKenYa/skills` 扫描的分支。**main 也持有 references/ 下三个上游的 submodule 引用（gitlink）**，与 upstream-refs 指向同步。
+- `upstream-refs` 分支：上游 submodule 的维护分支，`git submodule update --remote` 在这里做。
 
-> 为什么要分两个分支？`skills` CLI 会递归扫描整个仓库找 `SKILL.md`，只跳过 `node_modules/.git/dist/build/__pycache__`。如果 submodule（含原版 SKILL.md）和 main 在同一分支，原版会被误扫，和本仓库的版本产生同名冲突。隔离到独立分支后，main 保持干净。
+> 关于污染问题：远程用户 `npx skills add` 时 clone 不含 submodule 内容（gitlink 只是引用），扫描不受影响（已实测 Found 数不变）。本地 `submodule update --init` 后 references/ 里会出现原版 SKILL.md，但它们与本仓库中文版同名，CLI 按 name 去重，且 `skills/` 优先扫描，不会产生重复条目（已实测）。历史上曾把 references/ 隔离在独立分支，2026-11 起 main 直接持有 gitlink，更新流程见下。
 
 ## 已整合的上游
 
@@ -30,16 +30,18 @@ git checkout upstream-refs
 # 2. 初始化并更新 submodule 到各自远程的最新 commit
 git submodule update --init --remote
 
-# 3. 查看 submodule 指针变化
-git diff
-
-# 4. 提交新的 submodule 指针
-git add references/mattpocock-skills
+# 3. 提交新的 submodule 指针
+git add -f references/mattpocock-skills
 git commit -m "chore: bump mattpocock-skills upstream"
 
-# 5. 切回 main，对照上游 diff 同步变更
+# 4. 推送 upstream-refs，并让 main 的 gitlink 跟进
+git push origin upstream-refs
 git checkout main
+git update-index --add --cacheinfo 160000,<新sha>,references/mattpocock-skills   # 三个上游逐个
+git commit -m "chore: main 的上游 submodule 引用跟进"
 ```
+
+然后按下文「对照 diff 同步变更」把上游内容镜像/翻译到 main 的 skills/。
 
 对照方式：在 `upstream-refs` 分支里进入对应 `references/<上游>/`，与 main 的 `skills/` 逐个 diff。同步规则因上游而异：
 
