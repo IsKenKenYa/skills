@@ -91,8 +91,20 @@ for cat in sorted(andr_by):
     andr_sec.append(f"### {cat}（{len(rows)}）\n")
     andr_sec.append(tbl(rows))
 
+# Apple（official/ios/macos/swiftui/swift）
+apple_all=walk('skills/apple')
+apple_by={}
+for rel,fm in apple_all: apple_by.setdefault(rel.split('/')[2],[]).append((rel,fm))
+apple_zh={'official':'Apple 官方（Xcode 27 导出）','ios':'iOS 开发（OpenAI build-ios-apps）','macos':'macOS 开发（OpenAI build-macos-apps）','swiftui':'SwiftUI 跨平台（twostraws）','swift':'Swift 语言级（AvdLee）'}
+apple_sec=[]
+for cat in ['official','ios','macos','swiftui','swift']:
+    if cat not in apple_by: continue
+    rows=apple_by[cat]
+    apple_sec.append(f"### {cat} — {apple_zh.get(cat,cat)}（{len(rows)}）\n")
+    apple_sec.append(tbl(rows))
+
 meta_all=walk('skills/meta')
-total=len(mp_all)+len(hmos_all)+len(andr_all)+len(meta_all)
+total=len(mp_all)+len(hmos_all)+len(andr_all)+len(apple_all)+len(meta_all)
 
 readme=f"""# KenKenSkills
 
@@ -102,6 +114,9 @@ readme=f"""# KenKenSkills
 - [mattpocock/skills](https://github.com/mattpocock/skills)（MIT）— 通用编码/生产力 skill，description 已译为中文
 - [HarmonyOS_Skills/harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) — 鸿蒙开发 skill，上游原生中文，原样保留
 - [android/skills](https://github.com/android/skills)（Apache 2.0）— Android 官方开发 skill，description 已译为中文
+- [openai/plugins](https://github.com/openai/plugins) — build-ios-apps / build-macos-apps（Apple 平台，description 已译为中文）
+- [twostraws/SwiftUI-Agent-Skill](https://github.com/twostraws/SwiftUI-Agent-Skill)、[AvdLee/Swift-Concurrency-Agent-Skill](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill) — Apple 生态社区精品，description 已译为中文
+- **Apple 官方 11 个**（Xcode 27.2 `xcrun agent skills export` 导出，来源 WWDC26 session 269）— description 已译为中文
 
 另有 2 个自建的安装指导 skill（`skills/meta/`），介绍各上游及官方 CLI 安装方式。`engineering/`、`in-progress/` 下另有若干自建/本土化 skill（code-review、research、wizard、loop-me 等）。
 
@@ -138,7 +153,11 @@ npx skills@latest add IsKenKenYa/skills
 
 """ + "\n\n".join(andr_sec) + f"""
 
-## 四、安装指导 Skills（{len(meta_all)} 个）
+## 四、Apple 生态 Skills（{len(apple_all)} 个，description 已中文化；official/ 为 Apple 官方 Xcode 27 导出）
+
+""" + "\n\n".join(apple_sec) + f"""
+
+## 五、安装指导 Skills（{len(meta_all)} 个）
 
 """ + tbl(meta_all) + f"""
 

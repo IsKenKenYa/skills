@@ -6,6 +6,9 @@
 - [mattpocock/skills](https://github.com/mattpocock/skills)（MIT）— 通用编码/生产力 skill，description 已译为中文
 - [HarmonyOS_Skills/harmonyos-agent-skills](https://gitcode.com/HarmonyOS_Skills/harmonyos-agent-skills.git) — 鸿蒙开发 skill，上游原生中文，原样保留
 - [android/skills](https://github.com/android/skills)（Apache 2.0）— Android 官方开发 skill，description 已译为中文
+- [openai/plugins](https://github.com/openai/plugins) — build-ios-apps / build-macos-apps（Apple 平台，description 已译为中文）
+- [twostraws/SwiftUI-Agent-Skill](https://github.com/twostraws/SwiftUI-Agent-Skill)、[AvdLee/Swift-Concurrency-Agent-Skill](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill) — Apple 生态社区精品，description 已译为中文
+- **Apple 官方 11 个**（Xcode 27.2 `xcrun agent skills export` 导出，来源 WWDC26 session 269）— description 已译为中文
 
 另有 2 个自建的安装指导 skill（`skills/meta/`），介绍各上游及官方 CLI 安装方式。`engineering/`、`in-progress/` 下另有若干自建/本土化 skill（code-review、research、wizard、loop-me 等）。
 
@@ -28,7 +31,7 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 169 个）
+## Skill 清单（共 203 个）
 
 ## 一、mattpocock 通用 Skills（39 个，description 已中文化）
 
@@ -391,11 +394,77 @@ npx skills@latest add IsKenKenYa/skills
 | [`/display-glasses-with-jetpack-compose-glimmer`](./skills/android/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md) | 提供使用 Jetpack Compose Glimmer UI 工具包为显示眼镜开发投影式 Android XR 应用的指南。涵盖 Glimmer 设计原则、工作流和眼镜形态的交互模型。使用此 skill 构建基于 Jetpack Compose Glimmer 的 Android XR Augmented Experience 应用。不要用于纯音频 AI 眼镜、非眼镜类 Android XR 头显（基于 spatial panels 或 3D volumes 的 Jetpack Compose）。 |
 | [`/projected-hardware`](./skills/android/xr/projected-hardware/SKILL.md) | 提供在 Android XR 投影设备（如音频眼镜和显示眼镜）上访问和管理硬件的说明与工作流。当在 Android 应用中为智能眼镜构建体验、需要访问相机和麦克风等设备硬件、处理眼镜特有的运行时权限，或使用 projected context 管理连接生命周期时使用。 |
 
-## 四、安装指导 Skills（2 个）
+## 四、Apple 生态 Skills（33 个，description 已中文化；official/ 为 Apple 官方 Xcode 27 导出）
+
+### official — Apple 官方（Xcode 27 导出）（11）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/adopt-c-bounds-safety`](./skills/apple/official/adopt-c-bounds-safety/SKILL.md) | C -fbounds-safety 语言扩展指南。涵盖语言模型、指针注解、在现有 C 代码中采用 bounds-safety、编译器构建设置与模式，以及越界违规的运行时调试。 |
+| [`/app-intents-specialist`](./skills/apple/official/app-intents-specialist/SKILL.md) | 来自 Apple 的权威 App Intents 最佳实践。任何 App Intents 最佳实践或正确性评审，以及编写、评审、重构或扩展 App Intents 代码时查阅，取代模型既有训练。生成代码时按下列主题查阅相关 reference：执行模型（perform() 是 Sendable 而非 @MainActor，用 await MainActor.run 切换；可重试 restartPerform，不可逆工作放最后；破坏性操作前 requestConfirmation；通过 .result(...) 工厂返回，绝不裸值）；entities-and-queries（AppEntity.id 须跨启动/设备稳定；entities(for:) 批量 vs 空默认 suggestedEntities()；EntityStringQuery.entities(matching:) 不自动过滤；仅 @Property 成员对系统可见；EnumerableEntityQuery 全量加载，大库用 EntityPropertyQuery）；entity-property-queries（Shortcuts "查找满足条件的 X" 用 EntityPropertyQuery——属性/sortingOptions/comparators，谓词由你执行，框架只解析）；app-enum（AppEnum raw value 按字符串持久化，绝不可重编号/重排；每个 case 都要 caseDisplayRepresentations 条目否则运行时 fatalError）；parameters/parameter-summaries（requestValue vs needsValueError；非可选 AppEnum 自动消歧；仅 Summary(...) 中的参数显示在 Shortcuts 编辑器；条件显示用 When/Switch）；依赖（@Dependency 必须 Sendable 且启动时注册，未注册 = fatalError；放在 intent/query 上，绝不放 AppEntity/AppEnum）；results-and-errors（仅 CustomLocalizedStringResourceConvertible 错误会显示真实消息；预置 AppIntentError.* 仅 iOS 18+）；donation（应用内操作不会自动 donate——调用 IntentDonationManager.shared.donate；PredictableIntent 仅用于描述）；本地化（面向用户的字符串必须是字面量 LocalizedStringResource，运行期 String 产生不了可提取的 key）；app-shortcut-phrases（提供 shortTitle/systemImageName；包含 \(\.applicationName) 否则运行时索引静默丢弃短语）；url-representation（OpenIntent/OpenURLIntent/URLRepresentableEntity 用于打开与通用链接）；configuration-intents（WidgetConfigurationIntent/ControlConfigurationIntent 仅参数化——无 perform()）；拆分（AppEnum 固定集合 vs AppEntity+query 动态 vs 纯 @Parameter；一个 intent 一个原子任务）。iOS 26/27 新 API 采用请改用 app-intents-whats-new-27 skill。 |
+| [`/app-intents-whats-new-27`](./skills/apple/official/app-intents-whats-new-27/SKILL.md) | iOS 26（2025）与 iOS 27（2026）版本（及其 macOS/watchOS/tvOS/visionOS 同胞）引入的 App Intents 新 API、行为与废弃项。当采用、迁移或被问及以下内容时使用：用 supportedModes / IntentModes（.background/.foreground）声明 intent 运行位置或迁移废弃的 openAppWhenRun；用 continueInForeground / needsToContinueInForegroundError 把后台运行拉到前台；UndoableIntent；用 requestChoice / IntentChoiceOption 让用户在 perform 中途从少量选项中选择；用 CancellableIntent / IntentCancellationReason 取消；用 LongRunningIntent / performBackgroundTask 长时间或后台工作；用 IntentExecutionTargets / allowedExecutionTargets 限制 intent 运行位置；用 SnippetIntent 和 Button(intent:) 返回交互式片段；用 IntentValueQuery + SemanticContentDescriptor（import VisualIntelligence）+ @UnionValue 做 Visual Intelligence 相机/屏上搜索；用 appEntityIdentifier 关联屏上内容与 entity；用 @Property / @ComputedProperty / @DeferredProperty(indexingKey:) 把 entity 值映射进 Spotlight；用 IndexedEntityQuery 做系统驱动的 Spotlight 重建索引；用 relatedAppEntityIdentifier 把 CSSearchableItem 链接到 entity；用 RelevantEntities + AppEntityContext 主动呈现 entity；用 SyncableEntity / SyncableEntityIdentifier 与 EntityOwnership / OwnershipProvidingEntity 做跨设备 entity；@ComputedProperty / @DeferredProperty 便捷属性；用 SystemShortcut / RunSystemShortcutIntent 运行系统快捷方式；用 EntityCollection 廉价传递大 entity 集；用 @AppIntent(schema:) / @AppEntity(schema:) / @AppEnum(schema:) 采用 Apple Intelligence schema（迁移废弃的 @AssistantIntent）；用 AppIntentsTesting 做单元测试；或询问"iOS 26 / iOS 27 的 App Intents 有什么新东西"。永续（非版本相关）的 App Intents 最佳实践请改用 app-intents-specialist skill。 |
+| [`/app-resizability`](./skills/apple/official/app-resizability/SKILL.md) | 当应用布局必须适应运行中变化的窗口尺寸，或应用需支持多窗口时使用。包括被要求让应用可调大小或支持可调整窗口、布局在窗口缩放时破损或不适配，以及为可折叠 iPhone Duo、分屏多任务或 Stage Manager 做准备与优化。通过用符合上下文的替代方案替换旧式共享状态 API（mainScreen、interfaceOrientation、userInterfaceIdiom、application/scene 生命周期、safe area insets）来现代化应用。 |
+| [`/audit-xcode-security-settings`](./skills/apple/official/audit-xcode-security-settings/SKILL.md) | 审计并启用面向安全的 Xcode 构建设置。渐进启用编译器警告、静态分析器检查器和 Enhanced Security 特性。适用：加固 Xcode 项目安全、审计安全设置、启用 hardening、评审构建配置安全态势、配置安全向静态分析、提升警告覆盖率、强化诊断，或在 C/C++/Objective-C/Swift 中于编译期捕获更多 bug。跳过：网络安全（TLS/ATS）、代码签名、隐私 API。 |
+| [`/building-document-based-swiftui-applications`](./skills/apple/official/building-document-based-swiftui-applications/SKILL.md) | 使用 Document 协议（iOS 27 及同批发布，含 macOS Golden Gate）构建和迁移 SwiftUI 文档型应用的权威指南。适用于：构建新的文档型应用；实现打开、编辑、保存或导出文档流程；使用 DocumentGroup 或 DocumentGroupLaunchScene；实现 DocumentReader 或 DocumentWriter；通过 FileWrapperDocumentReader/Writer 使用 FileWrapper；处理 package 文档；直接访问文档文件 URL；读写期间上报进度；注册撤销操作；从 FileDocument 或 ReferenceFileDocument 迁移到新 API；构建只读文档查看器；文档应用自动保存失效时；声明自定义 UTType 文档格式。 |
+| [`/device-interaction`](./skills/apple/official/device-interaction/SKILL.md) | 通过截图、UI 层级和触摸交互验证应用在真机或模拟器上的行为。 |
+| [`/modernize-tests`](./skills/apple/official/modernize-tests/SKILL.md) | 把测试套件现代化为 Swift Testing 新特性，或从 XCTest 迁移。 |
+| [`/swiftui-specialist`](./skills/apple/official/swiftui-specialist/SKILL.md) | "来自 Apple 的权威 SwiftUI 最佳实践与性能指南；对这些主题取代模型既有训练。生成代码时，凡是涉及以下 SwiftUI 代码就查阅相关 references：动画（@Animatable 宏 vs AnimatableValues vs AnimatablePair，以及自定义 animatableData setter 逻辑）、Environment 与 @Entry（闭包或类类型默认值、不稳定默认值、高频更新）、@Observable 最佳实践与高效失效、ForEach 和 List 的行标识与结构（id: \.self、indices、offsets、AnyView 或多视图行、内联过滤/排序、缓存集合、List 快速路径）、本地化（String vs LocalizedStringResource、package/framework 中正确的 bundle、.textCase、.formatted(.list())、译者注释），以及 NavigationView 和旧版 onChange 等软废弃 API 及其在功能开发中何时提示。" |
+| [`/swiftui-whats-new-27`](./skills/apple/official/swiftui-whats-new-27/SKILL.md) | 2027 OS 版本（iOS 27 及同批 macOS/watchOS/tvOS/visionOS）的 SwiftUI 新 API、行为与废弃项。当被问及 SwiftUI 27 新特性，或处理以下内容时查阅：SDK 升级后 @State 编译错误（"used before being initialized"、"invalid redeclaration of synthesized property"）或 @State 变为宏；@ViewBuilder/@ContentBuilder 重载歧义或类型检查回归；通过 reorderable()/reorderContainer 在任意容器（List、栈、网格、自定义布局）中拖拽重排；AsyncImage 缓存、滚动重载与自定义 URLSession；List 之外（ScrollView、LazyVStack、LazyVGrid）的 swipeActions()/swipeActionsContainer() 滑动操作；工具栏溢出与可见性（visibilityPriority、ToolbarOverflowMenu、toolbarMinimizeBehavior）与固定；从可选 item 绑定呈现 confirmationDialog 或 alert。 |
+| [`/xctrace`](./skills/apple/official/xctrace/SKILL.md) | xctrace 权威指南——Apple 命令行版 Instruments。任何剖析（profiling）、性能或优化工作都查阅本 skill：例如找出应用为什么慢、CPU/内存占用过高或停止响应，或想优化一段代码并测量结果；以及任何涉及 xctrace 的场景：采集 trace，或从命令行打开读取 .trace 与 .atrc（Apple Trace）文件。 |
+
+### ios — iOS 开发（OpenAI build-ios-apps）（9）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/ios-app-intents`](./skills/apple/ios/ios-app-intents/SKILL.md) | 为 iOS 系统界面设计 App Intents、app entity 和 App Shortcuts。当需要把应用操作或内容暴露给 Shortcuts、Siri、Spotlight、小组件或控制中心时使用。 |
+| [`/ios-debugger-agent`](./skills/apple/ios/ios-debugger-agent/SKILL.md) | 使用 XcodeBuildMCP 在模拟器上构建、运行和调试 iOS 应用。当需要启动应用、检查模拟器 UI 或日志，或诊断运行时行为时使用。 |
+| [`/ios-ettrace-performance`](./skills/apple/ios/ios-ettrace-performance/SKILL.md) | 采集并解读 iOS Simulator 的 ETTrace 剖析。当需要分析启动或运行时延迟、对比 trace、或找出 CPU 热点栈时使用。 |
+| [`/ios-memgraph-leaks`](./skills/apple/ios/ios-memgraph-leaks/SKILL.md) | 采集并检查 iOS 泄漏与 memgraph。当调试泄漏对象、保留环（retain cycle）、内存增长，或做泄漏前后证据对比时使用。 |
+| [`/ios-simulator-browser`](./skills/apple/ios/ios-simulator-browser/SKILL.md) | 把 iOS Simulator 镜像到 Codex 内置浏览器，并通过可导入的 Swift 包在该模拟器中渲染 SwiftUI 预览（支持热重载）。当用户想观看或交互 iOS 应用的实时预览时使用。 |
+| [`/swiftui-liquid-glass`](./skills/apple/ios/swiftui-liquid-glass/SKILL.md) | 实现和评审 iOS 26+ 的 SwiftUI Liquid Glass UI。当采用 Liquid Glass，或检查其正确性、性能与设计契合度时使用。 |
+| [`/swiftui-performance-audit`](./skills/apple/ios/swiftui-performance-audit/SKILL.md) | 从代码层面优先审计 SwiftUI 运行时性能。当诊断渲染缓慢、滚动卡顿、昂贵更新或需要剖析时使用。 |
+| [`/swiftui-ui-patterns`](./skills/apple/ios/swiftui-ui-patterns/SKILL.md) | 用组件模式和示例构建并重构 SwiftUI UI。当设计导航、状态、布局、控件或页面组合时使用。 |
+| [`/swiftui-view-refactor`](./skills/apple/ios/swiftui-view-refactor/SKILL.md) | 把 SwiftUI 视图文件重构为稳定、可测试的结构。当拆分大视图、收紧数据流，或清理 Observation 所有权时使用。 |
+
+### macos — macOS 开发（OpenAI build-macos-apps）（11）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/appkit-interop`](./skills/apple/macos/appkit-interop/SKILL.md) | 把 macOS SwiftUI 窄桥接到 AppKit。当实现 representable、访问 NSWindow 或 panel、处理菜单，或使用 responder chain 时使用。 |
+| [`/build-run-debug`](./skills/apple/macos/build-run-debug/SKILL.md) | 用 shell 优先的 Xcode 与 Swift 工作流构建、运行和调试 macOS 应用。当启动应用或诊断构建、启动、运行时故障时使用。 |
+| [`/liquid-glass`](./skills/apple/macos/liquid-glass/SKILL.md) | 实现和评审 macOS SwiftUI Liquid Glass UI。当采用系统玻璃效果、移除冲突的自定义 chrome，或构建玻璃表面时使用。 |
+| [`/packaging-notarization`](./skills/apple/macos/packaging-notarization/SKILL.md) | 准备 macOS 打包与公证（notarization）工作流。当归档应用、校验 bundle，或解释仅分发阶段的失败时使用。 |
+| [`/signing-entitlements`](./skills/apple/macos/signing-entitlements/SKILL.md) | 检查 macOS 签名、entitlements 与 Gatekeeper 问题。当诊断代码签名、沙盒、hardened runtime 或信任失败时使用。 |
+| [`/swiftpm-macos`](./skills/apple/macos/swiftpm-macos/SKILL.md) | 构建、运行和测试 SwiftPM macOS 包与可执行文件。当仓库是 package-first 或没有 Xcode 工程时使用。 |
+| [`/swiftui-patterns`](./skills/apple/macos/swiftui-patterns/SKILL.md) | 用桌面模式构建 macOS SwiftUI scene 与组件。当设计窗口、命令、工具栏、设置、split view 或 inspector 时使用。 |
+| [`/telemetry`](./skills/apple/macos/telemetry/SKILL.md) | 添加并验证轻量 macOS 运行时遥测。当接入 Logger 事件，或检查窗口、侧栏、菜单和操作的日志时使用。 |
+| [`/test-triage`](./skills/apple/macos/test-triage/SKILL.md) | 在 Xcode 与 SwiftPM 间分诊 macOS 测试。当缩小失败范围、解释断言或崩溃，或区分环境问题与回归时使用。 |
+| [`/view-refactor`](./skills/apple/macos/view-refactor/SKILL.md) | 把 macOS SwiftUI 视图与 scene 重构为稳定结构。当拆分大视图、收紧 scene 状态，或减少 AppKit 逃逸时使用。 |
+| [`/window-management`](./skills/apple/macos/window-management/SKILL.md) | 定制 macOS SwiftUI 窗口与 scene 行为。当调优窗口 chrome、拖拽区域、位置、恢复、启动行为或无边框窗口时使用。 |
+
+### swiftui — SwiftUI 跨平台（twostraws）（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/swiftui-pro`](./skills/apple/swiftui/swiftui-pro/SKILL.md) | 全面评审 SwiftUI 代码的现代 API 使用、可维护性与性能最佳实践。当阅读、编写或评审 SwiftUI 项目时使用。 |
+
+### swift — Swift 语言级（AvdLee）（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/swift-concurrency`](./skills/apple/swift/swift-concurrency/SKILL.md) | 诊断 Swift Concurrency 问题、把基于回调的代码重构为 async/await，并在处理 Task、Actor、@MainActor、Sendable、数据竞争、线程安全或并发架构时指导 Swift 6 迁移。 |
+
+## 五、安装指导 Skills（3 个）
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/install-android-skills`](./skills/meta/install-android-skills/SKILL.md) | 介绍 Android agent skills 并指导安装。当用户想获取 Android 开发技能、询问 Android skills 怎么装、或提到 Jetpack Compose/CameraX/AGP/Perfetto/R8/Play Billing/Wear OS/Android XR 等 Android 开发场景时使用。涵盖官方 `android` CLI 安装、`android skills add` 用法、以及本仓库中文化版的获取途径。 |
+| [`/install-apple-skills`](./skills/meta/install-apple-skills/SKILL.md) | 介绍 Apple 生态（iOS/macOS/Swift/SwiftUI）的 agent skills 并指导安装。当用户想获取 Apple/Xcode 开发技能、询问 iOS/macOS/SwiftUI/Swift skills 怎么装、提到 WWDC26 session 269、Apple 官方 skill 导出（xcrun agent skills export）、OpenAI build-ios-apps / build-macos-apps 插件，或要做 iOS/Swift 开发时使用。涵盖 Apple 官方导出、三个 GitHub 上游、以及本仓库中文化版的获取途径。 |
 | [`/install-harmonyos-skills`](./skills/meta/install-harmonyos-skills/SKILL.md) | 介绍 HarmonyOS（鸿蒙）agent skills 并指导安装。当用户想获取鸿蒙开发技能、询问 HarmonyOS/OpenHarmony/ArkTS/ArkUI/DevEco skills 怎么装、或提到鸿蒙应用开发、多设备适配、稳定性分析等场景时使用。涵盖上游来源、官方安装方式、以及本仓库中文化版的获取途径。 |
 
 ## 致谢与许可
