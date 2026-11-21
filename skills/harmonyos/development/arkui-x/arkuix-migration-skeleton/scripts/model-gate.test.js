@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { loadReport, check, rejectMessage } from './model-gate.js';
 import { detectEnvironment } from './env-detector.js';
 
-// ── ModelGate：R-8/R-9 三分 + INV-1 零写 ──────────────────────────────
+// ── ModelGate： 三分 +  零写 ──────────────────────────────
 
 function writeReport(doc) {
   const dir = mkdtempSync(join(tmpdir(), 'f1-gate-'));
@@ -15,7 +15,7 @@ function writeReport(doc) {
   return { dir, file };
 }
 
-test('R-8 project_model=fa → reject_fa + 提示 + 目录零变更（INV-1）', () => {
+test('project_model=fa → reject_fa + 提示 + 目录零变更', () => {
   const { dir, file } = writeReport({ schema_version: 1, project_model: 'fa' });
   const before = readdirSync(dir).sort().join();
   const gate = check(loadReport(file));
@@ -25,13 +25,13 @@ test('R-8 project_model=fa → reject_fa + 提示 + 目录零变更（INV-1）',
   rmSync(dir, { recursive: true, force: true });
 });
 
-test('R-9 ScanReport 缺失 → reject_unknown + 引导 F2', () => {
+test('ScanReport 缺失 → reject_unknown + 引导 F2', () => {
   const gate = check(loadReport(join(tmpdir(), 'no-such-report.json')));
   assert.equal(gate.verdict, 'reject_unknown');
   assert.match(rejectMessage(gate), /请先运行 F2/);
 });
 
-test('R-9 不可解析 JSON → reject_unknown', () => {
+test('不可解析 JSON → reject_unknown', () => {
   const dir = mkdtempSync(join(tmpdir(), 'f1-gate-'));
   const file = join(dir, 'broken.json');
   writeFileSync(file, '{ not json', 'utf8');
@@ -40,14 +40,14 @@ test('R-9 不可解析 JSON → reject_unknown', () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-test('R-9 project_model=unknown → reject_unknown', () => {
+test('project_model=unknown → reject_unknown', () => {
   const { dir, file } = writeReport({ schema_version: 1, project_model: 'unknown' });
   const gate = check(loadReport(file));
   assert.equal(gate.verdict, 'reject_unknown');
   rmSync(dir, { recursive: true, force: true });
 });
 
-test('R-9 缺 project_model 字段 / schema_version 不受支持 → reject_unknown', () => {
+test('缺 project_model 字段 / schema_version 不受支持 → reject_unknown', () => {
   const a = mkdtempSync(join(tmpdir(), 'f1-gate-'));
   const fa = join(a, 'a.json');
   writeFileSync(fa, JSON.stringify({ schema_version: 1 }), 'utf8');
@@ -67,7 +67,7 @@ test('stage → pass', () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-// ── EnvDetector：R-1/R-2 分项与容错 ─────────────────────────────────
+// ── EnvDetector： 分项与容错 ─────────────────────────────────
 
 function fakeRun(responses) {
   return (cmd, args) => {
@@ -76,7 +76,7 @@ function fakeRun(responses) {
   };
 }
 
-test('R-1 全就绪（ace check 双平台 + 分项齐备）→ ready=true 且 missing 空', () => {
+test('全就绪（ace check 双平台 + 分项齐备）→ ready=true 且 missing 空', () => {
   const env = detectEnvironment({
     platform: 'darwin',
     aceCheckOutput: [
@@ -97,7 +97,7 @@ test('R-1 全就绪（ace check 双平台 + 分项齐备）→ ready=true 且 mi
   assert.deepEqual(env.ios.missing, []);
 });
 
-test('R-1 Android toolchains 缺失 + Gradle/JDK 缺 → missing 清单', () => {
+test('Android toolchains 缺失 + Gradle/JDK 缺 → missing 清单', () => {
   const env = detectEnvironment({
     platform: 'darwin',
     aceCheckOutput: '[X] Android toolchains\n[√] Xcode',
@@ -113,7 +113,7 @@ test('R-1 Android toolchains 缺失 + Gradle/JDK 缺 → missing 清单', () => 
   assert.equal(env.ios.ready, true);
 });
 
-test('R-2 非 macOS → ios.ready=false 且注明需 macOS（骨架仍双平台生成）', () => {
+test('非 macOS → ios.ready=false 且注明需 macOS（骨架仍双平台生成）', () => {
   const env = detectEnvironment({
     platform: 'linux',
     aceCheckOutput: '[√] Android toolchains',
@@ -127,7 +127,7 @@ test('R-2 非 macOS → ios.ready=false 且注明需 macOS（骨架仍双平台�
   assert.equal(env.android.ready, true);
 });
 
-test('ADR-3 容错：ace check 不可用 → 全独立探测兜底', () => {
+test('容错：ace check 不可用 → 全独立探测兜底', () => {
   const env = detectEnvironment({
     platform: 'darwin',
     run: fakeRun({

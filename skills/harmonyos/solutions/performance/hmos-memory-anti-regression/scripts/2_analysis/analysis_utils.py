@@ -404,6 +404,8 @@ def diff_top10_so(old_xlsx: str, new_xlsx: str, top_n: int = 10, min_delta_mb: f
         old_val = old_map.get((so, tn), 0.0)
         new_val = new_map.get((so, tn), 0.0)
         delta = new_val - old_val
+        if delta == 0:
+            continue
         rows.append({"so": so, "type_name": tn, "delta": delta})
 
     if not rows:

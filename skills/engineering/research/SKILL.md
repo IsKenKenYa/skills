@@ -4,7 +4,7 @@ description: 针对一个问题调研高可信度的一手资料，并把发现�
 
 ---
 
-Spin up a **background agent** to do the research, so you keep working while it reads.
+Spin up a **background agent** to do the research, so you keep working while it reads. Start it with a fresh context window.
 
 Its job:
 

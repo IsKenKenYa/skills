@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-build_flame_summary.py — 按版本构建火焰图 HTML (iframe 嵌入汇总)
+build_flame_summary.py — 按版本构建火焰图 HTML (链接跳转汇总)
 
 pipeline:
   1. 对每个 *_tree.json: 用 statics/flame.template 生成 <so_name>_flame.html
      (FlameGraph.build_flame_graph(so_name) -> html_file_name)
   2. 用 statics/example.template 生成 <version>_flamegraphs.html 汇总页
-     {7} 占位符填 iframe 串
+     {1} 占位符填链接串
 
 FlameGraph 类接口 (兼容已有调用模式):
   flame = FlameGraph(field_data, html_dir)   # field_data: {so_name: tree_json_path}
@@ -179,7 +179,7 @@ class FlameGraph:
         self.statics_dir = os.path.join(script_dir, "statics")
         self.template_path = os.path.join(self.statics_dir, "flame.template")
 
-        # 相对 html_dir 到 statics 的路径 (iframe 内的 HTML 用)
+        # 相对 html_dir 到 statics 的路径 (子页 HTML 引用资源用)
         try:
             self.rel_statics = os.path.relpath(
                 self.statics_dir, self.html_dir).replace(os.sep, "/")
@@ -296,7 +296,7 @@ class FlameGraph:
 def data_to_text(data, field_data, html_dir, limit=None,
                  ratio_limit=None, size_limit=10, config_data=None,
                  single_file=False):
-    """遍历 topdown 层级数据 (top→kit→so), 为每个 SO 生成火焰图并用 iframe 嵌入。
+    """遍历 topdown 层级数据 (top→kit→so), 为每个 SO 生成火焰图并用链接引用。
 
     data:       topdown 分析结果, 结构:
         { top_name: {
@@ -317,7 +317,7 @@ def data_to_text(data, field_data, html_dir, limit=None,
     ratio_limit:    SO 占比低于此百分比则截断 (仅 so_index>0 时)
     size_limit:     SO 内存小于此 MB 则跳过
     config_data:    配置 dict, 含 'heading' 键 (控制是否调 build_full_flame_graph)
-    返回:           HTML 文本串 (h2/h3 标题 + iframe)
+    返回:           HTML 文本串 (h2/h3 标题 + 链接)
     """
     if config_data is None:
         config_data = {"heading": True}
@@ -363,9 +363,8 @@ def data_to_text(data, field_data, html_dir, limit=None,
                     html_file_name = flame.build_flame_graph(so_name, single_file=single_file)
                     if html_file_name:
                         text.append(
-                            f'<iframe src="{html_file_name}" '
-                            f'style="width: 100%; height: 600px; border: none;">'
-                            f' </iframe><br>')
+                            f'&nbsp;&nbsp;&nbsp;&nbsp;<a href="{html_file_name}" '
+                            f'target="_blank">📊 查看 {so_name} 火焰图</a><br>')
     return ''.join(text)
 
 
@@ -401,7 +400,7 @@ def build(version_dir, output_path=None, template_path=None, statics_dir=None,
 
     # Step 1: 生成每个 SO 的 _flame.html
     flame = FlameGraph(field_data, version_dir)
-    iframe_parts = []
+    link_parts = []
     total_bytes = 0
     for so_name in sorted(field_data.keys()):
         html_file_name = flame.build_flame_graph(so_name, single_file=single_file)
@@ -409,27 +408,26 @@ def build(version_dir, output_path=None, template_path=None, statics_dir=None,
             tree = json.load(open(field_data[so_name], "rb")).get("tree", {})
             so_bytes = int(tree.get("value", 0))
             total_bytes += so_bytes
-            iframe_parts.append(
+            link_parts.append(
                 f'<h3>{so_name} ({so_bytes/1048576:.2f} MB)</h3>\n'
-                f'<iframe src="{html_file_name}" '
-                f'style="width: 100%; height: 600px; border: none;">'
-                f'</iframe><br>')
+                f'<p><a href="{html_file_name}" target="_blank">'
+                f'📊 查看 {so_name} 火焰图</a></p>')
 
     print("-" * 60)
-    print(f"合计: {total_bytes/1048576:.2f} MB, 生成 {len(iframe_parts)} 个 SO 火焰图")
+    print(f"合计: {total_bytes/1048576:.2f} MB, 生成 {len(link_parts)} 个 SO 火焰图")
 
-    if not iframe_parts:
+    if not link_parts:
         print("[ERROR] 没有 SO 成功生成", file=sys.stderr)
         return 2
 
-    # Step 2: 用 example.template 生成汇总页, {7} 填 iframe 串
+    # Step 2: 用 example.template 生成汇总页, {1} 填链接串
     with open(template_path, "r", encoding="utf-8") as f:
         summary_tpl = f.read()
 
-    iframe_html = "".join(iframe_parts)
+    links_html = "".join(link_parts)
     summary_html = summary_tpl.format(
         version_name,   # {0} 版本名 (title + h1)
-        iframe_html,    # {1} 火焰图 iframe 串
+        links_html,     # {1} 火焰图链接串
     )
 
     with open(output_path, "w", encoding="utf-8") as f:

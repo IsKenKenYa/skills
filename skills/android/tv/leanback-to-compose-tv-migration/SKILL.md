@@ -5,7 +5,7 @@ description: 提供把 Android TV 应用从旧版 Leanback UI Toolkit、Android 
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-18'
+  last-updated: '2026-11-10'
   keywords:
   - Android TV
   - Jetpack Compose

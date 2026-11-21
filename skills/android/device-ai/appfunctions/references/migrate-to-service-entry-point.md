@@ -1,7 +1,8 @@
 Follow this systematic procedure to migrate Android applications that use the
 AppFunctions API in version 1.0.0-alpha09 and lower to the compile-time
 `@AppFunctionServiceEntryPoint` architecture introduced in version
-`1.0.0-alpha10`.
+`1.0.0-alpha10`. Then follow the Upgrade to 1.0.0-beta01 section. Apps that
+already use `@AppFunctionServiceEntryPoint` only need that section.
 
 *** ** * ** ***
 
@@ -21,7 +22,7 @@ In version `1.0.0-alpha10` featuring `@AppFunctionServiceEntryPoint`:
 - The KSP compiler generates a concrete service subclass and an XML metadata schema file in `assets/`.
 - The OS discovers and routes executions using a consolidated `<service>` and `app_metadata` declaration in `AndroidManifest.xml`.
 
-### Strict migration requirements from 1.0.0-alpha09 to 1.0.0-alpha10
+### Required changes from 1.0.0-alpha09 to the entry point API
 
 When focusing solely on the mandatory API changes required by the new
 `@AppFunctionServiceEntryPoint` architecture, the migration consists of four
@@ -29,7 +30,7 @@ strict requirements that you must complete:
 
 1. **Build dependency consolidation** : Remove the merged `appfunctions-service` dependency while retaining core `appfunctions` and the KSP compiler.
 2. **Service wrapper creation** : Replace the legacy `AppFunctionConfiguration.Provider` on the `Application` class with an abstract class extending `AppFunctionService`, annotated with `@AppFunctionServiceEntryPoint`.
-3. **Annotation and context decoupling** : Move `@AppFunction` annotations to the new wrapper methods and drop `AppFunctionContext` parameters because `AppFunctionService` inherits directly from `Context`.
+3. **Annotation and context decoupling** : Move AppFunction annotations to the new wrapper methods as `@AppFunctionDeclaration`. Drop `AppFunctionContext` parameters, because `AppFunctionService` inherits directly from `Context`.
 4. **Manifest registration** : Register the KSP-generated concrete service in `AndroidManifest.xml` with `BIND_APP_FUNCTION_SERVICE`, the `AppFunctionService` intent filter, and metadata property tags.
 
 *** ** * ** ***
@@ -43,24 +44,28 @@ files like `build.gradle.kts` and version catalog like `libs.versions.toml`. In
 version `1.0.0-alpha10`, all core service capabilities are consolidated directly
 within the main `appfunctions` artifact.
 
-    // build.gradle.kts
-    dependencies {
-        implementation(libs.androidx.appfunctions)
-    -   implementation(libs.androidx.appfunctions.service)
-        ksp(libs.androidx.appfunctions.compiler)
-    }
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation(libs.androidx.appfunctions)
+-   implementation(libs.androidx.appfunctions.service)
+    ksp(libs.androidx.appfunctions.compiler)
+}
+```
 
-    # libs.versions.toml
-    [versions]
-    appfunctions = "1.0.0-alpha10"
+```toml
+# libs.versions.toml
+[versions]
+appfunctions = "1.0.0-beta01"
 
-    [libraries]
-    androidx-appfunctions = { module = "androidx.appfunctions:appfunctions", version.ref = "appfunctions" }
-    -   androidx-appfunctions-service = { module = "androidx.appfunctions:appfunctions-service", version.ref = "appfunctions" }
-    androidx-appfunctions-compiler = { module = "androidx.appfunctions:appfunctions-compiler", version.ref = "appfunctions" }
+[libraries]
+androidx-appfunctions = { module = "androidx.appfunctions:appfunctions", version.ref = "appfunctions" }
+-   androidx-appfunctions-service = { module = "androidx.appfunctions:appfunctions-service", version.ref = "appfunctions" }
+androidx-appfunctions-compiler = { module = "androidx.appfunctions:appfunctions-compiler", version.ref = "appfunctions" }
+```
 
 > [!NOTE]
-> **Note:** If another dependency in your project uses snapshot builds like `1.0.0-SNAPSHOT` or custom snapshot repositories from `https://androidx.dev/snapshots/...`, preserve your custom snapshot repository configuration in `settings.gradle.kts`. Otherwise, standard Google Maven repositories resolve `1.0.0-alpha10` directly.
+> **Note:** If another dependency in your project uses snapshot builds like `1.0.0-SNAPSHOT` or custom snapshot repositories from `https://androidx.dev/snapshots/...`, preserve your custom snapshot repository configuration in `settings.gradle.kts`. Otherwise, standard Google Maven repositories resolve `1.0.0-beta01` directly.
 
 *** ** * ** ***
 
@@ -87,7 +92,7 @@ repositories or use cases using standard `@Inject internal lateinit var`:
 abstract class BaseAppFunctionService : AppFunctionService() {
     @Inject internal lateinit var messageRepository: MessageRepository
 
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     internal suspend fun send(
         name: String,
         endpointValue: String,
@@ -124,7 +129,7 @@ abstract class ServiceLocatorBaseAppFunctionService : AppFunctionService() {
     // Or with Koin / alternative DI locators:
     // private val messageRepository: MessageRepository by inject()
 
-    @AppFunction(isDescribedByKDoc = true)
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
     internal suspend fun send(
         name: String,
         endpointValue: String,
@@ -149,8 +154,10 @@ method requires an Android `Context`, for example when constructing a
 `PendingIntent`, access `this` directly from your `AppFunctionService` wrapper
 because the wrapper inherently extends `android.content.Context`.
 
-    -   suspend fun makeCall(appFunctionContext: AppFunctionContext, contactName: String?): PendingIntent
-    +   suspend fun makeCall(contactName: String?): PendingIntent
+```diff
+-   suspend fun makeCall(appFunctionContext: AppFunctionContext, contactName: String?): PendingIntent
++   suspend fun makeCall(contactName: String?): PendingIntent
+```
 
 *** ** * ** ***
 
@@ -159,19 +166,21 @@ because the wrapper inherently extends `android.content.Context`.
 Update your `Application` class by removing
 `AppFunctionConfiguration.Provider` and its associated builder entry points:
 
-    -   abstract class BaseChatApplication : Application(), AppFunctionConfiguration.Provider { ... }
-    +   abstract class BaseChatApplication : Application()
+```diff
+-   abstract class BaseChatApplication : Application(), AppFunctionConfiguration.Provider { ... }
++   abstract class BaseChatApplication : Application()
+```
 
 *** ** * ** ***
 
 ### Avoid redundant abstraction layers
 
-Don't attempt to make an `AppFunction` class or method OS-agnostic---AppFunctions
+Don't attempt to make an AppFunction class or method OS-agnostic---AppFunctions
 are inherently part of the Android platform integration through the
 `androidx.appfunctions` package. For architectural cleanliness, use existing
 application functionality, such as existing repositories, use cases, or domain
-orchestrators, to execute the behavior within your `@AppFunction` methods rather
-than creating redundant abstraction layers around the OS service.
+orchestrators, to execute the behavior within the `@AppFunctionDeclaration`
+methods rather than creating redundant abstraction layers around the OS service.
 
 *** ** * ** ***
 
@@ -205,6 +214,29 @@ within the `<application>` tag:
 
 <br />
 
+Set `android:name` to the class that KSP generates from `serviceName`, and
+the `android.app.appfunctions.v2` value to `appFunctionXmlFileName` plus
+`.xml`.
+
+*** ** * ** ***
+
+## Upgrade to 1.0.0-beta01
+
+Apply these changes to every app that uses `@AppFunctionServiceEntryPoint`,
+including apps migrated with the preceding steps:
+
+1. **Annotation rename** : Replace each `@AppFunction` annotation with `@AppFunctionDeclaration`, and update its import. Match the whole name, so annotations such as `@AppFunctionSerializable` stay unchanged. Version 1.0.0-alpha13 renamed this annotation.
+2. **Explicit KDoc flag** : Set `isDescribedByKDoc = true` on every `@AppFunctionDeclaration`, `@AppFunctionSerializable`, and `@AppFunctionSignature`. Since 1.0.0-beta01, it has no default value.
+3. **App description attribute** : In `app_metadata.xml`, rename `appfn:description` to `appfn:instructions`.
+4. **Imports** : Import `AppFunctionName` from `androidx.appfunctions`, not from `androidx.appfunctions.metadata`.
+5. **Removed APIs** : Remove remaining uses of `AppFunctionConfiguration` and `AppFunctionContext`. Version 1.0.0-alpha12 removed them.
+6. **Other API changes** : If the app uses these APIs, update them:
+   - `@AppFunctionStringValueConstraint`: Replace regular expression patterns with `patternMatchers` (1.0.0-beta01).
+   - `AppFunctionResourceContainer` and `AppFunctionTextResource`: Opt in with `@OptIn(ExperimentalAppFunctionsApi::class)` (1.0.0-beta01).
+   - `AppFunctionAppMetadata.description`: Read `instructions` instead (1.0.0-beta01).
+   - `AppFunctionMetadata.isEnabled`: Call `AppFunctionManager.getAppFunctionStates` instead (1.0.0-alpha11).
+   - `ObserveAppFunctionsEvent`: Use `AppFunctionsChangeEvent` instead (1.0.0-alpha13).
+
 *** ** * ** ***
 
 ## Verification and troubleshooting
@@ -214,8 +246,8 @@ within the `<application>` tag:
 2. **Verify AppSearch discovery / indexing** : Run the following ADB command to
    confirm the OS successfully discovered and indexed your functions:
    `bash
-   adb shell cmd app_function list-app-functions`
-   *If your package doesn't appear, confirm that `android.app.appfunctions.v2`
+   adb shell cmd app_function list-app-functions --package com.example.chatapp`
+   *If the output is empty, confirm that `android.app.appfunctions.v2`
    matches the exact asset name generated in `assets/`.*
 
 3. **Verify execution using ADB** :

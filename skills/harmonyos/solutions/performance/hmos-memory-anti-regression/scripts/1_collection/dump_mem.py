@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent / "../_lib"))
+from encoding import *  # noqa: E402  # Force UTF-8 output (fixes Windows GBK garbled text)
 from tool_finder import find_hdc, hdc_env
 
 def run_hdc_shell(hdc, device_cmd, timeout=120):
@@ -218,6 +219,38 @@ def main():
             print(f"   影响: 混合模式 SO_SIZE 归因不可用, topdown 分析仍可正常运行")
         else:
             print(f"  /proc/{main_pid}/smaps 采集异常 (输出无有效 VMA), 请排查设备状态")
+
+    # ========================
+    # hilog (供 ArkWeb 案例匹配: CreateNWeb/NWebImpl::OnDestroy 事件计数)
+    # ========================
+    print("====================================================================================")
+    print("正在保存 hilog (应用日志，供 ArkWeb 案例匹配使用)")
+    print("↓")
+    folder = root_folder / "hilog"
+    ensure_dir(folder)
+    hilog_file = folder / f"hilog_{main_pid}_{timestamp}_{search_name}_{case}.txt"
+    # hilog -x 非阻塞读取缓冲区所有日志后退出（含系统级 Web 引擎事件，不按 PID 过滤）
+    hilog_stdout = run_hdc_shell_to_file(hdc, "hilog -x", hilog_file, timeout=30)
+    hilog_lines = len((hilog_stdout or "").splitlines())
+    print(f"  hilog 已保存到: {hilog_file} ({hilog_lines} 行)")
+
+    # ========================
+    # 窗口/组件树 dump (供 ArkWeb 案例匹配: 当前显示的 Web 组件数 b)
+    # ========================
+    print("====================================================================================")
+    print("正在保存窗口/组件树 dump (供 ArkWeb 案例匹配使用)")
+    print("↓")
+    folder = root_folder / "window_dump"
+    ensure_dir(folder)
+    # WindowManagerService -a "-a" dump all window information
+    win_file = folder / f"window_{main_pid}_{timestamp}_{search_name}_{case}.txt"
+    win_stdout = run_hdc_shell_to_file(
+        hdc, 'hidumper -s WindowManagerService -a "-a"', win_file, timeout=30)
+    win_lines = len((win_stdout or "").splitlines())
+    if win_lines > 0:
+        print(f"  窗口 dump 已保存到: {win_file} ({win_lines} 行)")
+    else:
+        print(f"  窗口 dump 为空 (设备可能不支持 WindowManagerService dump)")
 
 if __name__ == "__main__":
     main()

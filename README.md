@@ -28,9 +28,9 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 128 个）
+## Skill 清单（共 169 个）
 
-## 一、mattpocock 通用 Skills（38 个，description 已中文化）
+## 一、mattpocock 通用 Skills（39 个，description 已中文化）
 
 ### Engineering — 工程类（20）
 
@@ -87,7 +87,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/scaffold-exercises`](./skills/misc/scaffold-exercises/SKILL.md) | 模型/用户调用 | 创建带章节、题目、解答和讲解的练习目录结构，且能通过 lint。当用户想脚手架化练习、创建练习桩，或搭建新课程章节时使用。 |
 | [`/setup-pre-commit`](./skills/misc/setup-pre-commit/SKILL.md) | 模型/用户调用 | 在当前仓库设置带 lint-staged（Prettier）、类型检查和测试的 Husky pre-commit 钩子。当用户想添加 pre-commit 钩子、设置 Husky、配置 lint-staged，或在提交时加入格式化/类型检查/测试时使用。 |
 
-### In-progress — 进行中（7）
+### In-progress — 进行中（8）
 
 *尚未定稿的草稿*
 
@@ -98,11 +98,12 @@ npx skills@latest add IsKenKenYa/skills
 | [`/claude-handoff`](./skills/in-progress/claude-handoff/SKILL.md) | 用户调用 | 把当前对话移交给一个全新的后台代理，让它立即接手工作。 |
 | [`/loop-me`](./skills/in-progress/loop-me/SKILL.md) | 用户调用 | 在本工作区内，就我想构建的工作流的规格（spec）对我进行 grill 访谈。 |
 | [`/setup-ts-deep-modules`](./skills/in-progress/setup-ts-deep-modules/SKILL.md) | 用户调用 | 把 dependency-cruiser 接入 TypeScript 仓库，让每个包都成为深层模块（deep module）——实现隐藏在子文件夹中，只能通过入口文件访问。用户调用。 |
+| [`/software-factory`](./skills/in-progress/software-factory/SKILL.md) | 用户调用 | 设计「软件工厂」（software factory）的共享语言：它运行的任务与接入的服务。 |
 | [`/writing-beats`](./skills/in-progress/writing-beats/SKILL.md) | 用户调用 | 写作·利用（exploit）：把原始素材组装成一段节拍（beat）之旅，在每个节拍依赖某个术语之前先把它讲透。 |
 | [`/writing-fragments`](./skills/in-progress/writing-fragments/SKILL.md) | 用户调用 | 写作·探索（explore）：挖掘原始片段，暂不构建结构。 |
 | [`/writing-shape`](./skills/in-progress/writing-shape/SKILL.md) | 用户调用 | 写作·利用（exploit）：把原始素材逐段塑造成文章。 |
 
-## 二、HarmonyOS（鸿蒙）Skills（63 个，上游原生中文原样保留）
+## 二、HarmonyOS（鸿蒙）Skills（91 个，上游原生中文原样保留）
 
 ### design — 设计（1）
 
@@ -111,11 +112,14 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/hmos-design-visual-mobile`](./skills/harmonyos/design/mobile/hmos-design-visual-mobile/SKILL.md) | HarmonyOS 移动端页面视觉还原技能。基于仓库内设计规范文档与组件模板，生成符合 HarmonyOS Design Token 标准的高保真移动端 HTML 页面。触发场景：(1) 用户要求生成/还原 HarmonyOS 移动端页面 (2) 用户提供设计稿/截图/参考图，要求还原为 HarmonyOS 风格 HTML 页面 (3) 用户提到"视觉还原"/"高保真页面"/"移动端页面"并涉及 HarmonyOS，用于需要生成符合鸿蒙规范的移动端设计稿的场景 |
 
-### solutions — 解决方案（18）
+### solutions — 解决方案（22）
 
 
 | skill | 中文介绍 |
 |-------|---------|
+| [`/hmos-app-continuity-skill`](./skills/harmonyos/solutions/feature-integration/hmos-app-continuity-skill/SKILL.md) | This guide directs the incremental integration of HarmonyOS (鸿蒙 / ArkTS) app continuation (应用接续 / App Continuity), enabling users to resume the same task on a different device. It is applicable when planning, adding, extending, or fixing cross-device state migration for pages, navigation stacks, forms, editors, or large data, as well as when assessing the completeness of an existing implementation or identifying where it fails. |
+| [`/hmos-share-kit-gestures-share`](./skills/harmonyos/solutions/feature-integration/hmos-share-kit-gestures-share/SKILL.md) | 为 HarmonyOS 工程接入 Share Kit 隔空传送文件 / App Linking 链接，支持首次接入与增量升级。用户提到隔空传送、gesturesShare、一抓一放或要求接入时使用。 |
+| [`/hmos-share-kit-knock-share`](./skills/harmonyos/solutions/feature-integration/hmos-share-kit-knock-share/SKILL.md) | Entry skill for HarmonyOS Share Kit knock share. Use when requests involve knock share, touch-to-share file or link transfer. This skill helps project quickly integrate knockShare, inject manager file, register lifecycle listener, build SharedData for files or App Linking, and judge compatible API versions. |
 | [`/hmos-multidevice-avoid-areas`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-avoid-areas/SKILL.md) | Handle HarmonyOS avoid-area adaptation through a declarative scene and resource index. Use when the task involves safe area expansion, status bar or navigation bar avoidance, notch or cutout handling, immersive full-screen layouts, or soft keyboard overlap handling. |
 | [`/hmos-multidevice-fold-state`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-fold-state/SKILL.md) | HarmonyOS foldable-device adaptation skill for requirements, development, bug-fix, and verification phases. Activate when the task involves fold status detection, hover-mode split-screen layouts, crease avoidance, fold continuity, multi-fold form-factor mapping (e.g. F/M/G), inner/outer screen ratio differences, or fold-related issue remediation. |
 | [`/hmos-multidevice-hardware-access`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-hardware-access/SKILL.md) | Handle HarmonyOS hardware-capability adaptation through a declarative scene and resource index. Use when the task involves camera selection, camera rotation/stride/foldable adaptation, canIUse or SysCap checks, hardware fallback strategy, or multi-device hardware behavior differences. |
@@ -123,37 +127,53 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-multidevice-natural-orientation`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-natural-orientation/SKILL.md) | 鸿蒙 HarmonyOS 屏幕方向与旋转相关的需求分析、开发实现、问题修复和功能验证。当任务涉及以下场景时使用：setPreferredOrientation、屏幕旋转(rotation)、屏幕方向(orientation)、自然方向、折叠屏方向、三折叠G态、follow_desktop、视频横竖屏切换、短视频自适应旋转、多设备方向策略、module.json5方向配置、方向监听、旋转检测、分屏旋转、折叠屏展开态方向、窗口方向设置、方向Bug修复。 |
 | [`/hmos-multidevice-scenario-entry`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-scenario-entry/SKILL.md) | Entry skill for HarmonyOS multi-device adaptation. Use when the task broadly concerns HarmonyOS multi-device adaptation, the task involves foldable device verification or when the correct scenario is still unclear. This skill classifies the request by phase and scenario type, then routes to one or more scenario files for screen and window size, fold state, avoid areas, interaction methods, natural orientation, or hardware access. |
 | [`/hmos-multidevice-screen-window-size`](./skills/harmonyos/solutions/multi-device/hmos-multidevice-screen-window-size/SKILL.md) | HarmonyOS 多设备屏幕窗口尺寸适配。当任务涉及以下任一场景时必须调用：（1）比价与分屏：比价/比价场景/比价窗口/价格对比/创建新窗口/多窗口并行/双窗口；（2）平行视界与分栏：平行视界/EasyGo/easy_go.json/分栏效果/分栏布局/列表详情分栏/navigationSplit/routerSplit/Navigation分栏；（3）响应式与自适应布局：响应式布局/自适应布局/断点/GridRow/GridCol/WidthBreakpoint/HeightBreakpoint/重复布局/分栏布局/挪移布局/缩进布局；（4）窗口监听：windowSizeChange/窗口尺寸变化/布局未同步更新；（5）组件自适应：layoutWeight/Blank/aspectRatio/displayPriority/FlexWrap/拉伸/均分/隐藏/折行/缩放/占比/百分比宽度；（6）多设备适配：手机/平板/2in1/穿戴/折叠屏/双折/三折/大屏/横竖屏/密度/字体缩放/滚动延伸；（7）布局异常：截断/留白/溢出/遮挡/错位/对齐异常/GridRow不降列/断点不切换/图片变形/压缩。不适用于：FoldStatus、hover、折痕、安全区、与尺寸无关的调整。 |
-| [`/hmos-memory-anti-regression`](./skills/harmonyos/solutions/performance/hmos-memory-anti-regression/SKILL.md) | HarmonyOS 应用内存防劣化分析。对同一应用的两个版本分别执行数据采集和归因分析，通过 topdown 对比识别劣化源，对 Top10 劣化 SO 逐个按其 type_name 分发深度分析步骤 3/4/5（该 SO 含 ARKTS_HEAP→3+4，不全是 SO_SIZE/HAP→4，含 SO_SIZE/HAP→5，全是 SO_SIZE/HAP→仅5），综合输出总体防劣化分析报告。当用户提到采集htrace、分析内存、冷启动、内存对比、防劣化、topdown、汇总表、showmap、smaps、hidumper、hiprofiler、内存归因、内存劣化、heapsnapshot、nativehook、arkts heap、native heap、版本对比时使用此技能。 |
+| [`/harmonyos-memory-optimization-solution`](./skills/harmonyos/solutions/performance/harmonyos-memory-optimization-solution/SKILL.md) | 优化 HarmonyOS 应用内存以降低内存峰值与冗余占用，覆盖四大类场景：① 离线 Web 组件（预渲染停止、离开页面复用、退后台释放、低端机预创建控制）；② ArkUI 组件（Image 降采样、长列表懒加载、LazyForEach/Repeat/@Reusable 内存优化策略、Navigation 路由栈、Tabs 预加载、cachedCount、容器嵌套、XComponent Surface 释放）；③ SO/HAP 包体积（编译选项裁剪、abc 字节码去冗余）；④ 并发（Worker 收敛复用、taskpool 共享传输）。当涉及 Web 组件预渲染或内存释放、图片/长列表内存峰值高、缓存池或复用池内存过高、so Pss 增长、hap/abc 体积增长、worker 实例过多、taskpool 大数据拷贝翻倍等场景时调用。 |
+| [`/hmos-memory-anti-regression`](./skills/harmonyos/solutions/performance/hmos-memory-anti-regression/SKILL.md) | HarmonyOS 应用内存防劣化分析。对同一应用的两个版本分别执行数据采集和归因分析，通过 topdown 对比识别劣化源，对 Top10 劣化 SO 按 type_name 分发 ArkTS Heap / Native Heap / SO_SIZE 三类深度分析，综合输出防劣化报告并匹配案例库。当用户提到 htrace 采集、内存对比、防劣化、topdown、smaps、hidumper、hiprofiler、heapsnapshot、native heap、arkts heap、版本对比等场景时使用此技能。 |
 | [`/hmos-memory-tier-optimizer`](./skills/harmonyos/solutions/performance/hmos-memory-tier-optimizer/SKILL.md) | HarmonyOS 应用低端机内存分档优化 Skill，覆盖内存采集、数据分析、分档候选方案、用户确认、代码修改与审查、构建安装、优化后复测、patch 与报告生成全闭环。当用户提供 HarmonyOS 应用内存占用过高、需要在低端机上做内存分档降级、要求优化前后内存对比、或需要执行完整内存优化闭环时，必须使用此技能。即使用户只说"帮我优化这个应用的内存"、"低端机内存超标怎么降"、"做个内存前后对比"，也应立即触发此技能。 |
 | [`/hmos-apifault-analysis`](./skills/harmonyos/solutions/stability/hmos-apifault-analysis/SKILL.md) | 定位开发者问题。当遇到 API 调用失败或报错、错误码（如 5400xxx、801、9200 等）、crash/freeze 日志（hilog、HiviewDFX）、或需要根据日志与源码定位问题根因时使用——即使用户没明说要做诊断也应触发。输出结构化诊断报告（错误码映射 + 根因候选 + 代码修改建议）。 |
 | [`/hmos-appfreeze-analysis`](./skills/harmonyos/solutions/stability/hmos-appfreeze-analysis/SKILL.md) | DFX Skills，自动分析 HarmonyOS / OpenHarmony Freeze（冻屏/卡死）故障日志，定位根因并输出完整证据链。 当用户提供完整的faultlog 文件和采样栈文件、询问应用无响应/卡死/ANR 问题的根因， 或上传包含 APPFREEZE / INPUT_BLOCK / LIFECYCLE_TIMEOUT / THREAD_BLOCK_6S / BUSSINESS_THREAD_BLOCK_6S / BUSINESS_THREAD_BLOCK_6S 等关键字的日志时，必须使用此技能。 即使用户只说"帮我分析这个 freeze 日志"、"应用卡死了是什么原因"，也应立即触发此技能。 技能会按优先级逐步排除整机低内存、高负载、热限频等系统级异常，再深入分析线程堆栈、 Binder 通信链路、EventHandler 队列，最终输出唯一根因模块与修复建议。  |
 | [`/hmos-cppcrash-analysis`](./skills/harmonyos/solutions/stability/hmos-cppcrash-analysis/SKILL.md) | DFX Skills，分析 HarmonyOS/OpenHarmony 应用的 CppCrash（Native 层崩溃）日志， 基于信号、寄存器、Native 调用栈、符号和内存证据定位根因并给出修复建议。 当输入包含 cppcrash、NativeCrash、Reason:Signal、Fault thread info、Registers、 Memory near registers、Native .so 调用栈、SIGSEGV/SIGABRT/SIGILL/SIGBUS/SIGFPE， 或 GWP-ASan 报告时使用。若用户只说“应用崩溃/闪退”但没有 JS 或 Native 证据， 先识别日志类型；仅在确认是 Native Crash 后使用本技能。 |
+| [`/hmos-dfx-analyzer`](./skills/harmonyos/solutions/stability/hmos-dfx-analyzer/SKILL.md) | DFX 故障分析主 Skill：输入归一化、确定性故障分诊、候选仲裁、专项 Analyzer 路由与报告交付。 由 dfx subagent 在隔离子会话中加载执行（显式 /analyze 命令或主 Agent 自然语言委派两个入口）， 也供第三方宿主直接加载。受理：HarmonyOS 应用故障——闪退/崩溃/白屏（含进程未退出的 非崩溃型白屏/空白页）/冻屏/卡死/无响应/ANR，CppCrash、JSCrash、AppFreeze，faultlog/崩溃日志 ——无论要求修复、分析还是仅描述症状，有日志与否。一般编译错误、常规功能开发、静态检查问题、 HiLog 流水、内存泄漏/OOM/性能问题不适用。  |
 | [`/hmos-fdleak-analysis`](./skills/harmonyos/solutions/stability/hmos-fdleak-analysis/SKILL.md) | DFX Skills，分析 FD Leak、句柄泄漏和文件描述符泄漏日志，提取泄漏快照、句柄类型与目录分布、专项维测明细及 FdTrack 申请栈热点，并依据证据链定位根因。当用户提供 `[pid]_fd_leak.txt`、`RESOURCE_OVERLIMIT_[TIMESTAMP]_[PID].log`，或输入包含 `leaked fd nums`、`Leaked fd Top 10`、`LOGGER_MEMCHECK_FD_STACK_INFO`、`FdTrack Stack` 时使用。 |
 | [`/hmos-jscrash-analysis`](./skills/harmonyos/solutions/stability/hmos-jscrash-analysis/SKILL.md) | DFX Skills，分析 HarmonyOS/OpenHarmony 应用的 JS Crash（ArkTS/JS 层闪退）faultlogger 日志， 按 Reason、Error name、Error message、Error code 和 Stacktrace 定位根因，支持使用 SourceMap 反解 release/混淆堆栈并给出修复建议。 当用户提供包含 JS Crash、Reason:Error/TypeError/SyntaxError/ReferenceError/RangeError/ BusinessError/OutOfMemoryError/URIError/TerminationError/AggregateError、Error message、 Stacktrace、HybridStack、faultlogger、Cannot get SourceMap info 等字段的日志， 或询问 HarmonyOS 应用启动/点击后闪退、ArkTS 崩溃、JS Crash 怎么定位、OOM 闪退原因时， 必须使用此技能。确认崩溃原因为 OOM 且用户同时提供 rawheap 或 heapsnapshot 快照时， 必须继续调用 jsleak-analysis Skill 分析快照。即使用户只说“帮分析这个 JS Crash 日志” “应用闪退了是什么原因”“ArkTS 报错导致崩溃怎么修”，也应立即触发此技能；如果日志是 cppcrash、 freeze，或者用户询问的是原生/C++ 层崩溃，且没有 JS/ArkTS 错误字段，则不该调用此技能。  |
 | [`/hmos-jsleak-analysis`](./skills/harmonyos/solutions/stability/hmos-jsleak-analysis/SKILL.md) | DFX Skills，分析 HarmonyOS/ArkTS rawheap、heapsnapshot 和 Heap Cluster 报告，识别疑似 JS 内存泄漏；支持 rawheap 转换、单快照聚类、目录批处理、多快照总榜、双版本增长对比、测试版对象差值对比，以及 GlobalHandler对象关联native堆栈。当用户提供 .rawheap、.heapsnapshot、聚类报告、native hook DB，或 rawheap + htrace + js_map 三合一日志，要求运行 heap_cluster、多快照、版本对比或 GlobalHandler对象关联native堆栈，或询问哪些对象未释放、内存为何增长时使用。 |
 | [`/hmos-memleak-analysis`](./skills/harmonyos/solutions/stability/hmos-memleak-analysis/SKILL.md) | Analyzes HarmonyOS source code (ArkTS, JS, C/C++) to detect memory leaks.Use when (1) Performing static code analysis to catch potential leaks before deployment, (2) Reviewing PRs involving complex UI lifecycles or NAPI implementations,(3) Developing NAPI bridges between ArkTS and C++. Maps code to official specifications and applies heuristics for NAPI reference management and lifecycle synchronization. |
 | [`/hmos-native-memleak-analysis`](./skills/harmonyos/solutions/stability/hmos-native-memleak-analysis/SKILL.md) | 自动分析 HarmonyOS / OpenHarmony Native内存泄漏问题，基于 sample 采样文件、smaps 文件、profiler 火焰图等信息定位泄漏根因并输出完整证据链。 当用户提供 sample 采样文件、smaps 文件、profiler 火焰图、NMD 数据，或询问应用内存泄漏/内存增长/OOM问题的根因 即使用户只说"帮我分析这个内存泄漏"、"应用内存一直涨"、"native泄漏分析"、"PSS泄漏"、"DMA泄漏"、"GPU泄漏"，也应立即触发此技能。  |
-| [`/hmos-runtime-fix-skill`](./skills/harmonyos/solutions/stability/hmos-runtime-fix-skill/SKILL.md) | Load for ArkTS/JavaScript jscrash, runtime crash, uncaught exception, stack trace, faultlog, or hilog diagnosis. Also load when the app 闪退/崩溃/白屏, exits after 点击/启动/launch, or build succeeds but runtime fails (no compile error). Use before broad Read/Glob on crash-only tasks. |
 
-### development — 开发（31）
+### development — 开发（51）
 
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/hmos-ability-insight-intent-generator`](./skills/harmonyos/development/ability/hmos-ability-insight-intent-generator/SKILL.md) | Generates OpenHarmony intent decorator code from user requirements with automatic decorator selection. Use when the user mentions "intent", "@InsightIntent", or needs to integrate app functionality with AI entry points. Provides decorator selection decision tree, parameter validation, build config checking, and compilation verification with auto-fix.  |
-| [`/hmos-account-kit-quicklogin-client`](./skills/harmonyos/development/account-kit/hmos-account-kit-quicklogin-client/SKILL.md) | 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成。支持获取匿名手机号后一键登录页面跳转、失败Toast提示等。在用户提及"华为账号一键登录"、"接入华为账号一键登录"、"Account Kit一键登录"或要求实现华为账号一键登录功能时使用（当前仅支持原生ArkTS框架） |
+| [`/hmos-account-kit-login-api-client`](./skills/harmonyos/development/account-kit/hmos-account-kit-login-api-client/SKILL.md) | 基于 HarmonyOS Account Kit 提供华为自定义按钮登录客户端接入指引。提供自定义登录按钮（纯图标/纯文本/图文三种模式）、Authorization Code 获取及 Union ID 服务端请求框架。**当用户需要在现有登录页嵌入华为登录自定义按钮（非标准按钮，需自定义按钮外观）时使用。** |
+| [`/hmos-account-kit-login-button-client`](./skills/harmonyos/development/account-kit/hmos-account-kit-login-button-client/SKILL.md) | 为尚未接入华为账号登录功能的原生 ArkTS HarmonyOS 应用接入华为 Account Kit"华为账号登录"/"华为按钮登录"功能，提供登录按钮入口、账号登录页面和用户协议页面，在获得授权码后请求应用服务端获取 Union ID，并支持根据 Prompt 配置服务端域名、登录按钮样式、颜色及应用图标。**当用户需要为 HarmonyOS 应用接入华为账号标准按钮登录（使用华为提供的标准登录按钮组件，而非自定义按钮）时使用；纯图标按钮不适用。** |
+| [`/hmos-account-kit-quicklogin-client`](./skills/harmonyos/development/account-kit/hmos-account-kit-quicklogin-client/SKILL.md) | 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成。支持获取匿名手机号后一键登录页面跳转、失败Toast提示等。在用户提及"接入华为账号一键登录"、"Account Kit一键登录"或要求实现华为账号一键登录功能时使用（当前仅支持原生ArkTS框架） |
 | [`/hmos-ads-kit-access`](./skills/harmonyos/development/ads-kit/hmos-ads-kit-access/SKILL.md) | HarmonyOS Ads Kit 广告服务开发指南 — 涵盖6种广告形式(横幅/原生/激励/插屏/开屏/贴片)的完整接入文档、代码模板、自动化场景识别与植入决策引擎。触发关键词：广告接入, Ads Kit, 流量变现, 横幅广告, 原生广告, 激励广告, 插屏广告, 开屏广告, 贴片广告, OAID, 广告自动化接入, 广告植入, RTB, 广告错误排查 |
 | [`/hmos-arkts-deprecated-interface-checker`](./skills/harmonyos/development/arkts/hmos-arkts-deprecated-interface-checker/SKILL.md) | 检查 HarmonyOS 项目中的废弃 SDK 接口并提供修复建议。当需要清理废弃 API、升级 API 版本、优化代码质量或进行静态语法检查时使用。提供详细的迁移方案、修复优先级分类和代码示例。 |
 | [`/hmos-arkts-knowledge-retriever`](./skills/harmonyos/development/arkts/hmos-arkts-knowledge-retriever/SKILL.md) | Retrieve grounded ArkTS references for pure non-UI ArkTS work and ArkTS API usage. Use this skill whenever the user is writing, reviewing, testing, validating, running, or debugging ArkTS code and the answer should be backed by repository sources such as `docs/ArkTS-Language-Guide/`, `docs/ArkTS-API-Reference/`, the linter-derived `docs/linter/ArkTS_Syntax_Knowledge_From_Linter.md`, and the bundled lightweight lint tool docs `docs/linter/linter-cli.md` plus `linter-cli/` instead of model memory. This skill is especially useful for syntax rules, ArkTS-specific restrictions, API/module/member lookup, common-library usage, lightweight lint workflow lookup, runnable example lookup, snippet validation context, and figuring out which repository section to trust before suggesting code or fixes. |
+| [`/hmos-arkts-napi-side-effect-fixer`](./skills/harmonyos/development/arkts/hmos-arkts-napi-side-effect-fixer/SKILL.md) | 鸿蒙 ArkTS NAPI 模块 import（dlopen）副作用端到端技能：扫描识别（prescan 初筛/深析 + rulebook 语义判定，输出问题行号、白话判定原因）＋ 整改落地（类别2 加载期重初始化全局单例改惰性访问器；类别1 注册函数违规业务逻辑迁显式 init() 导出）＋ 回归验证（残留清零 + 编译运行验证）。当需要审查 NAPI so import 副作用、排查启动耗时劣化/多页面全局状态不一致、检出的副作用问题需要整改、或整改后回归验证时使用。 |
 | [`/hmos-arkts-syntax-checker`](./skills/harmonyos/development/arkts/hmos-arkts-syntax-checker/SKILL.md) | 检查并修复 HarmonyOS 项目的 ArkTS 语法错误，自动化构建项目。当需要编译项目、修复编译错误、生成 HAP/App 产物时使用。提供静态语法检查、错误自动修复、循环构建直到成功的完整工作流程。支持错误优先级分类（P0/P1/P2）、最大重试机制、构建产物自动定位。 |
-| [`/arkuix-interface-scan`](./skills/harmonyos/development/arkui-x/arkuix-interface-scan/SKILL.md) | 扫描 OpenHarmony Stage 工程全部 @ohos.*/@hms.* 接口引用与 Native NDK C-API 引用（头文件包含与 OH_* 符号），按 ArkUI-X 适配性六分类（完整直用/有损直用/等价桥接/降级桥接/平台裁剪/业务决策，unknown 兜底）产出 ScanReport(JSON) 与迁移建议报告(Markdown)。开发者在评估 OH 应用迁移 ArkUI-X、需要接口适配清单或迁移画像时使用；FA 模型工程将被告知不支持。 |
-| [`/arkuix-migration-skeleton`](./skills/harmonyos/development/arkui-x/arkuix-migration-skeleton/SKILL.md) | 为 OpenHarmony Stage 工程生成 ArkUI-X 跨平台骨架（按平台选项的 Android/iOS 壳 + 共享 ArkTS）。提供 modify（经 ace tool modify 就地改造原工程）与 new（ace create 新建 scaffold 后迁入源码）双模式；消费 F2 ScanReport 判定工程模型（FA 直接拒绝）；检测 Android/iOS 编译环境与 ArkUI-X SDK（API 24+ 门槛）并生成编译验证辅助。开发者在 OH 应用迁移 ArkUI-X 需要搭建跨平台工程结构时使用。 |
+| [`/arkuix-bridge-codegen`](./skills/harmonyos/development/arkui-x/arkuix-bridge-codegen/SKILL.md) | 消费 F2 ScanReport 的 ③/④ 分类，为每个需桥接接口生成六件套（①Interface 契约 ②Local HarmonyOS class ③ArkUIX 桥接 class ④Android BridgePlugin ⑤iOS BridgePlugin ⑥Impl 平台分发器——一码三平台）与 BridgeArtifact(JSON)+报告(MD)。OH 应用迁移 ArkUI-X 完成扫描后需生成跨平台桥接骨架时使用；只生成骨架/胶水，平台业务以 TODO 占位待补，增量再生成不覆盖手改区。 |
+| [`/arkuix-flowlog-diagnose-skill`](./skills/harmonyos/development/arkui-x/arkuix-flowlog-diagnose-skill/SKILL.md) | Use when diagnosing ArkUI-X (Android/iOS) white screen, jank, startup slowness, or crash from developer logcat/os_log/hilog. Analyzes 4 dimensions — lifecycle anchor coverage (22 anchors across Java/JNI/native/shared) / FAQ pattern grep (12 log signatures + 4 config fallbacks) / first-frame presence (F1 request + vsync) / timestamp gaps-duplicates — and outputs symptom classification → stall stage → evidence → FAQ root cause → remediation. Triggers on "白屏", "卡顿", "闪退", "启动慢", "ArkUI-X 日志排查", "flowlog diagnose", or when a developer pastes ArkUI-X log fragments for triage. |
+| [`/arkuix-interface-scan`](./skills/harmonyos/development/arkui-x/arkuix-interface-scan/SKILL.md) | 扫描 OpenHarmony Stage 工程的 @ohos.*/@hms.* 接口引用与 Native NDK C-API 引用（#include 头文件 + OH_* 符号），按六分类（完整直用/有损直用/等价桥接/降级桥接/平台裁剪/业务决策，unknown 兜底）产出 scan-report.json 与 migration-advice.md。评估 OH 应用迁移 ArkUI-X 接口适配性时使用；FA 模型不支持。 |
+| [`/arkuix-migration-orchestrator`](./skills/harmonyos/development/arkui-x/arkuix-migration-orchestrator/SKILL.md) | 编排 ArkUI-X 迁移全流程：按 扫描(F2)→骨架(F1)→桥接(F3)→报告 顺序调度三 Skill，在关键决策点（骨架模式/配置迁移/new 选项/覆盖确认）与⑥业务决策项（@ohos.* 独有→删除/重新设计；@hms.*/闭源 kit→降级 OH 替代/降级平台原生桥接/自行实现/裁剪）引导开发者确认，管理 MigrationState（断点续跑/回滚，checkpoint 快照），汇总迁移报告（含源码改写工单/适用版本与环境要求+安全声明）。需端到端完成 OH 应用迁移 ArkUI-X 而非手工串联 Skill 时使用；三 Skill 各自仍可独立运行，编排器为可选增强，全程离线。 |
+| [`/arkuix-migration-skeleton`](./skills/harmonyos/development/arkui-x/arkuix-migration-skeleton/SKILL.md) | 为 OpenHarmony Stage 工程生成 ArkUI-X 跨平台骨架（Android/iOS 壳+共享 ArkTS）。modify（内置归档自修改，零 ace 依赖）/ new（归档物化或 ace create）双模式；FA 拒绝；检测编译环境。搭建跨平台工程结构时使用。 |
+| [`/arkui-imperative-node`](./skills/harmonyos/development/arkui/arkui-imperative-node/SKILL.md) | 指导开发者快速接入 ArkUI 命令式节点（BuilderNode/FrameNode/RenderNode）。当用户提到"命令式节点""BuilderNode""FrameNode""RenderNode""动态挂载""预创建组件""命令式框架""NodeContainer""NodeController""节点不显示""dispose""内存释放""@Reusable 联用""aboutToDisappear 不触发""冻结 update""文件路径""组件信息"等关键词时使用此 Skill。覆盖场景判断、API 选型、骨架代码生成、文件路径输入与上下文感知方案生成和常见问题排障五个能力。 |
+| [`/arkui-memory-analysis`](./skills/harmonyos/development/arkui/arkui-memory-analysis/SKILL.md) | 检查 ArkUI 应用源码和 inspector dump 中的 18 类内存反模式（不可见页面、Tabs 缓存/预加载/动画、长列表非懒加载、布局冗余、页面栈过深、缓存池未释放、XComponent/命令式节点未释放、Image 超大图、Canvas 渐变、ImageAnimator/Video 常驻、ArkWeb 过多、BuilderNode 销毁流程不完整、缓存池清空使能未设置）。通过关键词/正则 + 反模式匹配分析 .ets 源码，通过节点树结构分析 dump 文件，输出定性报告（Markdown）+ 标准化 schema（JSON）+ 内存测试用例构造指南。适用于内存劣化排查、不可见页面检测、缓存池泄漏诊断、组件树优化等诉求。 |
+| [`/arkui-ndk-ui-node-skill`](./skills/harmonyos/development/arkui/arkui-ndk-ui-node-skill/SKILL.md) | 识别 CAPI 混合开发方向（P1 ArkTS→C 或 P2 C→ArkTS）并生成可运行工程骨架，同时检测七类常见坑点（handle 只能当 child、napi 引用成对、dispose 防泄漏、节点类型混乱、子线程调用、descriptor 字段顺序、ComponentContent 构造签名）。适用于"ArkTS 挂 Native""Native 挂 ArkTS""CAPI 混合""NodeContent""ContentSlot""ComponentContent""OH_ArkUI_GetNodeHandleFromNapiValue""addChild""ArkUI_NodeHandle""ArkUI_NodeContentHandle"等关键词触发的跨语言 UI 节点接入场景。 |
+| [`/hmos-arkui-accessibility-skill`](./skills/harmonyos/development/arkui/hmos-arkui-accessibility-skill/SKILL.md) | Guides ArkUI/HarmonyOS screen-reader accessibility adaptation — routes demands to accessibility/focus attributes with semantic guardrails and build-profile.json5 version gating; answers knowledge-only questions (零代码). Use when the user mentions 接入/适配无障碍, 读屏/屏幕朗读, 播报文本, 聚合播报, 自定义走焦/首焦点, Canvas 自绘读不到, 支持哪些无障碍能力/默认使能/接口是什么（问答）, accessibility 编译报错, or edits .ets involving accessibility* attributes. |
+| [`/hmos-arkui-dark-light-adaptation`](./skills/harmonyos/development/arkui/hmos-arkui-dark-light-adaptation/SKILL.md) | 为 HarmonyOS/OpenHarmony ArkUI 应用接入深浅色、配置颜色资源、减少 color.json 维护、设置 WithTheme 局部主题，并检查和启用高性能深浅色切换。适用于“协助适配深色模式”“深浅色切换卡顿”“局部设置深浅色”“缩减 color.json”“减少后续颜色资源适配”等需求。 |
 | [`/hmos-arkui-develop-skill`](./skills/harmonyos/development/arkui/hmos-arkui-develop-skill/SKILL.md) | REQUIRED before writing the first .ets file of a session. Fatal gotchas list + API quick-reference for HarmonyOS ArkTS/ArkUI development. Load this skill when writing or modifying .ets files, porting TypeScript to ArkTS, or building any ArkUI page, component, layout, navigation, dialog, state-driven UI, or animation. Covers ArkTS linter rules, forbidden syntax, null safety, struct/@Component constraints, V1/V2 state management, rendering control, API parameter correctness, and UI quality. Triggers — .ets, ArkTS, ArkUI, HarmonyOS, struct, @Component, TS-to-ArkTS migration, ArkUI build error, runtime crash. |
+| [`/hmos-arkui-kit-window-floatwindow`](./skills/harmonyos/development/arkui/hmos-arkui-kit-window-floatwindow/SKILL.md) | 辅助 OpenHarmony 悬浮类需求开发：画中画（PiPWindow）、闪控窗（floatView）、闪控球（floatingBall）。覆盖能力分流、接口指南、代码查错（指出文件/行/错在哪并直接改）、按需求改用户工程里的 ArkTS、按评审稿写需求设计。Use when the user mentions 画中画、PiP、PiPWindow、闪控窗、floatView、闪控球、floatingBall、悬浮小窗、球窗绑定、防窥保护组合，或要为这三类写代码/查误用/写需求。不覆盖子窗口 createSubWindow、全局悬浮窗 TYPE_FLOAT、模态窗 TYPE_DIALOG。 |
 | [`/hmos-arkui-knowledge-retriever`](./skills/harmonyos/development/arkui/hmos-arkui-knowledge-retriever/SKILL.md) | ArkUI 知识检索层，按问题语境自动路由到 ArkTS 声明式或 NDK(C-API)知识库进行精准检索，不涉及代码生成或修改。触发场景：(1) 用户查询 ArkUI/ArkTS API 用法、参数细节或版本支持 (2) 验证组件/装饰器的正确用法 (3) 排查 ArkUI 编译错误码或运行时异常 (4) 询问状态管理 V1/V2 差异或迁移 (5) 查询 NDK / Native / C-API 接口或头文件 (6) 其他 skill 调用检索获取 API 证据。 |
 | [`/hmos-arkui-longtake-transition`](./skills/harmonyos/development/arkui/hmos-arkui-longtake-transition/SKILL.md) | 为鸿蒙(HarmonyOS)应用添加一镜到底转场效果。当用户提到一镜到底、转场动画、页面跳转动画、Navigation转场、卡片展开动画、图片查看大图动画、ezcustomtransition、自定义NavContentTransition、longtake、连续转场、沉浸式转场等关键词时，务必使用此skill。也适用于用户想要在鸿蒙应用中实现类似iOS的卡片展开、图片预览等流畅过渡效果的场景，即使他们没有明确提到"一镜到底"这个术语。 |
 | [`/hmos-arkui-mvvm-pattern`](./skills/harmonyos/development/arkui/hmos-arkui-mvvm-pattern/SKILL.md) | HarmonyOS ArkUI MVVM 架构技能。适用于：(1) 项目分层设计 Model/ViewModel/View (2) 目录结构规划 (3) 组件职责与数据流规范 (4) 视图架构检视以及整改项目为MVVM模式等场景。在有以下请求时触发：1.在ArkUI中明确要求使用MVVM架构来添加或重构功能，并要求保持架构简洁。2.明确要求使用MVVM架构创建或改进视图模型，并将逻辑从视图中移出。3.修复状态管理混乱的问题。4.提升项目可测试性，通过拆分结构降低复杂度。5.将已有项目整改为 MVVM 架构。 |
+| [`/hmos-arkui-navigation-transition`](./skills/harmonyos/development/arkui/hmos-arkui-navigation-transition/SKILL.md) | 指导开发者为 ArkUI Navigation/NavDestination 配置转场动画（systemTransition/customTransition/customNavContentTransition/disableAnimation 四类方案）。当用户提到 Navigation 转场、NavDestination 转场、转场动画、systemTransition、customTransition、customNavContentTransition、disableAnimation、禁用转场、自定义转场、可交互转场、系统转场等关键词时，务必使用此 skill。也适用于用户想要在鸿蒙应用中实现页面切换转场动画效果的场景，即使没有明确提到具体 API 名称。不适用于纯路由跳转/路由配置问题（如 pushPath、pop、NavPathStack 路由管理、路由表配置），这类需求不在本 skill 范围内。 |
+| [`/hmos-arkui-performance-analysis`](./skills/harmonyos/development/arkui/hmos-arkui-performance-analysis/SKILL.md) | 基于真实 ArkTS 代码，只读分析 ArkUI 组件刷新与复用、列表滑动、页面转场、首页启动和动画性能问题。适用于刷新范围过大、重复创建、Swiper 翻页卡顿、页签或路由进入慢、转场集中构建、滑动或动画掉帧、首页首帧及内容显示慢，输出问题位置、原因、修改建议和验证方法。 |
 | [`/hmos-arkui-scenario-development`](./skills/harmonyos/development/arkui/hmos-arkui-scenario-development/SKILL.md) | HarmonyOS/鸿蒙 ArkUI 场景化开发技能，用于实现、排查或验证 ArkUI(.ets) 功能，并按需求(REQ)/开发(DEV)/修复(FIX)/验证(VAL)四阶段路由到4个一级场景：ARKUI-01 ArkUI基础语法（声明式UI、条件渲染、自定义组件、Builder/BuilderParam、AttributeModifier、组件复用）;ARKUI-02 基于UI框架构建基础代码逻辑（手势/键盘交互、路由导航、组件页面、弹窗菜单、动画转场、焦点走焦、综合应用页面骨架、自定义组件FrameNode/Modifier、弹窗进阶、布局组件、图形图像、滚动列表、文本组件）;ARKUI-03 状态管理（组件状态同步，V1/V2使用、V1/V2混用、状态变量相关扩展能力）;ARKUI-04 编译与运行时（编译构建失败、ANR、AppFreeze异常卡死、白屏、崩溃闪退，长列表卡顿丢帧、不跟手、资源加载慢等问题）。不适用：与 ArkUI 无关的原生开发、非 HarmonyOS 平台、CI/CD。 |
 | [`/hmos-arkui-statemgt-migration`](./skills/harmonyos/development/arkui/hmos-arkui-statemgt-migration/SKILL.md) | 帮助开发者将ArkUI状态管理从V1迁移到V2。触发场景：(1) V1项目升级到V2；(2) 迁移@Component/@State/@Prop/@Link/@Observed/@ObjectLink/@Provide/@Consume/@Watch/@Reusable装饰器；(3) 迁移LocalStorage/AppStorage/PersistentStorage/Environment应用级状态；(4) 将ForEach/LazyForEach迁移到Repeat；(5) 解决animateTo在V2中的兼容问题；(6) 处理V1与V2混用场景；(7) 询问V1和V2装饰器对应关系或差异。 |
+| [`/hmos-arkui-v1-v2-migration-and-mixusage`](./skills/harmonyos/development/arkui/hmos-arkui-v1-v2-migration-and-mixusage/SKILL.md) | 分析并实施 ArkUI 状态管理 V1/V2 迁移或混用，覆盖整仓/组件迁移、V1/V2 共存、跨版本数据流、storage、渲染复用、依赖和构建验证。用于迁移规划与改造、混用方案设计、兼容边界实现或问题诊断；不用于普通的纯 V2 功能开发。 |
 | [`/hmos-ascf-assistant`](./skills/harmonyos/development/atomic-service/hmos-ascf-assistant/SKILL.md) | 辅助开发者使用 ASCF 工具链开发 HarmonyOS 元服务。触发场景：(1) 任何提到 ASCF 的问题；(2) 检测到项目包含 ascf/ascf_src 目录（即 ASCF 项目）；(3) 需要生成元服务睫毛图；(4) 将小程序转换为 ASCF 元服务；(5) 开发ASCF元服务页面/组件/平台能力（华为账号登录、隐私托管、授权、支付、分享、web-view、定位等）；(6) 将 Taro/uni-app 项目适配为 ASCF 元服务；(7) HarmonyOS 4及以下版本元服务适配与发布。 |
 | [`/hmos-ascf-convert-taro`](./skills/harmonyos/development/atomic-service/hmos-ascf-convert-taro/SKILL.md) | 辅助开发者将 Taro 项目适配（转换）为 ASCF 元服务。当需要在 Taro（React/Vue）项目中支持 ASCF 元服务平台，或将现有 Taro 项目迁移到 ASCF 时使用此技能。提供完整的环境搭建、项目配置、package.json 脚本、常见问题排查和发布流程。 |
 | [`/hmos-ascf-convert-uniapp`](./skills/harmonyos/development/atomic-service/hmos-ascf-convert-uniapp/SKILL.md) | 辅助开发者将 uni-app 项目适配(转换)为 ASCF 元服务。当需要使用 uni-app（HBuilderX 或 CLI）开发 HarmonyOS 元服务（MP-HARMONY），或将现有 uni-app 项目迁移(转换)到 ASCF 时使用此技能。提供完整的环境搭建、HBuilderX 开发流程、CLI 配置、常见问题排查和上架审核指引。 |
@@ -171,6 +191,11 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-scan-kit-customscan`](./skills/harmonyos/development/scan-kit/hmos-scan-kit-customscan/SKILL.md) | 帮助开发者快速接入华为 Scan Kit 自定义界面扫码能力，仅在需要支持完全自定义相机预览流 UI 界面、闪光灯控制、变焦、对焦等功能的场景使用 |
 | [`/hmos-scan-kit-defaultscan`](./skills/harmonyos/development/scan-kit/hmos-scan-kit-defaultscan/SKILL.md) | 帮助开发者快速接入华为 Scan Kit 默认界面扫码能力，在不需要完全自定义相机界面、闪光灯控制、变焦、对焦等高级功能时优先使用 |
 | [`/hmos-one-sdk-skill`](./skills/harmonyos/development/sdk/hmos-one-sdk-skill/SKILL.md) | ⚠️ MUST LOAD before writing first .ets file that imports from @kit.*. This skill provides verified API signatures, import paths, error codes, permission requirements, and example code for 25 Kits (AccountKit, MediaKit, NetworkKit, ScanKit, LocationKit, PushKit etc.). Even if you have partial API info from other sources, this skill covers complete error codes and permission requirements they lack. Load when — (1) writing ANY @kit.* import; (2) calling Kit APIs like vibrator, Bluetooth, location, scan, account, push, network, health, wear, map, IAP, accessibility, i18n, form, widget, card, cross-device collaboration; (3) @kit.* compile errors (wrong namespace, missing exported member, type mismatch) — load BEFORE attempting fixes; |
+| [`/hmos-share-kit-gestures-share`](./skills/harmonyos/development/share-kit/hmos-share-kit-gestures-share/SKILL.md) | 为 HarmonyOS 工程接入 Share Kit 隔空传送文件 / App Linking 链接，支持首次接入与增量升级。当开发者提到隔空传送、gesturesShare、一抓一放或要求接入时使用。提供首次接入模板注入、生命周期接线、入口 Ability 加载检测、App Linking 端侧合并、异构实现迁移、两阶段骨架回填等能力。 |
+| [`/hmos-share-kit-knock-share`](./skills/harmonyos/development/share-kit/hmos-share-kit-knock-share/SKILL.md) | Integrating HarmonyOS Share Kit knock share into projects. Use when requests involve knock share, touch-to-share file or link transfer. Provides manager injection, lifecycle listener registration, SharedData construction for files or App Linking, and API version compatibility checks. |
+| [`/hmos-window-hover-state`](./skills/harmonyos/development/window/hmos-window-hover-state/SKILL.md) | 为鸿蒙（HarmonyOS/OpenHarmony）折叠屏应用提供窗口悬停态适配：折痕避让几何、上半屏内容 + 下半屏固定操作坞布局、悬停监听接入、SDK 未声明时的降级方案、系统栏避让与旋转策略。当任务涉及悬停态/半折叠（HALF_FOLD 笔记本形态）适配、悬停拍摄、悬停视频布局、折痕避让、onWindowPostureModeChange / isInWindowPostureMode 悬停监听时使用。Use when adapting apps to foldable hover state, listening for window posture mode changes, or avoiding fold crease regions. 不适用于 PC 沉浸式 title/dock hover、鼠标指针 hover 效果与 WMS 系统服务侧功能开发。 |
+| [`/hmos-window-immersive`](./skills/harmonyos/development/window/hmos-window-immersive/SKILL.md) | 为鸿蒙（HarmonyOS/OpenHarmony）应用提供窗口沉浸式效果接入指引，覆盖 @ohos.window（ArkTS，Stage 模型）与 ArkUI 组件级属性。当任务涉及以下场景时使用：沉浸式状态栏/导航条隐藏与显示、安全区域避让（avoidArea 查询与监听）、扩展沉浸式（内容延伸到状态栏/导航条/挖孔区）、系统栏样式定制（颜色、透明度、内容色）、沉浸式状态切换（进入/退出/动态切换）、多设备适配（直板机/平板/折叠屏/自由窗口标题栏沉浸）。提供三种沉浸式方案对比选型、方案选型决策树、避让区类型映射表、核心接口速查表和实战场景代码。 |
+| [`/hmos-window-smart-orientation`](./skills/harmonyos/development/window/hmos-window-smart-orientation/SKILL.md) | 为鸿蒙（HarmonyOS/OpenHarmony）应用提供窗口旋转策略接入与智感旋转适配指引，覆盖 @ohos.window（ArkTS，Stage 模型）。当任务涉及以下场景时使用：智感旋转接入与机制说明、旋转策略选择（AUTO_ROTATION、USER_ROTATION、FOLLOW_DESKTOP、UNSPECIFIED 等 18 种 Orientation 枚举）、setPreferredOrientation 运行时设置、module.json5 orientation 静态配置、视频类横竖屏切换、直板机/平板/折叠屏多设备方向适配、旋转锁定、rotationChange 旋转监听、convertOrientationAndRotation 屏幕方向与窗口方向互转、扫描项目并将固定方向策略改造为支持智感旋转的策略。提供智感旋转机制说明、两种设置方式对比、18 种策略映射表、策略选型决策树和「扫描→评估→改造→验证」迁移流程。 |
 
 ### test — 测试（2）
 
@@ -180,7 +205,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/hmos-instrument-test`](./skills/harmonyos/test/hmos-instrument-test/SKILL.md) | 在 HarmonyOS 应用/服务开发中执行模块的 Instrument Test（包括 ArkTS/JS 和 C++ 测试），支持运行、覆盖率统计、ASan 检测等模式，并可指定测试范围（模块、测试套件、单个用例）。 |
 | [`/hmos-local-test`](./skills/harmonyos/test/hmos-local-test/SKILL.md) | 在 HarmonyOS 应用/服务开发中执行模块的 Local Test（ArkTS/JS 单元测试），支持运行、覆盖率统计等模式，并可指定测试范围（模块、测试套件、单个用例）。 |
 
-### tools — DevEco 工具（8）
+### tools — DevEco 工具（11）
 
 
 | skill | 中文介绍 |
@@ -188,18 +213,22 @@ npx skills@latest add IsKenKenYa/skills
 | [`/deveco-autobugfix`](./skills/harmonyos/tools/deveco/deveco-autobugfix/SKILL.md) | 自动执行鸿蒙应用 Bug 全流程修复，涵盖问题复现、根因分析、最小化代码修复、构建编译与运行验证。 依赖 deveco-mcp 提供 verify_ui/build_project/start_app 等能力。 使用场景：用户要求自动修复鸿蒙项目 Bug，或输入触发词：自动修复、auto fix、auto-fix、自动bug修复、autofix。 提供熔断保护、3 次构建重试上限、修复经验沉淀机制。  |
 | [`/deveco-native-flow`](./skills/harmonyos/tools/deveco/deveco-native-flow/SKILL.md) | 三端一致开发流水线（HarmonyOS/Android/iOS）：analyse → plan → coding → build → verify。 自包含：内嵌 HarmonyOS ArkTS 知识路由，无需外部 skill 依赖。 支持正向开发和翻译开发两种模式。  执行流程： 1. 自动检测项目类型和平台 2. 执行 analyse 阶段生成跨端技术方案（读取 references/native-analyse/SKILL.md） 3. 逐端执行 plan 阶段生成实施计划（读取 references/native-plan/SKILL.md） 4. 逐端执行 coding 阶段完成编码（读取 references/native-coding/SKILL.md） 5. 构建验证 + UI 验证  Triggers: 三端开发, native pipeline, deveco pipeline, cross-platform, 跨端开发, 技术方案, 实施计划, 编码实施  |
 | [`/deveco-requirement-development`](./skills/harmonyos/tools/deveco/deveco-requirement-development/SKILL.md) | 覆盖鸿蒙/HarmonyOS/ArkTS 应用需求开发流程。在用户要落地新功能/新页面/新模块、PRD、端到端需求开发或鸿蒙应用开发时使用。不用于仅询问 API 语法用法、或未声明走完整链路的单文件 Bug 修复。用户意图模糊时先澄清是否需要端到端交付。 |
-| [`/deveco-studio-codelinter`](./skills/harmonyos/tools/deveco/deveco-studio-codelinter/SKILL.md) | 对 HarmonyOS（鸿蒙）项目运行 DevEco Studio CodeLinter 静态代码检查，解读检查结果并提供修复建议。支持 ArkTS、TS、JS 文件，涵盖性能、安全、代码规范、正确性、跨设备适配、API 兼容性等规则集。当用户提到 codelinter、code linting、鸿蒙代码检查、鸿蒙应用质量、HarmonyOS 代码质量检查、静态代码分析、规范扫描、性能检查、安全扫描、代码审查、规则检查、lint 报告时使用。 |
+| [`/deveco-studio-codelinter`](./skills/harmonyos/tools/deveco/deveco-studio-codelinter/SKILL.md) | 对 HarmonyOS（鸿蒙）项目运行 DevEco Studio CodeLinter 静态代码检查，解读检查结果并提供修复建议。支持 ArkTS、TS、JS 文件，涵盖性能、安全、代码规范、正确性、跨设备适配、API 兼容性等规则集。当用户提到 codelinter、code linting、鸿蒙代码检查、鸿蒙应用质量、HarmonyOS 代码质量检查、静态代码分析、规范扫描、性能检查、安全扫描、代码审查、规则检查、规则集、lint 报告时使用。 |
+| [`/deveco-studio-codescanner`](./skills/harmonyos/tools/deveco/deveco-studio-codescanner/SKILL.md) | 指导使用 codescanner 命令行工具扫描 HarmonyOS 工程（ArkTS 23 条 + C++ 27 条资源泄漏规则），覆盖参数用法、SDK 解析、规则配置（-c 白名单）、输出产物与退出码，解读 SARIF/HTML 扫描结果，并按权限/路径/JSON/引擎分类排查扫描问题。当用户提到 codescanner、code-scanner、code scanner、代码扫描，询问如何运行扫描或指定 SDK/输出/格式/规则配置，报告扫描报错、日志或退出码问题，询问结果解读或规则含义（如 WindowListenerNotOff、NapiWrap API Not Paired），或 codescanner 命令找不到、command line tools 在哪下载（tool-availability：仅 26.0.1+ 支持 codescanner 扫描）时使用。 |
 | [`/deveco-studio-emulator`](./skills/harmonyos/tools/deveco/deveco-studio-emulator/SKILL.md) | HarmonyOS模拟器管理助手。**首次使用必须先运行 `node scripts/setup.js --force` 配置路径**，然后才能执行模拟器启动、应用安装调试等操作。包含完整的场景化设备控制命令（旋转、电源、截屏、音量、摇一摇、折叠）。支持Windows/macOS/Linux。触发词：模拟器、emulator、hdc、推包、安装应用、启动模拟器、构建推包。 |
 | [`/deveco-studio-hilog`](./skills/harmonyos/tools/deveco/deveco-studio-hilog/SKILL.md) | HarmonyOS日志分析助手，专注于hilog日志查看、崩溃日志分析、日志导出(-logZip)、手动日志分析。包含完整的hilog命令、hidumper堆栈转储、崩溃日志自动解压分析功能。支持Windows/macOS/Linux跨平台。 |
 | [`/deveco-studio-hvigor`](./skills/harmonyos/tools/deveco/deveco-studio-hvigor/SKILL.md) | HarmonyOS应用构建工具助手，专注于使用Hvigor命令行工具构建HarmonyOS应用。包含完整的构建命令、参数说明、清理操作和CI/CD集成指南。触发词：hvigor、构建、编译、assembleHap、clean、build。 |
 | [`/deveco-studio-verify`](./skills/harmonyos/tools/deveco/deveco-studio-verify/SKILL.md) | HarmonyOS 设备验证工具 - 支持多设备类型验证（手机/折叠屏/平板）、应用安装、UI自动化操作、截图验证、日志收集和 Journey 测试框架。使用 hdc 命令行工具直接操作设备。适用于测试 HarmonyOS 应用在不同设备类型上的表现、验证 UI 在不同屏幕尺寸下的适配、执行 Journey 自动化测试、收集设备日志进行调试、构建产物发布前的完整验证。 |
+| [`/hmos-lazy-import-analysis`](./skills/harmonyos/tools/lazy-import/hmos-lazy-import-analysis/SKILL.md) | 分析鸿蒙/OpenHarmony 应用源码与 redundant file 报告，识别可安全 import lazy 懒加载的模块，产出带完整证据链的修改建议，经 diff 预览确认后可机械应用改写。Use when 用户提供鸿蒙/OpenHarmony 应用源码和 redundant file 报告（hdc 从设备导出或本地 txt），要求识别哪些模块可以改为 import lazy 懒加载、分析模块顶层副作用、索取 lazy-import 修改建议、或在确认后应用这些修改。触发词：lazy import、lazy-import、模块懒加载、redundant file、冗余文件分析、启动耗时优化、模块加载开销、内存优化、应用 lazy 修改。 |
+| [`/hmos-module-dependency-visualizer`](./skills/harmonyos/tools/modtree/hmos-module-dependency-visualizer/SKILL.md) | 采集并可视化 HarmonyOS/OpenHarmony 应用 ArkTS 模块的依赖关系，聚合文件级依赖为模块级，产出含循环依赖检测与扇入/扇出排行的交互式 HTML 依赖图和 Markdown 分析报告。支持 hdc 真机一键采集与本地 *_dependency_graph.txt 日志解析两种模式（工具为 skill 内嵌单文件，详见正文命令表）。Use when 用户提到 模块依赖、依赖图、依赖可视化、循环依赖、被依赖排行、dependency_graph.txt、modtree、采集应用依赖、分析抖音/头条等鸿蒙应用的模块结构。不处理启动性能、卡顿、内存、功耗等性能优化问题——「冷启动」仅指采集所需的完全重启，与启动速度无关。 |
 
-### tooling — 审查工具（1）
+### tooling — 审查工具（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/hmos-skill-reviewer`](./skills/harmonyos/tooling/hmos-skill-reviewer/SKILL.md) | Review and validate Agent Skills for compliance with Claude Skills specification. Use when evaluating SKILL.md files, checking naming conventions, validating content structure, or ensuring skills follow best practices. Provides comprehensive analysis of metadata format, content organization, progressive disclosure, and actionable vs knowledge-based content. |
+| [`/hmos-skill-test-runner`](./skills/harmonyos/tooling/hmos-skill-test-runner/SKILL.md) | Discovers and executes test cases for Agent Skills changed in the current pull request. Use when a PR touches a skill that has test-cases, and the pipeline must run each case prompt in a separate model call, compare the answer with expected output, and publish summary findings. Supports three standard test case formats: trigger verification, smoke (routing), and functional testing. |
 
 ### launch-and-distribute — 发布与分发（2）
 
@@ -209,7 +238,7 @@ npx skills@latest add IsKenKenYa/skills
 | [`/app-metadata-audit-skill`](./skills/harmonyos/launch-and-distribute/app-metadata-audit-skill/SKILL.md) | 开发者在app开发提交agc前，可利用该skill规范对应用市场的元数据（名称、描述、关键词、隐私链接等）进行自动化合规性审查。支持华为应用市场审核规范，防止因低级错误导致被拒。 |
 | [`/hmos-connect-api-cli-skill`](./skills/harmonyos/launch-and-distribute/hmos-connect-api-cli-skill/SKILL.md) | 用本 skill 内嵌的 connect-api-cli 脚本（scripts/，无需 npm 安装）操作华为 AppGallery Connect / AGC：登录登出、创建应用/元服务、查询 App ID、上传 APP（非 HAP）/APK、发布审核、邀请/公开测试、证书与 Profile、ACL、域名，以及 CSR/P12、assembleApp/assembleHap、encrypt-pwd、真机 hdc 安装。Use when 用户提到 AGC、AppGallery Connect、华为应用市场、hmos-connect-api-cli-skill、connect-api-cli、登录、退出登录、创建应用、创建元服务、上架、上传 APP、构建 app/release/debug 包、assembleApp、assembleHap、运行到手机、真机运行、hdc、发布/调试证书、Profile、p7b、csr、encrypt-pwd、ACL、邀请测试或公开测试。 |
 
-## 三、Android Skills（25 个，description 已中文化）
+## 三、Android Skills（37 个，description 已中文化）
 
 ### build-system（1）
 
@@ -225,20 +254,30 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/camerax`](./skills/android/camera/camerax/SKILL.md) | 提供 Android CameraX 相机开发的技术指导。当实现相机功能、处理异步录制生命周期、使用 CameraX 对接底层硬件互操作（hardware interop），或集成 ML Kit 或 Media3 特效时使用。 |
 
-### device-ai（2）
+### cars（1）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/appfunctions`](./skills/android/device-ai/appfunctions/SKILL.md) | 分析 Android 应用，识别可用于 AppFunctions 的关键用户工作流（如创建笔记、播放媒体，或发送由自动化或 AI agent 触发的消息、语音命令、系统快捷方式，而无需打开应用 UI）。生成 Kotlin 代码将这些工作流暴露给 Android 系统，使 agent 能在设备端发现并执行它们。同时优化 KDoc 文档，确保 AI agent 正确理解并使用所提供的功能。 |
+| [`/android-for-cars-parked-apps`](./skills/android/cars/android-for-cars-parked-apps/SKILL.md) | 把现有 Android 视频流媒体应用、游戏和浏览器改造为可在 Android Auto 和 Android Automotive OS 上运行的 parked apps（驻车应用）。涵盖 manifest 配置、Google Play 硬件特性声明、兼容模式、返回导航、方向与显示连续性、可控系统栏 insets、异形挖孔屏、驾驶员分心生命周期处理、基于 CarUxRestrictions 的 MediaSession 播放限制。 |
+
+### device-ai（5）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/appfunctions`](./skills/android/device-ai/appfunctions/SKILL.md) | 分析 Android 应用，发现可暴露为 AppFunctions 的用户工作流，如创建笔记、播放媒体或发送消息——AI agent、语音命令和系统快捷方式随后无需打开应用 UI 即可执行它们。使用 androidx.appfunctions 库生成 Kotlin 代码，并优化 KDoc 与应用描述，让 agent 能正确选择和调用函数。当需要发现、实现、文档化或测试 AppFunctions 时使用此 skill。 |
+| [`/litert-lm`](./skills/android/device-ai/litert/litert-lm/SKILL.md) | 构建在设备端 CPU 或 GPU 上运行开放文本 LLM 的 Android 应用，使用 LiteRT-LM Kotlin API（com.google.ai.edge.litertlm:litertlm-android）。当用来自 Hugging Face litert-community 的 .litertlm 模型（Gemma、Qwen、Llama、Phi）创建聊天、摘要或提取功能时使用，包括 Gradle 依赖、GPU manifest 条目、模型文件落盘、Engine 初始化与推理循环。 |
+| [`/litert-runtime`](./skills/android/device-ai/litert/litert-runtime/SKILL.md) | 使用 CompiledModel API 在 Android 上以 Kotlin 配置和实现 LiteRT（.tflite）设备端推理（CPU 与 GPU）。适用于任何 Android LiteRT 或 .tflite 任务，包括 Gradle 配置、图像分类或视觉/音频/embedding 辅助、TensorBuffer 复用、CPU 内存优化、Bitmap 预处理、AndroidViewModel 的 GPU 到 CPU 降级回退（单线程 dispatcher 上预热）以及 Google Play Services 中的 LiteRT。 |
 | [`/ml-kit-genai-prompt-api`](./skills/android/device-ai/ml-kit-genai-prompt-api/SKILL.md) | 分析 Android 代码库以实现 ML Kit GenAI Prompt API。使用此 skill 在设备端向 Gemini Nano 发送自然语言请求、使用 Prompt API 的结构化输出、实现前缀缓存、优化当前提示词，或应用最佳实践。 |
+| [`/mlkit-agent-api`](./skills/android/device-ai/mlkit-agent-api/SKILL.md) | 使用由 Gemini Nano 和 AICore 驱动的 ML Kit GenAI Agent API，在 Android 应用中构建自主的设备端 agentic 工作流。当实现会话式 agent、ViewModel 中基于 AgentSession 的多轮对话、通过 Android AppFunctions 的自主工具调用（@AppFunctionDeclaration 与 AppFunctionAgentTools.discover）、用 runner.runSingleTurnAsync 执行单次临时任务，或处理 GenAiException 时使用。 |
 
 ### devtools（1）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/android-cli`](./skills/android/devtools/android-cli/SKILL.md) | 提供安装和使用 `android` CLI 的说明。`android` 命令行工具是 Android 开发的关键工具，帮助你创建新 Android 项目、在设备上运行 Android 应用、管理和交互 Android 虚拟设备（含截图和 UI 检查）、管理 Android SDK 组件、查询官方 Android 文档，以及发现和安装官方 Android skills。 |
+| [`/android-cli`](./skills/android/devtools/android-cli/SKILL.md) | 提供安装和使用 `android` CLI 的说明。`android` 命令行工具是 Android 开发的关键工具，帮助你创建新 Android 项目、把 APK 安装到设备和模拟器并在其上启动运行应用、管理和交互 Android 虚拟设备（含截图和 UI 检查）、管理 Android SDK 组件、检查构建产物（APK、AAB、JAR、AAR）的构建与优化问题、查询官方 Android 文档，以及发现和安装官方 Android skills。 |
 
 ### identity（2）
 
@@ -248,14 +287,16 @@ npx skills@latest add IsKenKenYa/skills
 | [`/restore-credentials`](./skills/android/identity/restore-credentials/SKILL.md) | 提供使用 androidx.credentials 库实现 Android 恢复凭证（Restore Credentials）功能的知识与工作流。使用此 skill 创建恢复密钥、用其登录、删除恢复密钥，在设备恢复后实现新设备上的静默登录。涵盖版本兼容性、依赖、服务端前提条件，以及创建、读取、清除恢复密钥的完整客户端实现。 |
 | [`/verified-email`](./skills/android/identity/verified-email/SKILL.md) | 提供基于 Android Credential Manager API 实现已验证邮箱获取的完整工作流。使用此 skill 向 Android 应用集成安全、免 OTP 的邮箱验证流程。该 skill 利用来自 Google 等可信提供商的加密验证凭证，解决注册流程摩擦过大的问题。 |
 
-### jetpack-compose（3）
+### jetpack-compose（5）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/adaptive`](./skills/android/jetpack-compose/adaptive/SKILL.md) | 提供让应用 UI 适配不同 Android 设备（手机、平板、折叠屏、笔记本、桌面、TV、Auto 和 XR）的说明。涵盖使用 Compose MediaQuery API 处理不同窗口尺寸、指针设备（如鼠标）和文本输入设备（如键盘）；使用 Navigation3 Scenes 实现多窗格布局；使用 Compose Grid 和 FlexBox API 实现随目标尺寸变化的自适应 UI 组件（如按钮）和自适应布局（含导航区——nav rails 和 nav bars）。 |
+| [`/adaptive`](./skills/android/jetpack-compose/adaptive/SKILL.md) | 提供让应用 UI 适配不同 Android 设备（手机、平板、折叠屏、笔记本、桌面、TV、Auto 和 XR）的说明。涵盖使用 Compose MediaQuery API 处理不同窗口尺寸、指针设备（如鼠标）和文本输入设备（如键盘），以及在配置变化（如折叠/展开、旋转、分屏）时保留 UI、导航、滚动和媒体播放状态。 |
+| [`/ink-app-builder`](./skills/android/jetpack-compose/ink/ink-app-builder/SKILL.md) | 使用 Jetpack Ink（androidx.ink）和 Compose 为 Android 应用添加手写墨迹与自由绘制能力。当实现触控笔或触摸绘制表面、渲染湿墨/干墨笔画、配置内置笔刷（压感笔、马克笔、荧光笔）、实现基于几何的擦除、线性撤销重做历史，或用 Room 持久化笔画时使用。交付可直接运行的 Compose 与 ViewModel 实现。 |
+| [`/ink-custom-brush-builder`](./skills/android/jetpack-compose/ink/ink-custom-brush-builder/SKILL.md) | 使用 Jetpack Ink（androidx.ink 1.1.0-alpha03 及以上）为 Android 应用创建自定义 BrushFamily 笔刷定义。当配置自定义 BrushTip 形状、用 BrushBehavior 节点图添加压感/倾斜/速度/噪声敏感度、创建多层涂层笔刷、应用平铺或粒子盖章纹理、配置 SlidingWindowModel 输入平滑，或序列化笔刷时使用。 |
+| [`/jetpack-compose-performance`](./skills/android/jetpack-compose/jetpack-compose-performance/SKILL.md) | 诊断并优化 Android Jetpack Compose UI 代码。当分析现有代码的性能瓶颈，以减少重组（recomposition）开销、防止掉帧和 UI 卡顿时使用。 |
 | [`/migrate-xml-views-to-jetpack-compose`](./skills/android/jetpack-compose/migration/migrate-xml-views-to-jetpack-compose/SKILL.md) | 提供将 Android XML View 迁移到 Jetpack Compose 的结构化工作流。该 skill 详述从规划和依赖设置，到主题和布局迁移、验证及 XML 清理的分步流程。当需要在 Android 项目中把 XML View 迁移到 Jetpack Compose 时使用。它解决将旧版 XML View 的 UI 转换为现代声明式 Compose 组件、同时保持互操作性的问题。 |
-| [`/styles`](./skills/android/jetpack-compose/theming/styles/SKILL.md) | 使用此 skill 将 Jetpack Compose Styles API 集成到 Android 项目。引导你升级依赖、设置组件主题、让自定义组件可样式化，以及将现有布局属性迁移到统一样式。迁移自定义设计系统组件、用 Style 属性替换硬编码参数、使用 Modifier.styleable 处理交互状态。 |
 
 ### media（1）
 
@@ -263,6 +304,13 @@ npx skills@latest add IsKenKenYa/skills
 | skill | 中文介绍 |
 |-------|---------|
 | [`/media3-cast-integration`](./skills/android/media/media3-cast-integration/SKILL.md) | 使用 Jetpack Media3 在 Android 应用中实现 Google Cast 支持。处理添加构建依赖、更新 manifest、配置 OptionsProvider，以及在 Compose 和 View 两种 UI 中管理 CastPlayer 或 RemoteCastPlayer 播放。当添加 Cast 功能或从旧版 Cast SDK 迁移到 Media3 Cast 时使用。 |
+
+### migration（1）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/ios-to-android`](./skills/android/migration/ios-to-android/SKILL.md) | 用于任何从 iOS/Swift 代码库移植或实现 Android 功能的任务——包括单特性任务（BLE 扫描、定位/GPS 追踪、支付、Health Connect、后台任务、数据库、单个页面），而不仅是整应用迁移。是把 iOS 应用与子系统迁移到 Android（Jetpack Compose、Room、Kotlin Coroutines 与 Flow、Architecture Components）的主协调 skill。 |
 
 ### navigation（2）
 
@@ -272,12 +320,13 @@ npx skills@latest add IsKenKenYa/skills
 | [`/navigation-3`](./skills/android/navigation/navigation-3/SKILL.md) | 学习如何安装并迁移到 Jetpack Navigation 3，以及如何实现 deep links、多个 backstack、scenes（对话框、底部表、list-detail、two-pane、supporting pane）、条件导航（如已登录导航与匿名导航的区别）、从流程返回结果、与 Hilt/ViewModel/Kotlin/View 互操作集成等功能和模式。 |
 | [`/navigation-event`](./skills/android/navigation/navigation-event/SKILL.md) | 在 Compose Android 中使用 NavigationEvent（androidx.navigationevent）库拦截返回手势并运行预测性返回（Predictive Back）动画。处理 Activity 配置、`ViewPagers` 或标签页中的父子分发器作用域、Compose `NavigationBackHandler`，以及 SDK 36+ 上从旧版 `BackHandler` 的迁移。 |
 
-### performance（1）
+### performance（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/r8-analyzer`](./skills/android/performance/r8-analyzer/SKILL.md) | 分析 Android 构建文件和 R8 keep 规则，识别冗余、过宽的包级规则，以及吞没了库消费者 keep 规则的规则。当开发者想优化应用体积、移除冗余或过宽的 keep 规则，或排查 Proguard 配置时使用。 |
+| [`/anr-audit-and-fix`](./skills/android/performance/anr-audit-and-fix/SKILL.md) | 审计 Android 代码库中的 ANR（应用无响应）风险并诊断 ANR 堆栈转储。当扫描 Android 代码查找 ANR 风险或分诊 ANR 堆栈转储时使用。不要用于非 ANR 崩溃、掉帧、一般 CPU 剖析或 Perfetto 系统 trace。 |
+| [`/r8-analyzer`](./skills/android/performance/r8-analyzer/SKILL.md) | 分析 Android 构建文件和 R8 keep 规则，识别冗余、过宽的包级规则，以及吞没了库消费者 keep 规则的规则。当开发者想优化 Android 应用体积、移除冗余或过宽的 keep 规则，或排查 ProGuard 配置时使用。不要用于一般 Gradle 构建错误、Compose UI 性能或运行时 CPU 剖析。 |
 
 ### play（3）
 
@@ -293,22 +342,24 @@ npx skills@latest add IsKenKenYa/skills
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/android-profiler`](./skills/android/profilers/android-profiler/SKILL.md) | 管理 Android 性能剖析与调试。当用户要求录制或分析 Android 性能数据（如系统 trace、堆转储、方法录制、调用栈采样、内存分配），排查 Android 上的瓶颈、卡顿（jank）、内存泄漏、应用启动问题，或要求编写、调试、执行临时 SQL 查询时触发。适用于用户应用和系统应用/服务。 |
+| [`/android-profiler`](./skills/android/profilers/android-profiler/SKILL.md) | 记录并分析 Android 性能数据，诊断用户应用、系统应用和系统服务的性能瓶颈——即使用户没有明确提到 profiling 或 traces。适用场景：录制系统 trace、CPU 调用栈、Vulkan GPU/DRM 内存或 Java/native 堆剖析；分析 Perfetto trace 定位 UI 卡顿、掉帧、ANR 或应用启动延迟问题；排查 CPU 瓶颈、IPC/Binder 链路问题。 |
 
 ### security（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/android-intent-security`](./skills/android/security/android-intent-security/SKILL.md) | Android Intent 安全最佳实践。当审计 AndroidManifest.xml 中的组件配置（activities、services、receivers）或处理传入 Intent 的源码（getIntent、getParcelableExtra）以防止 Intent 重定向（Intent Redirection）和未授权访问时使用此 skill。 |
+| [`/android-intent-security`](./skills/android/security/android-intent-security/SKILL.md) | 审计、发现并修复 Android Intent 与组件安全漏洞。当审计 AndroidManifest.xml 中的组件配置（activities、services、receivers）或处理传入 Intent 的源码（getIntent、getParcelableExtra）以防止 Intent 重定向（Intent Redirection）和未授权访问时使用。不要用于网络安全、TLS 配置或一般运行时权限请求流程。 |
 | [`/android-permissions-security`](./skills/android/security/android-permissions-security/SKILL.md) | 审计、发现缺口并修复 Android 权限与 IPC 组件安全漏洞。当审查 AndroidManifest.xml、定义权限、暴露组件（activity/service/receiver/provider）或加固 IPC 攻击面时使用。 |
 
-### system（1）
+### system（3）
 
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/edge-to-edge`](./skills/android/system/edge-to-edge/SKILL.md) | 使用此 skill 迁移 Jetpack Compose 应用以添加自适应 edge-to-edge 支持，并排查常见问题。用于修复被导航栏或状态栏遮挡/重叠的 UI 组件（如按钮或列表）、修复 IME insets、以及修复系统栏可读性。 |
+| [`/glance-appwidget-updates-and-memory`](./skills/android/system/glance-appwidget-updates-and-memory/SKILL.md) | 使用 Jetpack Glance（androidx.glance:glance-appwidget）和 Android 17（API 37）上的 AppWidgetProvider receiver，管理 Android AppWidget 的状态更新、后台同步与 RemoteViews 位图内存上限。当配置 Android 17（API level 37）的 compileSdk/targetSdk 与 AndroidManifest.xml widget receiver、在 CoroutineWorker 更新 DataStore 偏好后刷新冻结或过期的 Glance widget UI 时使用。 |
+| [`/glance-canonical-layouts`](./skills/android/system/glance-canonical-layouts/SKILL.md) | 使用来自 Android Platform Samples 项目的 Jetpack Glance Canonical Layouts 创建主屏幕小组件；或当被要求实现标准 widget 布局模式（Check List、Image Grid、Snap Scrolling、Standard Toolbar）时使用。 |
 
 ### testing（1）
 
@@ -324,19 +375,21 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/leanback-to-compose-tv-migration`](./skills/android/tv/leanback-to-compose-tv-migration/SKILL.md) | 提供把 Android TV 应用从旧版 Leanback UI Toolkit、Android Views 或 Support Fragments 迁移到 Jetpack Compose for TV（androidx.tv）的说明与架构模式。用于 Leanback 到 Compose 的迁移，包括浏览页、设置页、认证页、登录页或视频播放页迁移，或用现代 Compose 等价物替换 BrowseSupportFragment、LeanbackSettingsFragment、PreferenceFragment、VideoSupportFragment、GuidedStepSupportFragment、SearchSupportFragment、VerticalGridSupportFragment、Presenter、ArrayObjectAdapter、CursorMapper 等，实现带焦点记忆的沉浸式轮播、使用 PlayerSurface 的 Media3 视频播放，或自定义 10 英尺 hero 布局。 |
 
-### wear（1）
+### wear（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
 | [`/wear-compose-m3`](./skills/android/wear/wear-compose-m3/SKILL.md) | 使用 Wear OS Compose Material3 的专家指导。当创建、更新或迁移 Wear OS 项目时使用。涵盖 androidx.wear.compose.material3、androidx.wear.compose.foundation 和 androidx.wear.compose.navigation3 库，AppScaffold、ScreenScaffold、TransformingLazyColumn 等核心组件，以及 ambient mode 等 Wear OS 核心概念。含从早期版本（如 Material 2.5 和 Horologist）的迁移。 |
+| [`/wear-widgets`](./skills/android/wear/wear-widgets/SKILL.md) | 在 Android 项目中使用 Glance Wear 和 Remote Compose 创建、迁移、更新和验证 Wear OS 小组件。当实现 GlanceWearWidget、GlanceWearWidgetService、WearWidgetDocument、Remote Compose UI 原语（RemoteColumn、RemoteRow、RemoteBox、RemoteText、RemoteImage、RemoteButton）、用 rememberMutableRemoteInt 与 valueChange 管理本地状态、用 pendingIntentAction 处理点击、配置 widget provider XML 容器时使用。 |
 
-### xr（1）
+### xr（2）
 
 
 | skill | 中文介绍 |
 |-------|---------|
-| [`/display-glasses-with-jetpack-compose-glimmer`](./skills/android/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md) | 提供使用 Jetpack Compose Glimmer UI 工具包为显示眼镜开发投影式 Android XR 应用的指南。涵盖 Glimmer 基础设计原则、实现 Jetpack Compose Glimmer 的工作流，以及眼镜形态的交互模型。使用此 skill 构建遵循 Glimmer 设计系统、针对眼镜样式优化的 Android XR Augmented Experience 应用。 |
+| [`/display-glasses-with-jetpack-compose-glimmer`](./skills/android/xr/display-glasses-with-jetpack-compose-glimmer/SKILL.md) | 提供使用 Jetpack Compose Glimmer UI 工具包为显示眼镜开发投影式 Android XR 应用的指南。涵盖 Glimmer 设计原则、工作流和眼镜形态的交互模型。使用此 skill 构建基于 Jetpack Compose Glimmer 的 Android XR Augmented Experience 应用。不要用于纯音频 AI 眼镜、非眼镜类 Android XR 头显（基于 spatial panels 或 3D volumes 的 Jetpack Compose）。 |
+| [`/projected-hardware`](./skills/android/xr/projected-hardware/SKILL.md) | 提供在 Android XR 投影设备（如音频眼镜和显示眼镜）上访问和管理硬件的说明与工作流。当在 Android 应用中为智能眼镜构建体验、需要访问相机和麦克风等设备硬件、处理眼镜特有的运行时权限，或使用 projected context 管理连接生命周期时使用。 |
 
 ## 四、安装指导 Skills（2 个）
 

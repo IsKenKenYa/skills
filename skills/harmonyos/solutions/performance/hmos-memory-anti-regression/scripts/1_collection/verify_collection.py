@@ -24,6 +24,12 @@ PRODUCTS = [
     ("heapsnapshot", "heapsnapshot/hidumper-jsheap-*", False, 1),
 ]
 
+# 可选产物: 缺失不阻断核心分析，但会影响 ArkWeb 案例匹配规则 2/3 判定
+OPTIONAL_PRODUCTS = [
+    ("hilog",        "meminfo/hilog/hilog_*.txt", False, 1),
+    ("window_dump",  "meminfo/window_dump/window_*.txt", False, 1),
+]
+
 
 def verify_products(version_dir: Path) -> tuple[bool, list[dict]]:
     """校验产物完整性, 返回 (是否全部通过, 各产物详情列表)。
@@ -69,9 +75,20 @@ def main() -> int:
 
     if ok:
         print("  [通过] 必需产物齐全, 可继续后续分析。")
-        return 0
-    print(f"  [缺失] 必需产物不完整, 建议删除目录后重新采集:\n    rm -rf {vd}")
-    return 1
+    else:
+        print(f"  [缺失] 必需产物不完整, 建议删除目录后重新采集:\n    rm -rf {vd}")
+        return 1
+
+    # 可选产物检查 (缺失不阻断, 仅警告)
+    for name, pattern, recursive, min_bytes in OPTIONAL_PRODUCTS:
+        files = list(vd.rglob(pattern) if recursive else vd.glob(pattern))
+        valid = [f for f in files if f.is_file() and f.stat().st_size >= min_bytes]
+        if valid:
+            print(f"  ✅ {name:14s} {len(valid)} 个文件 (可选)")
+        else:
+            print(f"  ⚠️ {name:14s} 缺失 (可选, ArkWeb 案例匹配规则 2/3 将降级为「无法判定」)")
+
+    return 0
 
 
 if __name__ == "__main__":

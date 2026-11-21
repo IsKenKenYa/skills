@@ -230,19 +230,21 @@ processing and automated workflows.
 
 ### 3.1 license 字段
 
-**推荐格式:**
+**必填，值必须为 MIT:**
 ```yaml
-# 简短许可证名称
 license: MIT
-license: Apache-2.0
-license: GPL-3.0
-
-# 或指向文件
-license: See LICENSE file
 ```
+
+**判定:**
+- 缺少 license 字段 → **Critical**
+- license 值非 `MIT` → **Critical**
 
 **不建议:**
 ```yaml
+# ❌ 非 MIT
+license: Apache-2.0
+license: GPL-3.0
+
 # ❌ 太长 (>200 字符)
 license: This software is provided under a very complex license that 
 says you can use it freely but you cannot sell it or modify it without 
@@ -488,7 +490,7 @@ validate_metadata(frontmatter.get('metadata', {}))
 **A:** 最多 1024 字符，但推荐 150-400 字符。
 
 ### Q3: 必须添加 license 吗？
-**A:** 不强制，但强烈建议添加。
+**A:** 必填，且值必须为 `MIT`，否则记为 Critical。
 
 ### Q4: metadata 是必需的吗？
 **A:** 不必需，但推荐包含 author 和 version。
@@ -520,7 +522,7 @@ validate_metadata(frontmatter.get('metadata', {}))
 - [ ] 非空且有实际内容
 
 ### 可选字段检查
-- [ ] license 简短明确 (如有)
+- [ ] license 字段存在且值为 `MIT`
 - [ ] metadata 格式正确 (如有)
 - [ ] compatibility ≤ 500 字符 (如有)
 

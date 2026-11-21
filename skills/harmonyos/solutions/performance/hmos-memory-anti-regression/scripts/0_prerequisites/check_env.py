@@ -10,12 +10,13 @@ if sys.version_info < (3, 10):
     sys.exit(1)
 
 import os
+import platform
 import shutil
 import subprocess
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent / "../_lib"))
 from encoding import *  # noqa: E402  # Force UTF-8 output (fixes Windows GBK garbled text)
-from tool_finder import find_hdc, find_trace_streamer, _win_temp_dir
+from tool_finder import find_hdc, find_trace_streamer, find_addr2line, _win_temp_dir
 
 DEVECO_DOWNLOAD_URL = "https://developer.huawei.com/consumer/cn/deveco-studio/"
 TS_DOWNLOAD_URL = "https://gitcode.com/openharmony/developtools_smartperf_host/releases/download/HiSmartPerf_20260730/trace_streamer_binary.zip"
@@ -82,6 +83,35 @@ def check_trace_streamer():
         print("[FAIL] trace_streamer not found in any expected location")
         return False
     print(f"[OK] trace_streamer found: {found}")
+    return True
+
+
+def check_addr2line():
+    """Check addr2line availability for native heap symbol resolution.
+
+    Prefers llvm-addr2line (from DevEco Studio SDK) over system addr2line,
+    because GNU binutils addr2line may not support DWARF-5 ARM64 ELF
+    (errors: 'DW_FORM_line_strp' / 'invalid or unhandled FORM value: 0x23').
+    """
+    found = find_addr2line()
+    if not found:
+        found = _prompt_for_tool_path(
+            "llvm-addr2line",
+            "ADDR2LINE_PATH",
+            "DevEco Studio SDK: <install>/sdk/default/openharmony/native/llvm/bin/"
+        )
+    if not found:
+        print("[SKIP] addr2line not found (Step 4 native heap line resolution will be skipped)")
+        return True  # non-blocking: addr2line only needed for Step 4 deep analysis
+    # Check if it's llvm-addr2line (preferred) or generic addr2line
+    is_llvm = "llvm" in Path(found).name.lower()
+    if is_llvm:
+        print(f"[OK] llvm-addr2line found: {found}")
+    else:
+        print(f"[WARN] addr2line found but not llvm-addr2line: {found}")
+        print("       GNU binutils addr2line may not support DWARF-5 ARM64 ELF.")
+        print("       If Step 4 reports 'DW_FORM_line_strp' errors, install llvm-addr2line from:")
+        print("       DevEco Studio SDK: <install>/sdk/default/openharmony/native/llvm/bin/")
     return True
 
 
@@ -204,7 +234,10 @@ def install_app(hap_path: str):
     win_copy = win_temp / linux_path.name
     import shutil as shutil_mod
     shutil_mod.copy2(str(linux_path), str(win_copy))
-    win_path = str(win_copy).replace("/mnt/c", "C:").replace("/", "\\")
+    if platform.system() == "Windows":
+        win_path = str(win_copy).replace("/", "\\")
+    else:
+        win_path = str(win_copy)
     print(f"  Installing: {win_path}")
     result = _run([hdc, "install", win_path], timeout=120)
     if "success" in result.stdout.lower() or result.returncode == 0:
@@ -238,6 +271,7 @@ def main():
         "Python >= 3.10": check_python_version(),
         "hdc": hdc_ok,
         "trace_streamer": ts_ok,
+        "addr2line": check_addr2line(),
         "Python packages": check_dependencies(),
         "hypium": check_hypium(),
     }

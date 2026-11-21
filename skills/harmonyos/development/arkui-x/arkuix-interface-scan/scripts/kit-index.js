@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * @kit.* 展开索引（SD1 修复，实测 2026-09-23 立案）：
+ * @kit.* 展开索引：
  * 数据源 = OH SDK `ets/kits/@kit.*.d.ts`——kit 聚合文件以
  * `import X, { A, B as C } from '@ohos.mod';` 形态声明成员与符号来源，
  * 由此构建 kit→成员模块集合 与 kit 导出面符号→@ohos 模块 映射。

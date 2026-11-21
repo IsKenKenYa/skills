@@ -1,9 +1,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { stripComments } from './extract.js';
 
 /**
- * NDK 符号→头文件权威归属索引（SD2 修复，实测 2026-09-23 立案）：
+ * NDK 符号→头文件权威归属索引：
  * 数据源 = OH SDK native/sysroot/usr/include 下全部 .h 文件。
  * 归属规则（确定性）：每个 OH_* 符号归属"声明权重最高"的头文件——
  * 声明形态行（函数定义/typedef/struct/enum 等）权重 2，普通引用权重 1；
@@ -26,9 +26,9 @@ export function buildNativeSymbolIndex(sysrootDir) {
     } catch {
       continue;
     }
-    // SD11（r2 实测立案）：先剥注释（文档注释提及不得计分）+ 声明形态权重 10:1
-    // （函数定义/原型/typedef/struct/enum/extern=10，普通代码引用=1）——
-    // 修复"注释/参数提及频次击败定义头"与"平局字典序选错"两类错挂
+ // ：先剥注释（文档注释提及不得计分）+ 声明形态权重 10:1
+ // （函数定义/原型/typedef/struct/enum/extern=10，普通代码引用=1）——
+ // 修复"注释/参数提及频次击败定义头"与"平局字典序选错"两类错挂
     for (const raw of stripComments(text.split('\n'))) {
       if (!raw.includes('OH_')) continue;
       const isDecl = /\bOH_\w+\s*\(/.test(raw) || /^\s*(?:typedef|struct|enum|union|extern)\b/.test(raw);
@@ -67,6 +67,7 @@ function walk(root, dir, files) {
   for (const e of entries) {
     const full = join(dir, e.name);
     if (e.isDirectory()) walk(root, full, files);
-    else if (e.isFile() && e.name.endsWith('.h')) files.push(relative(root, full));
+    // 归一 '/'：此值为 C-API 规则表（'/' 形态键）的匹配键——win32 反斜杠形态永远不命中，致真实运行 C-API 全误判 unknown
+    else if (e.isFile() && e.name.endsWith('.h')) files.push(relative(root, full).split(sep).join('/'));
   }
 }

@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 
 const IGNORED = new Set(['.git', '.hvigor', 'oh_modules', 'node_modules', 'build', '.previewer', '.cxx']);
 
 /**
- * 工程文件快照（SD9）：全工程（排除缓存/产物目录）文件 → sha256。
+ * 工程文件快照：全工程（排除缓存/产物目录）文件 → sha256。
  * modify 前后各取一次，diff 得"实际改动文件清单"（新增+改写全覆盖，
  * 修复此前仅枚举 .arkui-x/ 子树、漏报既有构建文件改写的问题）。
  */
@@ -28,7 +28,8 @@ function walk(root, dir, map) {
       walk(root, join(dir, e.name), map);
     } else if (e.isFile()) {
       const full = join(dir, e.name);
-      map.set(relative(root, full), hashOf(full));
+ // 相对路径归一为 / 分隔（Windows relative 产生 \；diff 清单为跨平台稳定标识符）
+      map.set(relative(root, full).split(sep).join('/'), hashOf(full));
     }
   }
 }

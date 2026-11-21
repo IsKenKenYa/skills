@@ -1,7 +1,12 @@
 ---
 name: hmos-account-kit-quicklogin-client
-description: 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成。支持获取匿名手机号后一键登录页面跳转、失败Toast提示等。在用户提及"华为账号一键登录"、"接入华为账号一键登录"、"Account Kit一键登录"或要求实现华为账号一键登录功能时使用（当前仅支持原生ArkTS框架）
+description: 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成。支持获取匿名手机号后一键登录页面跳转、失败Toast提示等。在用户提及"接入华为账号一键登录"、"Account Kit一键登录"或要求实现华为账号一键登录功能时使用（当前仅支持原生ArkTS框架）
+license: MIT
+metadata:
+  author: Huawei Account Kit Team
+  version: "1.0.2"
 ---
+
 
 # 华为Account Kit一键登录·客户端开发助手
 
@@ -11,7 +16,57 @@ description: 基于 HarmonyOS Account Kit 提供华为账号一键登录客户�
 3. **语法严格约束**：所有需要被其他文件引用的 `@Component` 组件和 `@CustomDialog` 组件，必须添加 `export` 关键字；
 4. **页面跳转规则**：使用`this.getUIContext().getRouter().pushUrl()`方法跳转的页面需要添加到`main_pages.json`文件，且必须与 `main_pages.json` 中的配置**完全一致**，不使用`this.getUIContext().getRouter().pushUrl()`跳转的页面禁止添加；违反此规则会导致页面跳转失败，属于严重BUG。**（特别注意）WebPage协议页面必须使用this.getUIContext().getRouter().pushUrl()跳转方式，严禁改为NavDestination跳转，只有QuickLoginPage可以按工程跳转方式处理**；
 5. **华为账号一键登录按钮UI样式**：如提及按钮样式、颜色以及文字样式，请必须参考API接口文档`references/api/account-api-component-manager.md`，以便进行使用正确的接口进行实现；
-6. **交付检查与编译报错处理（重要）**：交付前，务必使用`build_project`MCP工具对工程进行编译；如果有编译报错，请使用`check_ets_files`MCP工具对ets文件进行语法检查并修复，直至编译通过；
+6. **交付检查与编译报错处理（重要）**：交付前，务必使用 `deveco-cli` 的 `build_project` 命令对工程进行编译；如果有编译报错，请使用 `deveco-cli` 的 `check_ets_files` 命令对ets文件进行语法检查并修复，直至编译通过；
+7. **需求确认**：当用户仅提及"华为账号一键登录"而未提供具体接入需求时，**停止执行**，简要介绍本 Skill 功能，并请用户确认或补充需求后再继续。
+
+## 决策树
+
+本 Skill 涉及多个分支判断，以下决策树系统化各判断逻辑。执行时按顺序自上而下匹配，命中即停止。
+
+### 工程类型与已接入检测
+
+```
+读取 AppScope/app.json5 的 bundleType
+├── atomicService（元服务）
+│   └── → 元服务不支持接入，停止执行
+└── 其他（普通应用）
+    └── 搜索工程中一键登录关键词（quickLoginAnonymousPhone / quicklogin 目录 / QuickLoginPage.ets）
+         ├── 命中任意一项 → 已接入
+         │    └── 检查第一步（网络权限）、第二步（混淆白名单）是否完成
+         │         ├── 已完成 → 停止执行，输出已接入提示
+         │         └── 未完成或有缺失 → 补全后停止执行，输出提示
+         └── 均未命中 → 未接入，继续后续步骤
+```
+
+### 按钮颜色选择
+
+```
+Prompt 指定的按钮颜色？
+├── 红/白/黑 → 使用 loginComponentManager.Style 枚举值（BUTTON_RED / BUTTON_WHITE / BUTTON_BLACK）
+├── 其他颜色 → 使用 loginComponentManager.Style.BUTTON_CUSTOM
+│              新增 customButtonParams（backgroundColor + fontColor）
+│              涉及文字等其他样式时先读取 references/api/account-api-component-manager.md
+└── 未指定 → 默认 BUTTON_RED，无需修改
+```
+
+### 页面跳转模式选择
+
+```
+分析当前工程的页面跳转方式（使用 hmos-arkui-develop-skill 学习路由规则）
+├── Router 模式
+│    └── QuickLoginPage 添加 @Entry
+│         在 main_pages.json 中配置页面路径
+│         使用 this.getUIContext().getRouter().pushUrl() 跳转
+│         通过 getRouter().getParams() 接收 anonymousPhone
+└── NavDestination 模式
+     └── 创建 QuickLoginRoot 根组件包裹 QuickLoginPage
+          使用 navPathStack.pushPathByName('QuickLoginRoot', params) 跳转
+          PageMap 中注册 'QuickLoginRoot' 映射
+          禁止在 main_pages.json 中添加 QuickLoginPage 路径
+          QuickLoginPage 无需 @Entry
+```
+
+---
 
 ## 自定义规则
 根据输入提取关键信息，如果没有提供，全部使用默认值，如果经过思考，确实有必要询问，则一次提出一个问题，并且尽量是选择题形式
@@ -37,14 +92,7 @@ description: 基于 HarmonyOS Account Kit 提供华为账号一键登录客户�
 2. 检测是否已配置一键登录权限 - 使用 `grep` 搜索代码中是否包含 `quickLoginAnonymousPhone` 字符串
 3. 检测是否已存在一键登录相关文件 - 使用 `glob` 搜索是否存在 `quicklogin` 目录、`QuickLoginPage.ets`、`WebPage.ets`
 
-**检测判定规则**：如果满足以下**任意一个条件**，判定为已接入或不支持接入：
-- ✅ 在`app.json5`找到`bundleType`字段为`atomicService`，提示元服务不支持接入
-- ✅ 在工程代码中找到 `quickLoginAnonymousPhone` 相关配置
-- ✅ 已存在 `quicklogin` 目录且包含 `QuickLoginPage.ets` 文件
-
-**检测结果处理**：
-- **如果检测到已接入**：检测第一步、第二步是否完成，若已完成，立即停止执行流程，输出提示信息；未完成或有缺失，则执行第一步、第二步后，停止执行流程，输出提示信息；
-- **如果未检测到已接入**：继续执行后续步骤
+判定逻辑见上方「决策树 - 工程类型与已接入检测」。
 
 ### Step 2: 功能开发
 
@@ -78,7 +126,7 @@ Image($r('app.media.startIcon'))
 ```
 
 #### 第五步：修改华为账号一键登录按钮的颜色及UI样式
-当开发者选择华为账号一键登录按钮颜色为红、白、黑时，可以使用loginComponentManager.Style中的枚举值，若未提供，则默认使用BUTTON_RED，无需修改。当用户指定其它颜色时，params中的style需要使用loginComponentManager.Style.BUTTON_CUSTOM，并且新增customButtonParams参数，按照如下方式进行实现：
+按钮颜色的判定逻辑见上方「决策树 - 按钮颜色选择」。当使用 BUTTON_CUSTOM 时，按照如下方式进行实现：
 ```ArkTS
 LoginWithHuaweiIDButton({
     params: {
@@ -243,7 +291,7 @@ Text('用户昵称')
 
 ##### 确定跳转方式
 
-使用 `hmos-arkui-develop-skill` 学习页面路由跳转规则，并分析当前工程的页面跳转方式，确定是使用 router 模式还是 NavDestination 模式。
+跳转模式的判定逻辑见上方「决策树 - 页面跳转模式选择」。
 
 ##### Router模式实现
 
@@ -261,7 +309,7 @@ Text('用户昵称')
 
 - NavPathStack不需要import
 
-- @Consume与@Provider需要配套使用，需要结合实际工程
+- @Consumer与@Provider需要配套使用，需要结合实际工程
 
 - 可以参考工程其他组件使用NavPathStack的方式
 
@@ -322,16 +370,16 @@ export function PageMap(name: string, params: Record<string, string>) {
 - 使用NavDestination模式时，禁止在`main_pages.json5`中添加`QuickLoginPage`页面路径，此场景下`QuickLoginPage`页面也无需添加@Entry装饰器
 
 ### Step 3: 代码审查
-- 协议页跳转检查，检查`QuickLoginPage.ets`文件中`jumpToPrivacyWebView`方法中的url有无替换为`WebPage.ets`基于`entry/src/main/ets`的相对路径，且该路径应该与`main_pages.json`保持一致，如不一致，请按照该规则进行修改。
-- 一键登录页面跳转检查，若一键登录页面使用NavDestation模式跳转，则应该检查页面栈的传递是否正确，如使用了@Consume或@Provider，则需要配套使用，否则直接传递页面栈变量即可。如不确定，请参考参考工程其他组件使用NavPathStack的方式。
+- [ ] 协议页跳转检查，检查`QuickLoginPage.ets`文件中`jumpToPrivacyWebView`方法中的url有无替换为`WebPage.ets`基于`entry/src/main/ets`的相对路径，且该路径应该与`main_pages.json`保持一致，如不一致，请按照该规则进行修改。
+- [ ] 一键登录页面跳转检查，若一键登录页面使用NavDestation模式跳转，则应该检查页面栈的传递是否正确，如使用了@Consumer或@Provider，则需要配套使用，否则直接传递页面栈变量即可。如不确定，请参考参考工程其他组件使用NavPathStack的方式。
 
 ### Step 4: 项目编译
-必须使用`deveco-mcp`的`build_project`MCP工具对工程进行编译；如果有编译报错，请使用`check_ets_files`MCP工具对ets文件进行语法检查并修复，修复后仍需使用`build_project`MCP工具对工程进行编译，直至编译通过，修复过程中如果对鸿蒙相关知识不理解，可以使用`harmonyos_knowledge_search`MCP工具进行查询
-| tool_name  | 主要功能  |
+必须使用 `deveco-cli` 的 `build_project` 命令对工程进行编译；如果有编译报错，请使用 `deveco-cli` 的 `check_ets_files` 命令对ets文件进行语法检查并修复，修复后仍需使用 `deveco-cli` 的 `build_project` 命令对工程进行编译，直至编译通过，修复过程中如果对鸿蒙相关知识不理解，可以使用 `deveco-cli` 的 `harmonyos_knowledge_search` 命令进行查询
+| 命令  | 主要功能  |
 |---|---|
-|`harmonyos_knowledge_search`|查询鸿蒙云端知识库|
-|`check_ets_files`|对ets文件进行语法检查|
-|`build_project`|进行项目构建|
+|`deveco-cli harmonyos_knowledge_search`|查询鸿蒙云端知识库|
+|`deveco-cli check_ets_files`|对ets文件进行语法检查|
+|`deveco-cli build_project`|进行项目构建|
 
 ## 输出模板
 

@@ -23,6 +23,39 @@ START_TS = None
 END_TS = None
 
 
+# 只读查询 PRAGMA 调优: 大库(数 GB+) I/O 主要瓶颈在默认 2MB page cache + 无 mmap。
+# mmap_size: 把库文件 mmap 进页缓存(惰性, 按访问页数占用, 不实占); cache_size: SQLite 自身页缓存;
+# temp_store=MEMORY: GROUP BY 等临时结果走内存(仅在用户未指定 temp_dir 时, 尊重其磁盘选择)。
+_DB_MMAP_SIZE = 30_000_000_000   # 30 GB mmap 上限(惰性)
+_DB_CACHE_KB = 1_000_000         # ~1 GB SQLite 页缓存
+
+
+def _apply_read_pragmas(cursor):
+    cursor.execute(f"PRAGMA mmap_size = {int(config_data.get('db_mmap_size', _DB_MMAP_SIZE))};")
+    cursor.execute(f"PRAGMA cache_size = -{int(config_data.get('db_cache_kb', _DB_CACHE_KB))};")
+    if not config_data.get("temp_dir"):
+        cursor.execute("PRAGMA temp_store = MEMORY;")
+
+
+# 关键查询索引(与 convert_htrace_to_sqlitedb._INDEXES 保持一致, 兜底老库缺索引)
+_QUERY_INDEXES = [
+    "CREATE INDEX IF NOT EXISTS idx_nh_type_callchain_ipid ON native_hook_statistic(type, callchain_id, ipid)",
+    "CREATE INDEX IF NOT EXISTS idx_nhf_callchain_id ON native_hook_frame(callchain_id)",
+    "CREATE INDEX IF NOT EXISTS idx_process_ipid ON process(ipid)",
+    "CREATE INDEX IF NOT EXISTS idx_native_hook_main ON native_hook(start_ts, end_ts, event_type, callchain_id)",
+    "CREATE INDEX IF NOT EXISTS idx_native_hook_addr_heap ON native_hook(addr, heap_size)",
+]
+
+
+def _ensure_query_indexes(cursor):
+    for sql in _QUERY_INDEXES:
+        try:
+            cursor.execute(sql)
+        except sqlite3.Error as e:
+            print(f"   [WARN] 建索引失败(跳过): {e}")
+    cursor.connection.commit()
+
+
 def get_realtime(sys_boottime, sys_realttime, ts):
     relative_time = ts - sys_boottime
     t = relative_time + sys_realttime
@@ -128,6 +161,7 @@ def query_string_table(source_db_dir: str):
         source_cursor = source_conn.cursor()
         if "temp_dir" in config_data:
             source_cursor.execute("PRAGMA temp_store_directory = " + config_data["temp_dir"])
+        _apply_read_pragmas(source_cursor)
 
         try:
             source_cursor.execute("select id, data from data_dict")
@@ -173,6 +207,8 @@ def merge_multiple_dbs_to_json(
         source_cursor = source_conn.cursor()
         if "temp_dir" in config_data:
             source_cursor.execute("PRAGMA temp_store_directory = " + config_data["temp_dir"])
+        _apply_read_pragmas(source_cursor)
+        _ensure_query_indexes(source_cursor)
 
         try:
             sys_boottime, sys_realtime = get_boottime_and_realtime(source_cursor)
@@ -409,12 +445,23 @@ def query_native_hook(
         event_types: list[str],
         exclude_patterns: Optional[List[str]] = None,
         startts: str = None,
-        endts: str = None):
+        endts: str = None,
+        aggregate: bool = True):
+    """查询 native_hook 表。
+
+    Args:
+        aggregate: True=SQL级 GROUP BY callchain_id 聚合（按 callchain_id 合并
+            heap_size，frames 只解析一次，适用于 add_detail_data 等只需聚合
+            结果的场景，大幅减少内存）；False=返回逐条记录（含 addr 字段，
+            适用于 add_anno_data 等需逐条处理后再聚合的场景）。
+    """
     source_db_paths = __get_query_dbs(exclude_patterns, source_db_dir)
-    res = OptimizedCallChain()
+    res = []
     for db_idx, db_path in enumerate(source_db_paths, 1):
         source_conn = sqlite3.connect(db_path)
         source_cursor = source_conn.cursor()
+        _apply_read_pragmas(source_cursor)
+        _ensure_query_indexes(source_cursor)
         try:
             sys_boottime, sys_realtime = get_boottime_and_realtime(source_cursor)
             if sys_boottime is None or sys_realtime is None:
@@ -432,43 +479,79 @@ def query_native_hook(
             if len(event_types) > 0:
                 event_type_str = "({})".format(", ".join(f"'{v}'" for v in event_types))
                 conditions += f" AND (event_type in {event_type_str})"
-            source_query_sql = f"""
-                SELECT
-                    nh.callchain_id,
-                    nh.addr,
-                    nh.event_type,
-                    nh.heap_size,
-                    nh.start_ts,
-                    nf.result_json,
-                    p.pid,
-                    p.name
-                FROM
-                    native_hook nh
-                INNER JOIN 
-                    process p ON nh.ipid = p.ipid
-                LEFT JOIN native_hook_agg nf ON nh.callchain_id = nf.callchain_id
-                WHERE {conditions}
-            """
+
+            if aggregate:
+                source_query_sql = f"""
+                    SELECT
+                        nh.callchain_id,
+                        SUM(nh.heap_size) as heap_size,
+                        MAX(nh.start_ts) as ts,
+                        MIN(nh.event_type) as event_type,
+                        MAX(nf.result_json) as result_json,
+                        MAX(p.pid) as pid,
+                        MAX(p.name) as name,
+                        COUNT(*) as apply_count
+                    FROM
+                        native_hook nh
+                    INNER JOIN
+                        process p ON nh.ipid = p.ipid
+                    LEFT JOIN native_hook_agg nf ON nh.callchain_id = nf.callchain_id
+                    WHERE {conditions}
+                    GROUP BY nh.callchain_id
+                """
+            else:
+                source_query_sql = f"""
+                    SELECT
+                        nh.callchain_id,
+                        nh.addr,
+                        nh.event_type,
+                        nh.heap_size,
+                        nh.start_ts,
+                        nf.result_json,
+                        p.pid,
+                        p.name
+                    FROM
+                        native_hook nh
+                    INNER JOIN
+                        process p ON nh.ipid = p.ipid
+                    LEFT JOIN native_hook_agg nf ON nh.callchain_id = nf.callchain_id
+                    WHERE {conditions}
+                """
             print(f"   正在执行查询：{source_query_sql}")
             source_cursor.execute(source_query_sql)
-            for row in source_cursor:
-                res.append({
-                    "ts": get_realtime(sys_boottime, sys_realtime, row[4])[0],
-                    "callchain_id": row[0],
-                    "addr": row[1],
-                    "event_type": row[2],
-                    "heap_size": row[3],
-                    "frames": json.loads(row[5]) if row[5] else [],
-                    "pid": row[6],
-                    "process_name": row[7]
-                })
-            print(f"   从源DB查询到 {len(res)} 条 anno 记录")
+            if aggregate:
+                for row in source_cursor:
+                    res.append({
+                        "ts": get_realtime(sys_boottime, sys_realtime, row[2])[0],
+                        "callchain_id": row[0],
+                        "event_type": row[3],
+                        "heap_size": row[1],
+                        "frames": json.loads(row[4]) if row[4] else [],
+                        "pid": row[5],
+                        "process_name": row[6],
+                        "apply_count": row[7],
+                    })
+            else:
+                res_cc = OptimizedCallChain()
+                for row in source_cursor:
+                    res_cc.append({
+                        "ts": get_realtime(sys_boottime, sys_realtime, row[4])[0],
+                        "callchain_id": row[0],
+                        "addr": row[1],
+                        "event_type": row[2],
+                        "heap_size": row[3],
+                        "frames": json.loads(row[5]) if row[5] else [],
+                        "pid": row[6],
+                        "process_name": row[7]
+                    })
+                res = res_cc.to_dict()
+            print(f"   从源DB查询到 {len(res)} 条 {'聚合' if aggregate else 'anno'} 记录")
 
         except sqlite3.Error as e:
             print(f"   处理源DB失败：{str(e)}，跳过该DB")
         finally:
             source_conn.close()
-    return res.to_dict()
+    return res
 
 
 # def _get_clock_snapshot(db_path: str) -> dict[str, int]:

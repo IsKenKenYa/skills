@@ -2,11 +2,13 @@
 name: hmos-skill-reviewer
 description: Review and validate Agent Skills for compliance with Claude Skills specification. Use when evaluating SKILL.md files, checking naming conventions, validating content structure, or ensuring skills follow best practices. Provides comprehensive analysis of metadata format, content organization, progressive disclosure, and actionable vs knowledge-based content.
 license: MIT
+enable: true
+publish: summary
 metadata:
   author: harmonyos-dev-skills
-  version: "1.0.0"
+  version: "1.1.0"
   created: "2026-03-17"
-  updated: "2026-03-17"
+  updated: "2026-09-18"
   keywords: ["skill-review", "validation", "quality-assurance", "agent-skills"]
 compatibility: Designed for Claude Code. Requires Bash and Python 3.8+ for automation scripts.
 ---
@@ -25,6 +27,36 @@ compatibility: Designed for Claude Code. Requires Bash and Python 3.8+ for autom
 
 ---
 
+## 输出
+
+审查完成后只写 **JSON**，不要再写 Markdown 审查报告。
+`title`、`message`、`suggestion`、`rationale` **必须用中文**（路径、枚举、字段名保持原样）。
+
+```json
+{
+  "schema_version": "1.0",
+  "skill": "hmos-skill-reviewer",
+  "findings": [
+    {
+      "severity": "blocker | minor | nit",
+      "file_path": "被审查 skill 的相对路径",
+      "line_number": 1,
+      "title": "问题标题",
+      "message": "问题说明",
+      "suggestion": "修复建议",
+      "rationale": "判定依据"
+    }
+  ]
+}
+```
+
+- `findings` 可为空数组（没有问题）。
+- `title` / `message` / `suggestion` / `rationale` 用中文写；不要用英文句子。
+- `rationale` 必填：写清对应哪条规范（或检查项），以及为什么算这个问题。
+- `severity` 必须用流水线枚举，不能写 `critical` / `error` / `warning` / `info`。
+- 本 skill 对应：Critical → `blocker`，Warning → `minor`，Info → `nit`。
+- 不要输出通过 / 有条件通过 / 拒绝；流水线只看 `findings` 是否为空。
+
 ## 审查工作流程
 
 ### 阶段 1: 快速扫描
@@ -33,15 +65,17 @@ compatibility: Designed for Claude Code. Requires Bash and Python 3.8+ for autom
 ```bash
 skill-name/
 ├── SKILL.md          # 必需
+├── test-cases/       # 可选（有测试用例时必需，放在根目录）
 ├── scripts/          # 可选
 ├── references/       # 可选
-└── assets/           # 可选
+└── assets/           # 可选（不含测试用例）
 ```
 
 **检查项:**
 - [ ] SKILL.md 是否存在
 - [ ] 目录名与 name 字段一致
 - [ ] 无深层嵌套
+- [ ] test-cases/ 在根目录下（不在 assets/ 内）
 
 **步骤 2: 提取元数据**
 读取 YAML frontmatter，记录明显问题。
@@ -118,10 +152,18 @@ structured output in JSON or Markdown format.
 
 #### 可选字段审查
 
-**license (推荐):**
+**license (必填，必须为 MIT):**
 ```yaml
 license: MIT
 ```
+
+**检查项:**
+- [ ] license 字段存在
+- [ ] license 值为 `MIT`
+
+**判定:**
+- 缺少 license 字段 → **Critical**
+- license 值非 `MIT` → **Critical**
 
 **metadata (推荐):**
 ```yaml
@@ -286,6 +328,7 @@ references/ (按需加载)
 - [ ] 详细内容在 references/
 - [ ] 引用了 references/文件
 - [ ] 引用只有一层深度
+- [ ] 顶层目录仅包含 `SKILL.md`、`test-cases/`、`scripts/`、`references/`、`assets/`，不得有其他额外目录；`test-cases/` 是允许的顶层目录，不应报为违规
 
 **组织错误:**
 ```markdown
@@ -362,51 +405,6 @@ references/ (按需加载)
 
 ---
 
-**审查报告模板:**
-```markdown
-# Skill 审查报告
-
-## 基本信息
-- **Skill 名称**: [name]
-- **审查时间**: [date]
-- **总体评分**: [?]/5
-
-## 问题汇总
-- **Critical**: [x] 个
-- **Warning**: [y] 个
-- **Info**: [z] 个
-
-## 维度评分
-| 维度 | 得分 | 说明 |
-|------|------|------|
-| 格式规范性 | ?/5 | ... |
-| 内容职责 | ?/5 | ... |
-| 可操作性 | ?/5 | ... |
-| 组织结构 | ?/5 | ... |
-| 综合评分 | ?/5 | ... |
-
-## Critical 问题
-1. **[问题标题]**
-   - 位置：第 X 行
-   - 修复建议：...
-
-## Warning 问题
-...
-
-## Info 问题
-...
-
-## 整体评价
-...
-
-## 审查结论
-- [ ] ✅ 通过
-- [ ] ⚠️ 有条件通过
-- [ ] ❌ 拒绝
-```
-
----
-
 **自动化检查工具:**
 
 ### Bash 脚本 - 快速格式检查
@@ -423,7 +421,7 @@ python scripts/validate-frontmatter.py skills/*/SKILL.md
 1. 运行自动化脚本
 2. 修复发现的问题
 3. 请求 AI 审查
-4. 查看审查报告
+4. 查看 JSON 结果
 
 ---
 
@@ -443,6 +441,119 @@ python scripts/validate-frontmatter.py skills/*/SKILL.md
 ### 外部资源
 - [Agent Skills Specification](https://agentskills.io/specification)
 - [Anthropic Skills Repository](https://github.com/anthropics/skills)
+
+---
+
+## 测试用例格式规范
+
+Skill 的测试用例由 `hmos-skill-test-runner` 自动发现并执行。测试用例目录必须命名为 `test-cases/`，放在 skill 根目录下（与 `SKILL.md` 同级），不得放在 `assets/` 或其他子目录中。
+
+### 目录与文件结构
+
+```
+skill-name/
+├── SKILL.md
+└── test-cases/
+    ├── trigger.md       # 触发验证（必需）
+    ├── smoke.md         # 冒烟测试 / 路由验证（可选，路由型 skill 才需要）
+    └── functional.md    # 功能性测试（必需）
+```
+
+### 用例文件格式
+
+每个文件为 Markdown 格式，多条用例之间以 `---` 分隔，每条用例以 `### 测试用例：` 开头。每条用例包含三部分：**基本信息**、**输入**、**预期输出**。
+
+#### 触发验证（trigger.md）
+
+验证 skill 是否在正确场景被触发。
+
+```markdown
+### 测试用例：TRIGGER-001
+
+**skill**：{skill_name}（必填）  
+**类型**：trigger（触发验证）
+
+#### 输入
+
+{prompt}
+
+#### 预期输出
+
+**应触发**：是（必填，`是` 或 `否`）
+
+---
+
+### 测试用例：TRIGGER-002
+
+**skill**：{skill_name}（必填）  
+**类型**：trigger（触发验证）
+
+#### 输入
+
+{prompt}
+
+#### 预期输出
+
+**应触发**：否（必填，`是` 或 `否`）
+```
+
+#### 冒烟测试（smoke.md，可选）
+
+仅路由型 skill 需要。验证场景路由是否正确命中。
+
+```markdown
+### 测试用例：SMOKE-001
+
+**skill**：{skill_name}（必填）  
+**类型**：smoke（路由验证）  
+**阶段**：{DEV/REQ/FIX}（选填）
+
+#### 输入
+
+{prompt}
+
+#### 预期输出
+
+**应命中场景**：{scene_id}（必填）  
+**禁止命中场景**：{scene_id}, {scene_id}（必填，逗号分隔）  
+**阶段**：{phase}（选填）
+```
+
+#### 功能性测试（functional.md）
+
+验证 skill 的核心功能是否正确执行。
+
+```markdown
+### 测试用例：FUNC-001
+
+**skill**：{skill_name}（必填）  
+**类型**：functional（功能验证）
+
+#### 输入
+
+{prompt}
+
+#### 预期输出
+
+**验证标准**：（必填，每条一个独立检查点，逐条判定通过/失败）
+
+- {验证点1}
+- {验证点2}
+- {验证点3}
+
+**应包含**：{可选，逗号分隔}（选填）  
+**不应包含**：{可选，逗号分隔}（选填）  
+**格式**：{可选}（选填，markdown/json/yaml/csv）  
+**应生成文件**：{可选，逗号分隔}（选填）
+```
+
+### 审查检查项
+
+- [ ] `test-cases/` 目录位于 skill 根目录下
+- [ ] `trigger.md` 文件存在
+- [ ] `functional.md` 文件存在
+
+详细模板参考：[hmos-skill-test-runner](../hmos-skill-test-runner/SKILL.md) 的 references 目录。
 
 ---
 
@@ -477,19 +588,24 @@ python scripts/validate-frontmatter.py skills/*/SKILL.md
 ❌ 错误结构:
 skill-name/
 ├── SKILL.md
-├── README.md          ← 不应该在根目录
-├── examples.md        ← 不应该在根目录
+├── README.md                ← 不应该在根目录
+├── examples.md              ← 不应该在根目录
+├── assets/
+│   └── test-cases/          ← 测试用例不应放在 assets 下
 └── references/
 
 ✅ 正确结构:
 skill-name/
-├── SKILL.md           ← 唯一根文件
-├── assets/            ← 所有辅助资源
+├── SKILL.md                 ← 唯一根文件
+├── test-cases/              ← 测试用例目录，放在 skill 根目录下
+├── assets/                  ← 辅助资源（不含测试用例）
 │   ├── README.md
 │   └── examples.md
-├── references/        ← 参考文档
-└── scripts/           ← 自动化脚本
+├── references/              ← 参考文档
+└── scripts/                 ← 自动化脚本
 ```
+
+> **注意**: 测试用例目录 `test-cases/` 必须放在 skill 的根目录下，不要放在 `assets/` 或其他子目录中。`test-cases/` 的命名和格式要求详见下方「测试用例格式规范」。
 
 详细案例：[assets/examples.md](assets/examples.md)
 

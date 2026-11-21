@@ -22,7 +22,7 @@ const BUCKET_ORDER = [
 
 const SIX_BUCKETS = BUCKET_ORDER.slice(0, 6);
 
-/** ScanReport JSON 渲染（契约产物；键序固定保证确定性 INV-3） */
+/** ScanReport JSON 渲染（契约产物；键序固定保证确定性 ） */
 export function renderJson(scanReport) {
   const ordered = orderReport(scanReport);
   return JSON.stringify(ordered, null, 2) + '\n';
@@ -60,7 +60,7 @@ function orderAdaptationItem(item) {
 }
 
 /**
- * 单平台支持接口占比（TASK-10，design 固化公式，报告渲染时实时计算）：
+ * 单平台支持接口占比（design 固化公式，报告渲染时实时计算）：
  *   分子 = 已判定 @ohos.* 条目中命中规则表符号级 platform 标注的接口数
  *   分母 = adaptation 六分类中 source=ohos 的条目数（不含 unknown、不含 @hms.*）
  * 规则表无任何单平台条目时显示 0% 并注明。
@@ -81,13 +81,13 @@ export function computePlatformRatio(scanReport, rules) {
   return { numerator, denominator, known: rules ? hasPlatformEntries(rules) : false };
 }
 
-/** Markdown 迁移建议报告（R-9/R-14 标注；v1.2：来源列/单平台占比/动态加载提示） */
+/** Markdown 迁移建议报告（含平台标注；来源列/单平台占比/动态加载提示） */
 export function renderMarkdown(scanReport, options = {}) {
   const template = readFileSync(join(SKILL_ROOT, 'templates', 'report.md.tpl'), 'utf8');
   const sections = [];
 
   if (options.degraded) {
-    sections.push('> ⚠️ **SDK 未检出，单源判定**：本次判定仅基于规则表（R-14）；建议提供 OpenHarmony SDK 目录后重扫以获得双源交叉结论。');
+    sections.push('> ⚠️ **SDK 未检出，单源判定**：本次判定仅基于规则表；建议提供 OpenHarmony SDK 目录后重扫以获得双源交叉结论。');
   }
   if (scanReport.project_model === 'fa') {
     sections.push('> **FA 模型不支持，仅支持 Stage 模型**：未产出适配分类。');
@@ -117,7 +117,7 @@ export function renderMarkdown(scanReport, options = {}) {
     sections.push('未发现 @ohos.*/@hms.* 接口引用。');
   }
 
-  // 单平台占比统计节（AC-3.1/R-9；渲染时实时计算）
+ // 单平台占比统计节（渲染时实时计算）
   const ratio = computePlatformRatio(scanReport, options.rules);
   let ratioLine;
   if (scanReport.project_model === 'stage') {

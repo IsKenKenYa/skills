@@ -1,5 +1,5 @@
-> [!WARNING]
-> **Experimental:** Compose Preview Screenshot Testing is still in development. Its features and APIs are subject to change substantially during the alpha phase. Report any feedback and issues through the [issue tracker](https://issuetracker.google.com/issues/new?component=192708&template=840533).
+> [!CAUTION]
+> **Caution:** The standalone `com.android.compose.screenshot` plugin described on this page is no longer maintained. We recommend setting up screenshot tests with [AGP test suites](https://developer.android.com/studio/preview/compose-screenshot-testing-with-testsuites) using Android Gradle Plugin (AGP) 9.5 or higher. To switch, see [Migrate an existing project](https://developer.android.com/studio/preview/compose-screenshot-testing-with-testsuites#migration).
 
 Screenshot testing is an effective way to verify how your UI looks to users.
 The Compose Preview Screenshot Testing tool combines the simplicity and
@@ -10,7 +10,7 @@ is designed to be as straightforward to use as composable previews.
 
 ## Android skills
 
-[View on GitHub](https://github.com/android/skills/blob/main/testing/testing-setup)
+[View on GitHub](https://github.com/android/skills/tree/main/testing/testing-setup)
 
 ### Create screenshot tests
 
@@ -60,12 +60,15 @@ validation failures entirely within the IDE. Here are some of the key features:
 
 ## Requirements
 
+> [!NOTE]
+> **Note:** For requirements and setup instructions for AGP test suites, see [AGP test suites](https://developer.android.com/studio/preview/compose-screenshot-testing-with-testsuites).
+
 To use Compose Preview Screenshot Testing through the full IDE integration, your
 project must meet the following requirements:
 
 - Android Studio Panda 1 Canary 4 or higher.
 - Android Gradle Plugin (AGP) version 9.0 or higher.
-- Compose Preview Screenshot Testing plugin version [0.0.1-alpha15](https://developer.android.com/studio/preview/compose-screenshot-testing-release-notes#alpha15) or higher.
+- Compose Preview Screenshot Testing plugin version [0.0.1-alpha16](https://developer.android.com/studio/preview/compose-screenshot-testing-release-notes#alpha16) or higher.
 - Kotlin version 2.2.10 or higher.
 - JDK version 17 or higher.
 - Compose enabled for your project. We recommend enabling Compose using the [Compose Compiler Gradle plugin](https://developer.android.com/develop/ui/compose/compiler).
@@ -74,7 +77,7 @@ If you only want to use the underlying Gradle tasks without the IDE integration,
 the requirements are as follows:
 
 - Android Gradle Plugin (AGP) version 8.5.0 or higher.
-- Compose Preview Screenshot Testing plugin version [0.0.1-alpha15](https://developer.android.com/studio/preview/compose-screenshot-testing-release-notes#alpha15) or higher.
+- Compose Preview Screenshot Testing plugin version [0.0.1-alpha16](https://developer.android.com/studio/preview/compose-screenshot-testing-release-notes#alpha16) or higher.
 - Kotlin version 1.9.20 or higher. We recommend using Kotlin 2.0 or higher so you can use the Compose Compiler Gradle plugin.
 - JDK version 17 or higher.
 - Compose enabled for your project. We recommend enabling Compose using the [Compose Compiler Gradle plugin](https://developer.android.com/develop/ui/compose/compiler).
@@ -94,11 +97,12 @@ Preview Screenshot Testing plugin. To set up the plugin, follow these steps:
 2. In the `android {}` block of your module-level `build.gradle.kts` file,
    enable the experimental flag to use the `screenshotTest` source set.
 
-       android {
-           experimentalProperties["android.experimental.enableScreenshotTest"] = true
-       }
-
-3. Add the `com.android.compose.screenshot` plugin, version `0.0.1-alpha15` to
+   ```kotlin
+   android {
+       experimentalProperties["android.experimental.enableScreenshotTest"] = true
+   }
+   ```
+3. Add the `com.android.compose.screenshot` plugin, version `0.0.1-alpha16` to
    your project.
 
    1. Add the plugin to your version catalogs file:
@@ -106,7 +110,7 @@ Preview Screenshot Testing plugin. To set up the plugin, follow these steps:
           [versions]
           agp = "9.0.0-rc03"
           kotlin = "2.2.10"
-          screenshot = "0.0.1-alpha15"
+          screenshot = "0.0.1-alpha16"
 
           [plugins]
           screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot"}
@@ -114,10 +118,11 @@ Preview Screenshot Testing plugin. To set up the plugin, follow these steps:
    2. In your module-level `build.gradle.kts` file, add the plugin in the
       `plugins {}` block:
 
-          plugins {
-              alias(libs.plugins.screenshot)
-          }
-
+      ```kotlin
+      plugins {
+          alias(libs.plugins.screenshot)
+      }
+      ```
 4. Add the [`screenshot-validation-api`](https://maven.google.com/web/index.html?q=screenshot-validation-api#com.android.tools.screenshot:screenshot-validation-api)
    and [`ui-tooling`](https://maven.google.com/web/index.html?q=tooling#androidx.compose.ui:ui-tooling)
    dependencies.
@@ -130,10 +135,12 @@ Preview Screenshot Testing plugin. To set up the plugin, follow these steps:
 
    2. Add them to your module-level `build.gradle.kts` file:
 
-          dependencies {
-            screenshotTestImplementation(libs.screenshot.validation.api)
-            screenshotTestImplementation(libs.androidx.ui.tooling)
-          }
+      ```kotlin
+      dependencies {
+        screenshotTestImplementation(libs.screenshot.validation.api)
+        screenshotTestImplementation(libs.androidx.ui.tooling)
+      }
+      ```
 
 ## Designate composable previews to use for screenshot tests
 
@@ -147,21 +154,23 @@ the new `screenshotTest` source set, for example:
 You can add more composables or previews, including multi-previews, in
 this file or other files created in the same source set.
 
-    package com.example.yourapp
+```kotlin
+package com.example.yourapp
 
-    import androidx.compose.runtime.Composable
-    import androidx.compose.ui.tooling.preview.Preview
-    import com.android.tools.screenshot.PreviewTest
-    import com.example.yourapp.ui.theme.MyApplicationTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.android.tools.screenshot.PreviewTest
+import com.example.yourapp.ui.theme.MyApplicationTheme
 
-    @PreviewTest
-    @Preview(showBackground = true)
-    @Composable
-    fun GreetingPreview() {
-        MyApplicationTheme {
-            Greeting("Android!")
-        }
+@PreviewTest
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    MyApplicationTheme {
+        Greeting("Android!")
     }
+}
+```
 
 ## Generate reference images
 
@@ -180,7 +189,7 @@ integration or for the Gradle tasks.
 
 Try [Android CLI](https://developer.android.com/tools/agents) if you're not using Android Studio or prefer to do things from the command line.  
 
-For example, use the [`android studio render-compose-preview`](https://developer.android.com/tools/agents/android-cli#studio-render-compose-preview) command when you need to render a Compose preview for visual testing.
+For example, use the [`android studio render-compose-preview`](https://developer.android.com/tools/agents/android-cli/commands/studio_render-compose-preview) command when you need to render a Compose preview for visual testing.
 
     android studio render-compose-preview
 
@@ -207,7 +216,7 @@ After the task completes, find the reference images in
 
 ## Generate a test report
 
-Once the reference images exist, generate a test report by following the
+After reference images exist, generate a test report by following the
 instructions in this section for the IDE integration or for the Gradle tasks.
 
 ### In the IDE

@@ -38,7 +38,7 @@ def htrace_to_sqlitedb(
     trace_streamer: str | None = None,
     so_dir: str | None = None,
     output_name: str | None = None,
-    timeout: int = 300,
+    timeout: int = 1800,
     skip_existing: bool = False,
 ) -> str:
     htrace = Path(htrace_path)

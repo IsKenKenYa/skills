@@ -5,7 +5,7 @@ description: 分析 Android 代码库以实现 ML Kit GenAI Prompt API。使用�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-03'
+  last-updated: '2026-11-10'
   keywords:
   - ML Kit
   - Prompt API
@@ -62,16 +62,19 @@ these rules:
 
    For example:
 
-       fun parseEmail(email: String): String {
-           ... 
-       }
+   ```kotlin
+   fun parseEmail(email: String): String {
+       ... 
+   }
+   ```
 
    should be refactored to:
 
-       fun parseEmail(email: String): ParsedEmail? {
-           ...
-       }
-
+   ```kotlin
+   fun parseEmail(email: String): ParsedEmail? {
+       ...
+   }
+   ```
 3. **Example:**
 
    This is the example code before refactoring:

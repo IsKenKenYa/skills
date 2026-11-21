@@ -288,7 +288,6 @@
                     "Lib": [
                         "/proc/.*/data/storage/.*/bundle/.*libantcube.so$",
                         "/proc/.*/data/storage/.*/bundle/.*libcube.so$",
-                        "/proc/.*/data/storage/.*/bundle/.*libentry.so$",
                         "/proc/.*/data/storage/.*/bundle/.*libBifrost.so$",
                         "/proc/.*/data/storage/.*/bundle/.*libbloxohos.so$"
                     ],

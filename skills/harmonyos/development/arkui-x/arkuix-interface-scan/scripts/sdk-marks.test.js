@@ -68,7 +68,7 @@ test('scanMarks：索引含模块名键；读取失败目录抛错（构建失�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD10：export default class/enum 声明形态的 @crossplatform 符号级标记不丢失', () => {
+test('export default class/enum 声明形态的 @crossplatform 符号级标记不丢失', () => {
   const text = [
     '/**',
     ' * @syscap X.Y.Z',
@@ -83,7 +83,7 @@ test('SD10：export default class/enum 声明形态的 @crossplatform 符号级�
   assert.equal(moduleMarked, false);
 });
 
-test('SD10（r2）：import 前置于模块 doc 注释时模块级标记不丢失（59 SDK 模块实测根因）', () => {
+test('import 前置于模块 doc 注释时模块级标记不丢失（59 SDK 模块实测根因）', () => {
   const text = [
     "import { AsyncCallback } from './@ohos.base';",
     "import image from './@ohos.multimedia.image';",
@@ -101,7 +101,7 @@ test('SD10（r2）：import 前置于模块 doc 注释时模块级标记不丢�
   assert.equal(moduleMarked, true, 'import 前置不应丢失模块级 @crossplatform');
 });
 
-test('SD13（r3）：barrel re-export 前置注释的 @crossplatform 逐符号计入（@ohos.arkui.node 实证形态）', () => {
+test('barrel re-export 前置注释的 @crossplatform 逐符号计入（@ohos.arkui.node 实证形态）', () => {
   const text = [
     "import { AsyncCallback } from './@ohos.base';",
     '/**',
@@ -123,7 +123,7 @@ test('SD13（r3）：barrel re-export 前置注释的 @crossplatform 逐符号�
   assert.equal(symbols.get('LengthUnit'), undefined, '无标记块的导出不计入');
 });
 
-test('SD17（统一轮）：.d.ets 文件纳入索引（ArkSlider 形态）', () => {
+test('.d.ets 文件纳入索引（ArkSlider 形态）', () => {
   const text = [
     '/**',
     ' * @crossplatform',
@@ -139,7 +139,7 @@ test('SD17（统一轮）：.d.ets 文件纳入索引（ArkSlider 形态）', ()
   assert.equal(moduleMarked, true);
 });
 
-test('SD22（r5）：declare struct 声明的 @crossplatform 标记计入（.d.ets 组件常见形态）', () => {
+test('declare struct 声明的 @crossplatform 标记计入（.d.ets 组件常见形态）', () => {
   const text = [
     '/**',
     ' * @crossplatform',

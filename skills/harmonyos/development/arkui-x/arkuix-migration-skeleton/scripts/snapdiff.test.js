@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { snapshotProject, diffSnapshots } from './snapdiff.js';
 
-test('SD9：快照 diff 覆盖新增+改写+删除（全工程，不限于 .arkui-x）', () => {
+test('快照 diff 覆盖新增+改写+删除（全工程，不限于 .arkui-x）', () => {
   const root = mkdtempSync(join(tmpdir(), 'f1-snapdiff-'));
   mkdirSync(join(root, '.arkui-x', 'android'), { recursive: true });
   writeFileSync(join(root, 'hvigorfile.ts'), 'export {};\n');
@@ -16,7 +16,7 @@ test('SD9：快照 diff 覆盖新增+改写+删除（全工程，不限于 .arku
   rmSync(join(root, 'keep.txt'));                                                       // 删除
   const diff = diffSnapshots(before, snapshotProject(root));
   assert.ok(diff.includes('+ .arkui-x/android/build.gradle'));
-  assert.ok(diff.includes('~ hvigorfile.ts'), '既有文件改写必须入清单（SD9 实测漏报点）');
+  assert.ok(diff.includes('~ hvigorfile.ts'), '既有文件改写必须入清单（实测漏报点）');
   assert.ok(diff.includes('- keep.txt'));
   rmSync(root, { recursive: true, force: true });
 });

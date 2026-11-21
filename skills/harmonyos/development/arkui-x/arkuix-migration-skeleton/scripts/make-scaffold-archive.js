@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * make-scaffold-archive.js —— 一次性归档组装工具（SD28 根治方案，dev 用）
+ * make-scaffold-archive.js —— 一次性归档组装工具（维护者用）
  *
  * 从 ArkUI-X SDK 26.0.0 toolchains 的官方模板组装"标准答案" scaffold 归档：
  *   项目名 arkuixapp / bundleName com.example.arkuixapp / Compile SDK 16(=26.0.0)
  *   / runtimeOS OpenHarmony / 双平台 / Framework CocoaPods
- * 行为按 ace_tools.js 反编译复刻（GM/KM/XM/createPackageFile/modifyOpenHarmonyOSConfig）：
+ * 行为按 ace 工具 CLI 交互实证复刻（GM/KM/XM/createPackageFile/modifyOpenHarmonyOSConfig）：
  *   - 复制 ohos_stage + ets_stage/source + android + cocoapods/ios
  *   - XM 占位符替换（固定清单）
  *   - java 包目录按 bundleName 分包重组
@@ -75,7 +75,7 @@ const replacements = [
   ['entry/src/ohosTest/module.json5', 'module_test_name', 'entry_test'],
   ['entry/src/ohosTest/resources/base/element/string.json', 'module_test_name', 'entry_test_desc'],
   ['entry/oh-package.json5', 'module_name', 'entry'],
-  // Android
+ // Android
   ['.arkui-x/android/settings.gradle', 'appName', NAME],
   ['.arkui-x/android/app/src/main/res/values/strings.xml', 'appName', NAME],
   ['.arkui-x/android/app/src/main/AndroidManifest.xml', 'packageName', BUNDLE],
@@ -87,7 +87,7 @@ const replacements = [
   ['.arkui-x/android/app/src/main/java/MainActivity.java', 'ArkUIInstanceName', `${BUNDLE}:entry:EntryAbility:`],
   ['.arkui-x/android/app/src/main/java/MainActivity.java', 'MainActivity', 'EntryEntryAbilityActivity'],
   ['.arkui-x/android/app/src/main/AndroidManifest.xml', 'MainActivity', 'EntryEntryAbilityActivity'],
-  // iOS
+ // iOS
   ['.arkui-x/ios/app.xcodeproj/project.pbxproj', 'bundleIdentifier', BUNDLE],
   ['.arkui-x/ios/app/AppDelegate.m', 'packageName', BUNDLE],
   ['.arkui-x/ios/app/Info.plist', '{{CFBundleName}}', iosName],
@@ -135,12 +135,21 @@ writeFileSync(join(outDir, 'hvigor', 'hvigor-config.json5'), [
   '}'
 ].join('\n'));
 
+// ：对齐 ace create（API≥12 = modelVersion 工程）的 hvigor 布局——删除模板自带的三件
+// （hvigor/hvigor-wrapper.js + 根 hvigorw + hvigorw.bat）。旧 wrapper 与 hvigor 6.x schema /
+// Node 24（spawn .cmd 无 shell 被拒 + pnpm 7.30 HTTP 崩）三重不兼容；modelVersion 工程的
+// hvigorw 自举由 ace build（Integration IDE hvigorw --sync）或 DevEco 完成，工程不内置 wrapper。
+for (const stale of ['hvigor/hvigor-wrapper.js', 'hvigorw', 'hvigorw.bat']) {
+  const p = join(outDir, stale);
+  if (existsSync(p)) rmSync(p, { force: true });
+}
+
 // BM（createAndroidTaskInBuildGradle）：build.gradle 注入 ArkTSBuildTask hook
 const gradlePath = join(outDir, '.arkui-x/android/app/build.gradle');
 const GRADLE_HOOK = [
   '',
   '',
-  '    //Select whether you want to execute the compile arkts script.',
+  ' //Select whether you want to execute the compile arkts script.',
   '    def configBuildFlag = false',
   '',
   '    task ArkTSBuildTask {',
@@ -167,7 +176,7 @@ let gradle = readFileSync(gradlePath, 'utf8');
 gradle = gradle.replace(/(buildToolsVersion "[^"]*")/, `$1\n${GRADLE_HOOK}`);
 writeFileSync(gradlePath, gradle);
 
-// UM（createIosScriptInPbxproj）：buildPhases 头插 Run Script 引用 + 文件尾前插 ShellScript 段
+// （createIosScriptInPbxproj）：buildPhases 头插 Run Script 引用 + 文件尾前插 ShellScript 段
 const pbxPath = join(outDir, '.arkui-x/ios/app.xcodeproj/project.pbxproj');
 const PBX_ID = 'DD0D56CB443B43659ABE95F1';
 const PBX_HOOK = `/* Begin PBXShellScriptBuildPhase section */
@@ -196,7 +205,7 @@ pbx = pbx.replace(/(buildPhases = \(\n)/, `$1\t\t\t\t${PBX_ID} /* Run Script */,
 pbx = pbx.replace(/(\/\* End PBXNativeTarget section \*\/\n)/, `$1\n${PBX_HOOK}\n`);
 writeFileSync(pbxPath, pbx);
 
-// WM/LM：buildArkTS 三件（ace 动态生成，模板无源）——从参照产物提取 + 占位符固化
+// WM/buildArkTS 三件（ace 动态生成，模板无源）——从参照产物提取 + 占位符固化
 for (const rel of ['.arkui-x/android/buildArkTS', '.arkui-x/android/buildArkTS.bat', '.arkui-x/ios/buildArkTS.sh']) {
   const ref = refDir ? join(refDir, rel) : '';
   const file = join(outDir, rel);

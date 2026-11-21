@@ -33,9 +33,9 @@
         "reason_contains": "双源一致"
       },
       "@ohos.geoLocationManager#getCurrentLocation": {
-        "bucket": "equivalent_bridge",
+        "bucket": "reduced_direct",
         "occurrences": 1,
-        "reason_contains": "双源一致"
+        "reason_contains": "单源（规则表"
       },
       "@ohos.vibrator#startVibration": {
         "bucket": "full_direct",
@@ -126,8 +126,8 @@
     "no_sdk_field": true,
     "exit_code": 0,
     "@ohos.geoLocationManager#getCurrentLocation": {
-      "bucket": "equivalent_bridge",
-      "reason_contains": "SDK 未检出降级"
+      "bucket": "reduced_direct",
+      "reason_contains": "单源（规则表"
     }
   },
   "demo": {

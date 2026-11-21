@@ -1,90 +1,47 @@
 # arkuix-interface-scan 测试提示词
 
-> 运行前提：Node.js ≥ 18（零第三方依赖）；可选 OpenHarmony SDK（无则 `--no-sdk` 降级模式）。
+> 运行前提：Node.js ≥ 18（零第三方依赖）；仓内自带 `benchmark/mini-sdk` 与三套 fixture，**自动场景无需本机 SDK**。
 > 环境变量基线：`OH_SDK_DIR`、`OHOS_SDK_HOME`、`DEVECO_SDK_HOME` 置空以复现确定性路径。
 
----
+## 使用说明（AI 检测/自动化）
 
-## 基础功能测试
-
-### 测试场景 1：Stage 工程全量扫描（双源判定）
-**提示词**：
-```
-扫描我的 OpenHarmony 工程接口适配性，工程路径 /path/to/stage-project，OH SDK 在 /path/to/ohos-sdk
-```
-
-**预期输出**：
-- 命令形态：`node scripts/scan.js <工程> --sdk-dir <OH SDK> --out <输出目录>`
-- 产出 `scan-report.json`（schema_version=1，含 inventory/adaptation 七桶）与 `migration-advice.md`
-- @ohos.* 模块按 SDK @crossplatform 标记 × 规则表双源交叉判定；双源一致 → 确定桶，冲突 → unknown（宁缺毋错）
-- 报告含分桶统计、unknown 归因与逐条 reason/advice
-
-### 测试场景 2：@kit 导入展开与符号级判定
-**提示词**：
-```
-我的工程用 @kit.ArkUI 导入了一批符号，扫描它们在 ArkUI-X 下的适配性
-```
-
-**预期输出**：
-- @kit.* 命中 SDK `ets/kits/@kit.*.d.ts` 映射展开为 @ohos.* 成员模块后再判定
-- 符号级条目（`@ohos.模块 | 符号`）按声明处标记判定；规则表符号级条目可覆盖模块级结论
-- kit 无映射或成员缺失 → 显式 unknown（不猜测）
-
-### 测试场景 3：C++ 工程 C-API 扫描
-**提示词**：
-```
-扫描这个 C++ 工程的 NDK C-API 适配性，路径 /path/to/native-project
-```
-
-**预期输出**：
-- 提取 `#include` 头文件路径（sysroot 相对形态，如 `multimedia/player_framework/native_avcodec_base.h`）与 `OH_*` 符号引用
-- 符号归属按定义头打分；C-API 判定为规则表单源（SDK 头文件无跨平台标注）
-- 规则表未覆盖的头 → unknown 并给出"人工确认"指引
+- **工作目录 = 本 skill 根目录**（`arkuix-interface-scan/`）。
+- **「自动可测场景」**：命令自包含（仓内 fixture 相对路径 + `/tmp` 输出，跑前清理），预期为确定性断言，可无人值守复跑。
+- **「人工场景」**：需真实工程、TTY 交互或真实 SDK，不进自动检测（跳过不算失败）。
+- **Windows/PowerShell**：命令为 bash 形态，复跑需适配（`/tmp`→`$env:TEMP`、`rm -rf`→`Remove-Item -Recurse -Force`）；`HOME` 隔离场景须同时设 `$env:USERPROFILE`（win32 `os.homedir()` 读 USERPROFILE）。
 
 ---
 
-## 边界条件测试
+## 自动可测场景
 
-### 测试场景 4：无 SDK 降级模式
-**提示词**：
+### A1：Stage 工程全量扫描（双源判定）
+**命令**：
+```bash
+rm -rf /tmp/f2-a1 && node scripts/scan.js benchmark/fixture-stage-project --sdk-dir benchmark/mini-sdk --out /tmp/f2-a1
 ```
-我这台机器没装 OpenHarmony SDK，直接扫描 /path/to/stage-project
-```
+**预期**：
+- 退出码 0；stdout 含 `SDK 判定源（显式指定）`
+- `/tmp/f2-a1/scan-report.json`：`schema_version=1`、`project_model=stage`、`adaptation` 七桶键齐（full_direct/…/unknown）；至少一条 reason 含 `双源一致`
+- `/tmp/f2-a1/migration-advice.md` 在场，含分桶表与 `单平台支持接口占比` 统计行
 
-**预期输出**：
-- 使用 `--no-sdk`（或环境无 SDK 自动降级）时仅规则表单源判定
-- 降级状态在报告 `sdk` 段如实记录（confirmed=false），不伪造 SDK 结论
-
-### 测试场景 5：混合 ArkTS + Native 工程
-**提示词**：
+### A5：SDK 询问先行拦截（非 TTY 无预设）
+**命令**：
+```bash
+rm -rf /tmp/f2-a5 && OH_SDK_DIR= OHOS_SDK_HOME= DEVECO_SDK_HOME= HOME=$(mktemp -d) \
+  node scripts/scan.js benchmark/fixture-stage-project --out /tmp/f2-a5
 ```
-工程里既有 ets 页面也有 entry/src/main/cpp 原生代码，一起扫
-```
-
-**预期输出**：
-- @ohos/@kit 引用与 C-API 引用同报告分列；project_model 判定为 stage
-- 两类引用各自进入七桶，统计互不污染
+（Windows 须同时设 `$env:USERPROFILE` 与 `$env:HOME` 同指假临时目录，否则本机真实 SDK 会泄漏进候选）
+**预期**：
+- 退出码 4，**零产出**（`/tmp/f2-a5/scan-report.json` 不存在）
+- stderr 含 SDK 路径**查找方法**（`DevEco`）、`--sdk-dir` 重跑通道、`未经确认，不产出判定`
 
 ---
 
-## 错误处理测试
+## 人工场景（不进自动检测）
 
-### 测试场景 6：FA 模型工程拒绝
-**提示词**：
-```
-扫描这个 FA 工程 /path/to/fa-project（根目录只有 config.json）
-```
-
-**预期输出**：
-- 判定 project_model=fa → 明确拒绝并引导（退出码 3，不产出半截报告）
-- 提示本 Skill 仅支持 Stage 模型
-
-### 测试场景 7：消费方报告缺失引导
-**提示词**：
-```
-跳过扫描直接给我迁移建议
-```
-
-**预期输出**：
-- 无输入工程/参数无效 → 退出码 2 与用法说明
-- 明确告知需要工程路径（以及可选 SDK 目录或 --no-sdk）
+- **C-API 扫描**：`node scripts/scan.js benchmark/fixture-capi-project --sdk-dir benchmark/mini-sdk`——inventory 含 `source:"ndk"` 条目，未覆盖头/符号落 unknown
+- **单源降级**：`--no-sdk` 显式确认——scan-report 无 `sdk` 字段，advice 含 `SDK 未检出，单源判定`
+- **--yes 自动采纳**：`OH_SDK_DIR=benchmark/mini-sdk` + `HOME` 隔离——退出码 0，`sdk.origin` 以 `auto:` 开头
+- **FA 拒绝**：`fixture-fa-project`——退出码 3，stdout 含 `FA 模型不支持`，产物照常写出
+- **TTY 交互全流程**：终端直跑真实工程，SDK 询问先行、无效路径当场纠正×3=中止
+- **真实工程+本机 SDK**：`[SDK 候选清单]` 交叉核对、@hms 归⑥带替代、动态加载提示

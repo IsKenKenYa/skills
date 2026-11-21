@@ -17,6 +17,7 @@
 """
 
 import json
+import re
 import argparse
 import sys
 from pathlib import Path
@@ -24,6 +25,33 @@ from pathlib import Path
 # Force UTF-8 output (fixes Windows GBK garbled text)
 sys.path.insert(0, str(Path(__file__).resolve().parent / "../_lib"))
 from encoding import *  # noqa: E402
+
+# ArkTS JS 帧格式: func_name:[url:<scope>|<package>|<version>|<file>:<line>:<col>]
+# ohpm 包升级时只有 <version> 字段变化；scope、package 是稳定标识符
+# （rule.py 的 THIRD_ARKTS_FRAGMENT 列表 + get_so_of_frame 均依赖包名稳定）。
+# 此正则须与 scripts/2_analysis/rule.py 的 TS_PATTERN 保持一致。
+_ARKTS_FRAME_RE = re.compile(
+    r'^(?P<func>[^:]+):\[url:'
+    r'(?P<scope>[^:|]+)\|'
+    r'(?P<package>[^|]+)\|'
+    r'(?P<version>[^:|]+)\|'
+    r'(?P<file>[^|\]]*):(?P<line>\d+):(?P<col>\d+)]:?$'
+)
+
+
+def _diff_key(name):
+    """跨版本帧名匹配键：剥离 ArkTS JS 帧 URL 中的 version 字段。
+
+    仅用于 diff 匹配——tree.json / 火焰图保留原始完整帧名（含版本号）。
+    只剥离第 3 个 | 字段（version），保留 scope|package 做消歧。
+    非 ArkTS 帧（native C/C++、未符号化、运行时内建）不匹配此格式，
+    原样返回，走精确匹配（与改动前行为一致）。
+    """
+    m = _ARKTS_FRAME_RE.match(name)
+    if not m:
+        return name
+    return (f"{m['func']}:[url:{m['scope']}|{m['package']}|"
+            f"{m['file']}:{m['line']}:{m['col']}]")
 
 
 def _mb(val):
@@ -70,10 +98,10 @@ def diff_trees(tree_a, tree_b):
     children_b = {}
     if tree_a and tree_a.get('children'):
         for ch in tree_a['children']:
-            children_a[ch['name']] = ch
+            children_a[_diff_key(ch['name'])] = ch
     if tree_b and tree_b.get('children'):
         for ch in tree_b['children']:
-            children_b[ch['name']] = ch
+            children_b[_diff_key(ch['name'])] = ch
 
     # 分离叶子节点和非叶子节点
     # 叶子节点 name 格式为 meta:<callchain_id>，跨版本 callchain_id 不一致

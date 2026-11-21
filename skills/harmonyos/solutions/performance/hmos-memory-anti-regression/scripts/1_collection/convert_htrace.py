@@ -2,6 +2,7 @@
 """Convert htrace files to sqlite db using trace_streamer."""
 
 import argparse
+import platform
 import shutil
 import subprocess
 import sys
@@ -18,8 +19,10 @@ TS_DOWNLOAD_FALLBACK = "https://gitcode.com/openharmony/developtools_smartperf_h
 
 
 def win_path(linux_path: str) -> str:
-    p = Path(linux_path)
-    return str(p).replace("/mnt/c", "C:").replace("/", "\\")
+    p = str(Path(linux_path))
+    if platform.system() == "Windows":
+        return p.replace("/", "\\")
+    return p
 
 
 def _ts_not_found_error():
@@ -46,7 +49,7 @@ def main():
     parser.add_argument("htrace_path", help="Path to .htrace file")
     parser.add_argument("-o", "--output", help="Output .db path (default: same dir, same name)")
     parser.add_argument("--ts", default=default_ts, help="trace_streamer path")
-    parser.add_argument("--win-temp", default=default_temp, help="Windows temp dir (WSL2 only)")
+    parser.add_argument("--win-temp", default=default_temp, help="Windows temp dir")
     args = parser.parse_args()
 
     htrace = Path(args.htrace_path)

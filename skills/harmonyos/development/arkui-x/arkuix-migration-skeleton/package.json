@@ -10,7 +10,7 @@
   "scripts": {
     "test": "node --test \"scripts/*.test.js\"",
     "benchmark": "node benchmark/compare.js",
-    "guard": "npm run test && npm run benchmark"
+    "guard": "node scripts/guard.js"
   },
   "dependencies": {}
 }

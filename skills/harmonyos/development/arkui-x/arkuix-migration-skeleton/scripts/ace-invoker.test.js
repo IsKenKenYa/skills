@@ -13,11 +13,13 @@ function makeStageRoot() {
   return root;
 }
 
-/** 构造 mock ace 可执行脚本（模拟真实行为：读 stdin 平台选择 1/2/3 → 按选项产壳） */
+/** 构造 mock ace 可执行脚本（模拟真实行为：读 stdin 平台选择 1/2/3 → 按选项产壳）。
+ * 文件名带 .js 后缀：spawnAce 对 .js 走 node 可执行启动——
+ * Windows 无法直接执行无扩展名 shebang 脚本，macOS/Linux 同样兼容 */
 function makeMockAce(root, behavior) {
   const dir = join(root, 'mock-bin');
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, 'ace');
+  const file = join(dir, 'ace.js');
   const bodies = {
     success: `
 const { mkdirSync, writeFileSync } = require('node:fs');
@@ -46,11 +48,11 @@ process.stdin.on('end', () => {
   return file;
 }
 
-test('v1.1 平台应答映射：both→1 / android→2 / ios→3', () => {
+test('平台应答映射：both→1 / android→2 / ios→3', () => {
   assert.deepEqual(PLATFORM_ANSWERS, { both: '1', android: '2', ios: '3' });
 });
 
-test('TASK-8 resolveTimeoutMs：显式参数 > ARKUIX_ACE_TIMEOUT_MS > 默认 300000；非法环境值回默认', () => {
+test('resolveTimeoutMs：显式参数 > ARKUIX_ACE_TIMEOUT_MS > 默认 300000；非法环境值回默认', () => {
   assert.equal(resolveTimeoutMs(1234, {}), 1234, '显式参数优先');
   assert.equal(resolveTimeoutMs(undefined, { ARKUIX_ACE_TIMEOUT_MS: '1500' }), 1500, '环境变量覆盖');
   assert.equal(resolveTimeoutMs(undefined, {}), DEFAULT_TIMEOUT_MS, '未设回默认');
@@ -73,7 +75,7 @@ test('preflight：缺三件套 → missing 清单', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-test('INV-2 modify 成功（both，应答 1）→ .arkui-x/{android,ios} 断言通过 + 改动清单', () => {
+test('modify 成功（both，应答 1）→ .arkui-x/{android,ios} 断言通过 + 改动清单', () => {
   const root = makeStageRoot();
   const ace = makeMockAce(root, 'success');
   const result = invokeModify(root, { aceBin: ace, platform: 'both' });
@@ -85,7 +87,7 @@ test('INV-2 modify 成功（both，应答 1）→ .arkui-x/{android,ios} 断言�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('INV-2 v1.1 modify platform=android（应答 2）→ 仅 android 壳断言', () => {
+test('modify platform=android（应答 2）→ 仅 android 壳断言', () => {
   const root = makeStageRoot();
   const ace = makeMockAce(root, 'success');
   const result = invokeModify(root, { aceBin: ace, platform: 'android' });
@@ -95,7 +97,7 @@ test('INV-2 v1.1 modify platform=android（应答 2）→ 仅 android 壳断言'
   rmSync(root, { recursive: true, force: true });
 });
 
-test('INV-2 v1.1 modify platform=ios（应答 3）→ 仅 ios 壳断言', () => {
+test('modify platform=ios（应答 3）→ 仅 ios 壳断言', () => {
   const root = makeStageRoot();
   const ace = makeMockAce(root, 'success');
   const result = invokeModify(root, { aceBin: ace, platform: 'ios' });
@@ -105,7 +107,7 @@ test('INV-2 v1.1 modify platform=ios（应答 3）→ 仅 ios 壳断言', () => 
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-5 modify 失败（非零退出）→ 失败原因（stderr 摘要），不产出成功结果', () => {
+test('modify 失败（非零退出）→ 失败原因（stderr 摘要），不产出成功结果', () => {
   const root = makeStageRoot();
   const ace = makeMockAce(root, 'fail');
   const result = invokeModify(root, { aceBin: ace });
@@ -116,7 +118,7 @@ test('R-5 modify 失败（非零退出）→ 失败原因（stderr 摘要），�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-5 modify 超时 → 终止并报超时（阈值含实际值）', () => {
+test('modify 超时 → 终止并报超时（阈值含实际值）', () => {
   const root = makeStageRoot();
   const ace = makeMockAce(root, 'timeout');
   const result = invokeModify(root, { aceBin: ace, timeoutMs: 500 });
@@ -133,10 +135,10 @@ test('ace 不可用 → 明确报因（--ace-bin 指引）', () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-// ── SD26（r7）：collectAceWarnings ───
+// ──：collectAceWarnings ───
 import { collectAceWarnings } from './ace-invoker.js';
 
-test('SD26 collectAceWarnings：stdout/stderr 含 WARN 行 → 提取（去重、去空）', () => {
+test('collectAceWarnings：stdout/stderr 含 WARN 行 → 提取（去重、去空）', () => {
   const root = mkdtempSync(join(tmpdir(), 'f1-invoker-'));
   writeFileSync(join(root, 'build-profile.json5'), '{}\n');  // 无 useNormalizedOHMUrl → 静态复核不触发
   const out = collectAceWarnings(
@@ -146,7 +148,7 @@ test('SD26 collectAceWarnings：stdout/stderr 含 WARN 行 → 提取（去重�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD26 collectAceWarnings：TTY 透传（stdout 空）+ build-profile 含 useNormalizedOHMUrl → 静态复核补已知必办 WARN', () => {
+test('collectAceWarnings：TTY 透传（stdout 空）+ build-profile 含 useNormalizedOHMUrl → 静态复核补已知必办 WARN', () => {
   const root = mkdtempSync(join(tmpdir(), 'f1-invoker-'));
   writeFileSync(join(root, 'build-profile.json5'), '{ "buildOption": { "useNormalizedOHMUrl": true } }\n');
   const out = collectAceWarnings('', '（TTY 透传模式：输出已直达终端）', root);
@@ -155,7 +157,7 @@ test('SD26 collectAceWarnings：TTY 透传（stdout 空）+ build-profile 含 us
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD26 collectAceWarnings：无 WARN 且静态复核不命中 → 空数组；stdout 已含该 WARN 时不重复补', () => {
+test('collectAceWarnings：无 WARN 且静态复核不命中 → 空数组；stdout 已含该 WARN 时不重复补', () => {
   const root = mkdtempSync(join(tmpdir(), 'f1-invoker-'));
   writeFileSync(join(root, 'build-profile.json5'), '{}\n');
   assert.deepEqual(collectAceWarnings('modify success!\n', '', root), []);
@@ -165,10 +167,10 @@ test('SD26 collectAceWarnings：无 WARN 且静态复核不命中 → 空数组�
   rmSync(root, { recursive: true, force: true });
 });
 
-// ── SD30（Windows 实证）：spawnAce 统一启动封装 ───
+// ──（Windows 实证）：spawnAce 统一启动封装 ───
 import { spawnAce } from './ace-invoker.js';
 
-test('SD30 spawnAce：.js 经 process.execPath 执行（跨平台 mock 可用）；win32 走 shell:true + 空格参数引号转义；非 win32 原样', () => {
+test('spawnAce：.js 经 process.execPath 执行（跨平台 mock 可用）；win32 走 shell:true + 空格参数引号转义；非 win32 原样', () => {
   const calls = [];
   const fake = (cmd, a, b) => {
     // 兼容 spawnSync 两种形态：(cmd, args[], opts) 与 shell 模式 (cmdString, opts)
@@ -181,11 +183,20 @@ test('SD30 spawnAce：.js 经 process.execPath 执行（跨平台 mock 可用）
   spawnAce('/x/mock-ace/ace.js', ['create', '/out dir'], { spawnSync: fake });
   assert.deepEqual(calls[0].args[0], '/x/mock-ace/ace.js');
   assert.equal(calls[0].cmd, process.execPath, 'mock .js 经 node 启动');
-  // win32 + ace.cmd → shell:true,命令串含引号转义
+  // win32 + ace.cmd（真实在场文件、含空格名）→ shell:true,命令串含引号转义
   calls.length = 0;
-  spawnAce('C:\\Program Files\\ace.cmd', ['modify', '--project'], { platform: 'win32', spawnSync: fake });
+  const sd30Root = mkdtempSync(join(tmpdir(), 'f1-sd30-'));
+  const spacedCmd = join(sd30Root, 'my ace.cmd');
+  writeFileSync(spacedCmd, '', 'utf8');
+  spawnAce(spacedCmd, ['modify', '--project'], { platform: 'win32', spawnSync: fake });
   assert.equal(calls[0].opts.shell, true, 'win32 走 shell');
-  assert.equal(calls[0].cmd, '"C:\\Program Files\\ace.cmd" modify --project', '含空格路径加引号，其余参数原样拼接');
+  assert.equal(calls[0].cmd, `"${spacedCmd}" modify --project`, '含空格路径加引号，其余参数原样拼接');
+  // win32 + 路径形态不存在 → 合成 ENOENT（shell 模式下 cmd 仅给非零退出码无 error；归一为 posix spawn 同语义）
+  calls.length = 0;
+  const missing = spawnAce(join(sd30Root, 'no-such-ace.cmd'), ['check'], { platform: 'win32', spawnSync: fake });
+  assert.equal(missing.error?.code, 'ENOENT', '合成 ENOENT（不可用语义跨平台一致）');
+  assert.equal(calls.length, 0, '未进入 shell 启动');
+  rmSync(sd30Root, { recursive: true, force: true });
   // win32 + 裸 ace（PATH 解析）→ 同样 shell
   calls.length = 0;
   spawnAce('ace', ['check'], { platform: 'win32', spawnSync: fake });

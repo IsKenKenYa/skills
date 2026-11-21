@@ -10,7 +10,33 @@ site](http://play.google.com/console/about/programs/EngageSDK)**.
 This guide contains instructions for developer partners to deliver health and
 fitness content to Engage content surfaces.
 
+## Category support and surfaces
+
+Engage SDK surface eligibility is based on your app's content category. Use the
+following table to determine your eligibility for specific surfaces:
+
+| Status | Content category or use case | Supported surfaces |
+|---|---|---|
+| **Supported** (Eligible on all surfaces) | - Fitness classes - Fitness routines - Relaxation \& meditation - Routes / trails discovery - Meal planning | - Collections - Play Store Apps tab - Play Store You tab - Play Store store listing page |
+| **Not supported** | - BMI calculator - Physical activity tracker / Step counter - Calorie counter - Sleep tracker - Tools / Remotes - Medical apps |   |
+
+
+## Android skills
+
+[View on GitHub](https://github.com/android/skills/tree/main/play/engage-sdk-integration)
+
+### Integrate Engage SDK
+
+Use the Engage SDK [Android skill](https://developer.android.com/tools/agents/android-skills) to integrate, debug, and resolve implementation issues. To install the skill from the [Android CLI](https://developer.android.com/tools/agents/android-cli), run:
+
+    android skills add engage-sdk-integration
+
+<br />
+
 ## Integration detail
+
+This section details the steps, data models, and terminology required to
+integrate with the Engage SDK for health and fitness content.
 
 ### Terminology
 
@@ -20,7 +46,7 @@ This integration includes the following three cluster types: **Recommendation** 
 - **Recommendation** clusters show personalized health and fitness suggestions
   from an individual developer partner. These recommendations can be
   personalized to the user or generalized (for example, trending fitness \&
-  health). Use these to surface articles or people related to health and
+  health). Use these to feature articles or people related to health and
   fitness.
 
   - A Recommendation cluster can be made of `ArticleEntity`, `PersonEntity`, or `EventEntity` but not a mix of different entity types.
@@ -87,10 +113,12 @@ Minimum API level: 19
 
 Add the `com.google.android.engage:engage-core` library to your app:
 
-    dependencies {
-        // Make sure you also include that repository in your project's build.gradle file.
-        implementation 'com.google.android.engage:engage-core:1.6.0'
-    }
+```groovy
+dependencies {
+    // Make sure you also include that repository in your project's build.gradle file.
+    implementation 'com.google.android.engage:engage-core:1.6.0'
+}
+```
 
 ### Summary
 
@@ -117,7 +145,8 @@ the following entities for the Health \& Fitness category:
 4. `EventEntity`
 5. `EventReservationEntity`
 
-The charts below outline available attributes and requirements for each type.
+The following charts outline available attributes and requirements for each
+type.
 
 #### `GenericFeaturedEntity`
 
@@ -165,7 +194,7 @@ The charts below outline available attributes and requirements for each type.
 | Popularity - Count | Optional | Indicate the number of followers or popularity value, for example - "3.7 M". **Note:** If both Count and Count Value are provided, Count will be used | String **Recommended text size: max 20 chars for count + label combined** |
 | Popularity - Count Value | Optional | The number of followers or popularity value. **Note:** Provide Count Value if your app doesn't want to handle logic on how a large number should be optimized for different display sizes. If both Count and Count Value are provided, Count will be used. | Long |
 | Popularity - Label | Optional | Indicate what the popularity label is. For example - "Likes". | String **Recommended text size: Max 20 chars for count + label combined** |
-| Popularity - Visual | Optional | Indicate what the interaction is for. For example - Image showing Likes icon, Emojis. Can provide more than 1 image, though not all may not be shown on all form factors. **Note:** Must be Square 1:1 image | See [Image Specifications](https://developer.android.com/guide/playcore/engage/healthandfitness#image-specs) for guidance. |
+| Popularity - Visual | Optional | Indicate what the interaction is for. For example - Image showing Likes icon, emoji. Can provide more than 1 image, though not all may not be shown on all form factors. **Note:** Must be Square 1:1 image | See [Image Specifications](https://developer.android.com/guide/playcore/engage/healthandfitness#image-specs) for guidance. |
 | Rating - Max value | Required | The maximum value of the rating scale. **Must be provided if current value of rating is also provided.** | Number \>= 0.0 |
 | Rating - Current value | Required | The current value of the rating scale. **Must be provided if maximum value of rating is also provided.** | Number \>= 0.0 |
 | Rating - Count | Optional | The count of the ratings for the entity. **Note:** Provide this field if your app controls how the count is displayed to the users. Use a concise string. For example, if the count is 1,000,000, consider using an abbreviation like 1M so that the count isn't truncated on smaller display sizes. | String |
@@ -306,7 +335,7 @@ them.
    - TYPE_MOVIES_AND_TV_SHOWS - Check out the entities from [Watch integration guide](https://developer.android.com/guide/playcore/engage/watch) before using the generic entities.
    - TYPE_BOOKS - Check out the [EbookEntity](https://developer.android.com/guide/playcore/engage/read#ebookentity) before using the generic entities.
    - TYPE_AUDIOBOOKS - Check out [AudiobookEntity](https://developer.android.com/guide/playcore/engage/read#audiobookentity) before using the generic entities.
-   - TYPE_SHOPPING - Check out [ShoppingEntity](https://developer.android.com/guide/playcore/engage/shopping#shoppingEntity) before using the generic entities.
+   - TYPE_SHOPPING - Check out [ShoppingEntity](https://developer.android.com/guide/playcore/engage/shopping#shoppingentity) before using the generic entities.
    - TYPE_FOOD_AND_DRINK - Check out entities from [Food Integration guide](https://developer.android.com/guide/playcore/engage/food) before using the generic entities.
 3. The ContentCategory field is optional and should be left blank if the
    content doesn't belong to any of the categories mentioned earlier.
@@ -379,107 +408,108 @@ required for `ServiceAvailabilityRequest` from the following table.
 
 ### Kotlin
 
-    val request = ServiceAvailabilityRequest.Builder()
-        .addIntendedClusterType(ClusterType.TYPE_CONTINUATION)
-        .addIntendedClusterType(ClusterType.TYPE_RECOMMENDATION)
-        .build()
+```kotlin
+val request = ServiceAvailabilityRequest.Builder()
+    .addIntendedClusterType(ClusterType.TYPE_CONTINUATION)
+    .addIntendedClusterType(ClusterType.TYPE_RECOMMENDATION)
+    .build()
 
-    client.isServiceAvailable(request).addOnCompleteListener { task ->
-        if (task.isSuccessful) {
-            val availabilityMap = task.result
-            if (availabilityMap[ClusterType.TYPE_CONTINUATION] == true) {
-                // Proceed with publishing continuation content
-            }
-            if (availabilityMap[ClusterType.TYPE_RECOMMENDATION] == true) {
-                // Proceed with publishing recommendation content
-            }
-        } else {
-            // The IPC call itself fails, proceed with error handling logic here,
-            // such as retry.
+client.isServiceAvailable(request).addOnCompleteListener { task ->
+    if (task.isSuccessful) {
+        val availabilityMap = task.result
+        if (availabilityMap[ClusterType.TYPE_CONTINUATION] == true) {
+            // Proceed with publishing continuation content
         }
+        if (availabilityMap[ClusterType.TYPE_RECOMMENDATION] == true) {
+            // Proceed with publishing recommendation content
+        }
+    } else {
+        // The IPC call itself fails, proceed with error handling logic here,
+        // such as retry.
     }
+}
+```
 
 ### Java
 
-    ServiceAvailabilityRequest request =
-        new ServiceAvailabilityRequest.Builder()
-            .addIntendedClusterType(ClusterType.TYPE_CONTINUATION)
-            .addIntendedClusterType(ClusterType.TYPE_RECOMMENDATION)
-            .build();
+```java
+ServiceAvailabilityRequest request =
+    new ServiceAvailabilityRequest.Builder()
+        .addIntendedClusterType(ClusterType.TYPE_CONTINUATION)
+        .addIntendedClusterType(ClusterType.TYPE_RECOMMENDATION)
+        .build();
 
-    client.isServiceAvailable(request).addOnCompleteListener(task -> {
-        if (task.isSuccessful()) {
-            Map<Integer, Boolean> availabilityMap = task.getResult();
-            if (Boolean.TRUE.equals(availabilityMap.get(ClusterType.TYPE_CONTINUATION))) {
-                // Proceed with publishing continuation content
-            }
-            if (Boolean.TRUE.equals(availabilityMap.get(ClusterType.TYPE_RECOMMENDATION))) {
-                // Proceed with publishing recommendation content
-            }
-        } else {
-            // The IPC call itself fails, proceed with error handling logic here,
-            // such as retry.
+client.isServiceAvailable(request).addOnCompleteListener(task -> {
+    if (task.isSuccessful()) {
+        Map<Integer, Boolean> availabilityMap = task.getResult();
+        if (Boolean.TRUE.equals(availabilityMap.get(ClusterType.TYPE_CONTINUATION))) {
+            // Proceed with publishing continuation content
         }
-    });
+        if (Boolean.TRUE.equals(availabilityMap.get(ClusterType.TYPE_RECOMMENDATION))) {
+            // Proceed with publishing recommendation content
+        }
+    } else {
+        // The IPC call itself fails, proceed with error handling logic here,
+        // such as retry.
+    }
+});
+```
 
 ###### Conditional Service Availability Feature
 
 Some integrated apps request a special configuration that enables and disables
-the Engage service intermittently in order to reduce their serving cost. This
-intermittent content ingestion strategy, although possible, negatively affects
-the user and the product -- stale content will not be presented and some surfaces
-will not be served at all.
+the Engage service intermittently to reduce serving costs. However, this
+intermittent content ingestion strategy negatively affects the user experience:
+stale content won't be presented, and some surfaces won't be served.
 
 Starting with v1.6.0, the Engage SDK allows checking availability for specific
-cluster types. This provides more flexibility so that if the intermittent
-content strategy was adopted by a given application, some cluster types can
-follow that intermittent strategy while other cluster types are always enabled
-(i.e. continuation clusters).
+cluster types. If your app uses intermittent ingestion:
 
-If the Engage service should not be 'continuously' enabled on all supported
-devices for whatever reason, and is configured for intermittent ingestion for
-any set of devices, all continuation cluster publications (e.g. Continue
-Reading and Event Reservations) will be still enabled by default
-configuration, and the rest of the cluster types will be enabled and disabled
-intermittently. If intermittent ingestion applies to you but this default
-configuration is not suitable for your needs, please contact
+- **Continuation clusters** (such as Continue Reading and Event Reservations) remain enabled by default across all supported devices.
+- **Other cluster types** (such as Recommendations) are enabled and disabled intermittently.
+
+If this default configuration isn't suitable for your needs, contact
 engage-developers@google.com.
 
 ##### For SDK versions prior to v1.6.0 (Deprecated)
 
 ### Kotlin
 
-    client.isServiceAvailable.addOnCompleteListener { task ->
-        if (task.isSuccessful) {
-            // Handle IPC call success
-            if(task.result) {
-              // Service is available on the device, proceed with content publish
-              // calls.
-            } else {
-              // Service is not available, no further action is needed.
-            }
+```kotlin
+client.isServiceAvailable.addOnCompleteListener { task ->
+    if (task.isSuccessful) {
+        // Handle IPC call success
+        if(task.result) {
+          // Service is available on the device, proceed with content publish
+          // calls.
         } else {
-          // The IPC call itself fails, proceed with error handling logic here,
-          // such as retry.
+          // Service is not available, no further action is needed.
         }
+    } else {
+      // The IPC call itself fails, proceed with error handling logic here,
+      // such as retry.
     }
+}
+```
 
 ### Java
 
-    client.isServiceAvailable().addOnCompleteListener(task - > {
-        if (task.isSuccessful()) {
-            // Handle success
-            if(task.getResult()) {
-              // Service is available on the device, proceed with content publish
-              // calls.
-            } else {
-              // Service is not available, no further action is needed.
-            }
+```java
+client.isServiceAvailable().addOnCompleteListener(task - > {
+    if (task.isSuccessful()) {
+        // Handle success
+        if(task.getResult()) {
+          // Service is available on the device, proceed with content publish
+          // calls.
         } else {
-          // The IPC call itself fails, proceed with error handling logic here,
-          // such as retry.
+          // Service is not available, no further action is needed.
         }
-    });
+    } else {
+      // The IPC call itself fails, proceed with error handling logic here,
+      // such as retry.
+    }
+});
+```
 
 > [!NOTE]
 > **Note:** We highly recommend keeping a periodic job running to check if the service becomes available at a later point in time. The availability of the service may change with Android version upgrades, app upgrades, installs, and uninstalls. By ensuring periodic job checks at a certain time interval, data can be published once the service becomes available.
@@ -493,29 +523,33 @@ This API is used to publish a list of `RecommendationCluster` objects.
 
 ### Kotlin
 
-    client.publishRecommendationClusters(
-          PublishRecommendationClustersRequest.Builder()
-            .addRecommendationCluster(
-              RecommendationCluster.Builder()
-                .addEntity(entity1)
-                .addEntity(entity2)
-                .setTitle("Top Picks For You")
-                .build()
-            )
+```kotlin
+client.publishRecommendationClusters(
+      PublishRecommendationClustersRequest.Builder()
+        .addRecommendationCluster(
+          RecommendationCluster.Builder()
+            .addEntity(entity1)
+            .addEntity(entity2)
+            .setTitle("Top Picks For You")
             .build()
         )
+        .build()
+    )
+```
 
 ### Java
 
-    client.publishRecommendationClusters(
-                new PublishRecommendationClustersRequest.Builder()
-                    .addRecommendationCluster(
-                        new RecommendationCluster.Builder()
-                            .addEntity(entity1)
-                            .addEntity(entity2)
-                            .setTitle("Top Picks For You")
-                            .build())
-                    .build());
+```java
+client.publishRecommendationClusters(
+            new PublishRecommendationClustersRequest.Builder()
+                .addRecommendationCluster(
+                    new RecommendationCluster.Builder()
+                        .addEntity(entity1)
+                        .addEntity(entity2)
+                        .setTitle("Top Picks For You")
+                        .build())
+                .build());
+```
 
 When the service receives the request, the following actions take place within
 one transaction:
@@ -535,25 +569,29 @@ This API is used to publish a list of `FeaturedCluster` objects.
 
 ### Kotlin
 
-    client.publishFeaturedCluster(
-        PublishFeaturedClusterRequest.Builder()
-          .setFeaturedCluster(
-            FeaturedCluster.Builder()
-              .addEntity(entity1)
-              .addEntity(entity2)
-              .build())
+```kotlin
+client.publishFeaturedCluster(
+    PublishFeaturedClusterRequest.Builder()
+      .setFeaturedCluster(
+        FeaturedCluster.Builder()
+          .addEntity(entity1)
+          .addEntity(entity2)
           .build())
+      .build())
+```
 
 ### Java
 
-    client.publishFeaturedCluster(
-                new PublishFeaturedClustersRequest.Builder()
-                    .addFeaturedCluster(
-                        new FeaturedCluster.Builder()
-                            .addEntity(entity1)
-                            .addEntity(entity2)
-                            .build())
-                    .build());
+```java
+client.publishFeaturedCluster(
+            new PublishFeaturedClusterRequest.Builder()
+                .setFeaturedCluster(
+                    new FeaturedCluster.Builder()
+                        .addEntity(entity1)
+                        .addEntity(entity2)
+                        .build())
+                .build());
+```
 
 When the service receives the request, the following actions take place within
 one transaction:
@@ -573,25 +611,29 @@ This API is used to publish a `ContinuationCluster` object.
 
 ### Kotlin
 
-    client.publishContinuationCluster(
-        PublishContinuationClusterRequest.Builder()
-          .setContinuationCluster(
-            ContinuationCluster.Builder()
-              .addEntity(entity1)
-              .addEntity(entity2)
-              .build())
+```kotlin
+client.publishContinuationCluster(
+    PublishContinuationClusterRequest.Builder()
+      .setContinuationCluster(
+        ContinuationCluster.Builder()
+          .addEntity(entity1)
+          .addEntity(entity2)
           .build())
+      .build())
+```
 
 ### Java
 
-    client.publishContinuationCluster(
-                new PublishContinuationClusterRequest.Builder()
-                    .setContinuationCluster(
-                        new ContinuationCluster.Builder()
-                            .addEntity(entity1)
-                            .addEntity(entity2)
-                            .build())
-                    .build());
+```java
+client.publishContinuationCluster(
+            new PublishContinuationClusterRequest.Builder()
+                .setContinuationCluster(
+                    new ContinuationCluster.Builder()
+                        .addEntity(entity1)
+                        .addEntity(entity2)
+                        .build())
+                .build());
+```
 
 When the service receives the request, the following actions take place within
 one transaction:
@@ -623,41 +665,45 @@ The following metadata is part of the Sign In Card -
 
 ### Kotlin
 
-    var SIGN_IN_CARD_ENTITY =
-          SignInCardEntity.Builder()
-              .addPosterImage(
-                  Image.Builder()
-                      .setImageUri(Uri.parse("http://www.x.com/image.png"))
-                      .setImageHeightInPixel(500)
-                      .setImageWidthInPixel(500)
-                      .build())
-              .setActionText("Sign In")
-              .setActionUri(Uri.parse("http://xx.com/signin"))
-              .build()
+```kotlin
+var SIGN_IN_CARD_ENTITY =
+      SignInCardEntity.Builder()
+          .addPosterImage(
+              Image.Builder()
+                  .setImageUri(Uri.parse("http://www.x.com/image.png"))
+                  .setImageHeightInPixel(500)
+                  .setImageWidthInPixel(500)
+                  .build())
+          .setActionText("Sign In")
+          .setActionUri(Uri.parse("http://xx.com/signin"))
+          .build()
 
-    client.publishUserAccountManagementRequest(
-                PublishUserAccountManagementRequest.Builder()
-                    .setSignInCardEntity(SIGN_IN_CARD_ENTITY)
-                    .build());
+client.publishUserAccountManagementRequest(
+            PublishUserAccountManagementRequest.Builder()
+                .setSignInCardEntity(SIGN_IN_CARD_ENTITY)
+                .build());
+```
 
 ### Java
 
-    SignInCardEntity SIGN_IN_CARD_ENTITY =
-          new SignInCardEntity.Builder()
-              .addPosterImage(
-                  new Image.Builder()
-                      .setImageUri(Uri.parse("http://www.x.com/image.png"))
-                      .setImageHeightInPixel(500)
-                      .setImageWidthInPixel(500)
-                      .build())
-              .setActionText("Sign In")
-              .setActionUri(Uri.parse("http://xx.com/signin"))
-              .build();
+```java
+SignInCardEntity SIGN_IN_CARD_ENTITY =
+      new SignInCardEntity.Builder()
+          .addPosterImage(
+              new Image.Builder()
+                  .setImageUri(Uri.parse("http://www.x.com/image.png"))
+                  .setImageHeightInPixel(500)
+                  .setImageWidthInPixel(500)
+                  .build())
+          .setActionText("Sign In")
+          .setActionUri(Uri.parse("http://xx.com/signin"))
+          .build();
 
-    client.publishUserAccountManagementRequest(
-                new PublishUserAccountManagementRequest.Builder()
-                    .setSignInCardEntity(SIGN_IN_CARD_ENTITY)
-                    .build());
+client.publishUserAccountManagementRequest(
+            new PublishUserAccountManagementRequest.Builder()
+                .setSignInCardEntity(SIGN_IN_CARD_ENTITY)
+                .build());
+```
 
 When the service receives the request, the following actions take place within
 one transaction:
@@ -720,19 +766,23 @@ to publish the Sign In Card then we recommend calling the
 
 ### Kotlin
 
-    client.updatePublishStatus(
-       PublishStatusRequest.Builder()
-         .setStatusCode(AppEngagePublishStatusCode.NOT_PUBLISHED_REQUIRES_SIGN_IN)
-         .build())
+```kotlin
+client.updatePublishStatus(
+   PublishStatusRequest.Builder()
+     .setStatusCode(AppEngagePublishStatusCode.NOT_PUBLISHED_REQUIRES_SIGN_IN)
+     .build())
+```
 
 ### Java
 
-    client.updatePublishStatus(
-        new PublishStatusRequest.Builder()
-            .setStatusCode(AppEngagePublishStatusCode.NOT_PUBLISHED_REQUIRES_SIGN_IN)
-            .build());
+```java
+client.updatePublishStatus(
+    new PublishStatusRequest.Builder()
+        .setStatusCode(AppEngagePublishStatusCode.NOT_PUBLISHED_REQUIRES_SIGN_IN)
+        .build());
+```
 
-#### `deleteRecommendationClusters`
+#### `deleteRecommendationsClusters`
 
 This API is used to delete the content of Recommendation Clusters.
 
@@ -741,11 +791,15 @@ This API is used to delete the content of Recommendation Clusters.
 
 ### Kotlin
 
-    client.deleteRecommendationClusters()
+```kotlin
+client.deleteRecommendationsClusters()
+```
 
 ### Java
 
-    client.deleteRecommendationClusters();
+```java
+client.deleteRecommendationsClusters();
+```
 
 When the service receives the request, it removes the existing data from the
 Recommendation Clusters. In case of an error, the entire request is rejected and
@@ -763,11 +817,15 @@ This API is used to delete the content of Featured Cluster.
 
 ### Kotlin
 
-    client.deleteFeaturedCluster()
+```kotlin
+client.deleteFeaturedCluster()
+```
 
 ### Java
 
-    client.deleteFeaturedCluster();
+```java
+client.deleteFeaturedCluster();
+```
 
 When the service receives the request, it removes the existing data from the
 Featured Cluster. In case of an error, the entire request is rejected and the
@@ -785,11 +843,15 @@ This API is used to delete the content of Continuation Cluster.
 
 ### Kotlin
 
-    client.deleteContinuationCluster()
+```kotlin
+client.deleteContinuationCluster()
+```
 
 ### Java
 
-    client.deleteContinuationCluster();
+```java
+client.deleteContinuationCluster();
+```
 
 When the service receives the request, it removes the existing data from the
 Continuation Cluster. In case of an error, the entire request is rejected and
@@ -807,11 +869,15 @@ This API is used to delete the content of UserAccountManagement Cluster.
 
 ### Kotlin
 
-    client.deleteUserManagementCluster()
+```kotlin
+client.deleteUserManagementCluster()
+```
 
 ### Java
 
-    client.deleteUserManagementCluster();
+```java
+client.deleteUserManagementCluster();
+```
 
 When the service receives the request, it removes the existing data from the
 UserAccountManagement Cluster. In case of an error, the entire request is
@@ -829,21 +895,25 @@ This API is used to delete the content of a given cluster type.
 
 ### Kotlin
 
-    client.deleteClusters(
-        DeleteClustersRequest.Builder()
-          .addClusterType(ClusterType.TYPE_CONTINUATION)
-          .addClusterType(ClusterType.TYPE_FEATURED)
-          .addClusterType(ClusterType.TYPE_RECOMMENDATION)
-          .build())
+```kotlin
+client.deleteClusters(
+    DeleteClustersRequest.Builder()
+      .addClusterType(ClusterType.TYPE_CONTINUATION)
+      .addClusterType(ClusterType.TYPE_FEATURED)
+      .addClusterType(ClusterType.TYPE_RECOMMENDATION)
+      .build())
+```
 
 ### Java
 
-    client.deleteClusters(
-                new DeleteClustersRequest.Builder()
-                    .addClusterType(ClusterType.TYPE_CONTINUATION)
-                    .addClusterType(ClusterType.TYPE_FEATURED)
-                    .addClusterType(ClusterType.TYPE_RECOMMENDATION)
-                    .build());
+```java
+client.deleteClusters(
+            new DeleteClustersRequest.Builder()
+                .addClusterType(ClusterType.TYPE_CONTINUATION)
+                .addClusterType(ClusterType.TYPE_FEATURED)
+                .addClusterType(ClusterType.TYPE_RECOMMENDATION)
+                .build());
+```
 
 When the service receives the request, it removes the existing data from all
 clusters matching the specified cluster types. Clients can choose to pass one or
@@ -857,45 +927,49 @@ that a follow-up action can be taken to recover and resubmit an successful task.
 
 ### Kotlin
 
-    client.publishRecommendationClusters(
-            PublishRecommendationClustersRequest.Builder()
-              .addRecommendationCluster(..)
-              .build())
-          .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
+```kotlin
+client.publishRecommendationClusters(
+        PublishRecommendationClustersRequest.Builder()
+          .addRecommendationCluster(..)
+          .build())
+      .addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+          // do something
+        } else {
+          val exception = task.exception
+          if (exception is AppEngageException) {
+            @AppEngageErrorCode val errorCode = exception.errorCode
+            if (errorCode == AppEngageErrorCode.SERVICE_NOT_FOUND) {
               // do something
-            } else {
-              val exception = task.exception
-              if (exception is AppEngageException) {
-                @AppEngageErrorCode val errorCode = exception.errorCode
-                if (errorCode == AppEngageErrorCode.SERVICE_NOT_FOUND) {
-                  // do something
-                }
-              }
             }
           }
+        }
+      }
+```
 
 ### Java
 
-    client.publishRecommendationClusters(
-                  new PublishRecommendationClustersRequest.Builder()
-                      .addRecommendationCluster(...)
-                      .build())
-              .addOnCompleteListener(
-                  task -> {
-                    if (task.isSuccessful()) {
+```java
+client.publishRecommendationClusters(
+              new PublishRecommendationClustersRequest.Builder()
+                  .addRecommendationCluster(...)
+                  .build())
+          .addOnCompleteListener(
+              task -> {
+                if (task.isSuccessful()) {
+                  // do something
+                } else {
+                  Exception exception = task.getException();
+                  if (exception instanceof AppEngageException) {
+                    @AppEngageErrorCode
+                    int errorCode = ((AppEngageException) exception).getErrorCode();
+                    if (errorCode == AppEngageErrorCode.SERVICE_NOT_FOUND) {
                       // do something
-                    } else {
-                      Exception exception = task.getException();
-                      if (exception instanceof AppEngageException) {
-                        @AppEngageErrorCode
-                        int errorCode = ((AppEngageException) exception).getErrorCode();
-                        if (errorCode == AppEngageErrorCode.SERVICE_NOT_FOUND) {
-                          // do something
-                        }
-                      }
                     }
-                  });
+                  }
+                }
+              });
+```
 
 The error is returned as an `AppEngageException` with the cause included as an
 error code.
@@ -932,95 +1006,101 @@ The `BroadcastReceiver` must be set up in the following two ways:
 
 ### Kotlin
 
-    class AppEngageBroadcastReceiver : BroadcastReceiver(){
-      // Trigger recommendation cluster publish when PUBLISH_RECOMMENDATION broadcast
-      // is received
-      // Trigger featured cluster publish when PUBLISH_FEATURED broadcast is received
-      // Trigger continuation cluster publish when PUBLISH_CONTINUATION broadcast is
-      // received
-    }
+```kotlin
+class AppEngageBroadcastReceiver : BroadcastReceiver(){
+  // Trigger recommendation cluster publish when PUBLISH_RECOMMENDATION broadcast
+  // is received
+  // Trigger featured cluster publish when PUBLISH_FEATURED broadcast is received
+  // Trigger continuation cluster publish when PUBLISH_CONTINUATION broadcast is
+  // received
+}
 
-    fun registerBroadcastReceivers(context: Context){
-      var  context = context
-      context = context.applicationContext
+fun registerBroadcastReceivers(context: Context){
+  var  context = context
+  context = context.applicationContext
 
-    // Register Recommendation Cluster Publish Intent
-      context.registerReceiver(AppEngageBroadcastReceiver(),
-                               IntentFilter(Intents.ACTION_PUBLISH_RECOMMENDATION),
-                               com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                               /*scheduler=*/null)
+// Register Recommendation Cluster Publish Intent
+  context.registerReceiver(AppEngageBroadcastReceiver(),
+                           IntentFilter(Intents.ACTION_PUBLISH_RECOMMENDATION),
+                           com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                           /*scheduler=*/null)
 
-    // Register Featured Cluster Publish Intent
-      context.registerReceiver(AppEngageBroadcastReceiver(),
-                               IntentFilter(Intents.ACTION_PUBLISH_FEATURED),
-                               com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                               /*scheduler=*/null)
+// Register Featured Cluster Publish Intent
+  context.registerReceiver(AppEngageBroadcastReceiver(),
+                           IntentFilter(Intents.ACTION_PUBLISH_FEATURED),
+                           com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                           /*scheduler=*/null)
 
-    // Register Continuation Cluster Publish Intent
-      context.registerReceiver(AppEngageBroadcastReceiver(),
-                               IntentFilter(Intents.ACTION_PUBLISH_CONTINUATION),
-                               com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                               /*scheduler=*/null)
-    }
+// Register Continuation Cluster Publish Intent
+  context.registerReceiver(AppEngageBroadcastReceiver(),
+                           IntentFilter(Intents.ACTION_PUBLISH_CONTINUATION),
+                           com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                           /*scheduler=*/null)
+}
+```
 
 ### Java
 
-    class AppEngageBroadcastReceiver extends BroadcastReceiver {
-    // Trigger recommendation cluster publish when PUBLISH_RECOMMENDATION broadcast
-    // is received
+```java
+class AppEngageBroadcastReceiver extends BroadcastReceiver {
+// Trigger recommendation cluster publish when PUBLISH_RECOMMENDATION broadcast
+// is received
 
-    // Trigger featured cluster publish when PUBLISH_FEATURED broadcast is received
+// Trigger featured cluster publish when PUBLISH_FEATURED broadcast is received
 
-    // Trigger continuation cluster publish when PUBLISH_CONTINUATION broadcast is
-    // received
-    }
+// Trigger continuation cluster publish when PUBLISH_CONTINUATION broadcast is
+// received
+}
 
-    public static void registerBroadcastReceivers(Context context) {
+public static void registerBroadcastReceivers(Context context) {
 
-    context = context.getApplicationContext();
+context = context.getApplicationContext();
 
-    // Register Recommendation Cluster Publish Intent
-    context.registerReceiver(new AppEngageBroadcastReceiver(),
-                             new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_RECOMMENDATION),
-                             com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                             /*scheduler=*/null);
+// Register Recommendation Cluster Publish Intent
+context.registerReceiver(new AppEngageBroadcastReceiver(),
+                         new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_RECOMMENDATION),
+                         com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                         /*scheduler=*/null);
 
-    // Register Featured Cluster Publish Intent
-    context.registerReceiver(new AppEngageBroadcastReceiver(),
-                             new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_FEATURED),
-                             com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                             /*scheduler=*/null);
+// Register Featured Cluster Publish Intent
+context.registerReceiver(new AppEngageBroadcastReceiver(),
+                         new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_FEATURED),
+                         com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                         /*scheduler=*/null);
 
-    // Register Continuation Cluster Publish Intent
-    context.registerReceiver(new AppEngageBroadcastReceiver(),
-                             new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_CONTINUATION),
-                             com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
-                             /*scheduler=*/null);
+// Register Continuation Cluster Publish Intent
+context.registerReceiver(new AppEngageBroadcastReceiver(),
+                         new IntentFilter(com.google.android.engage.service.Intents.ACTION_PUBLISH_CONTINUATION),
+                         com.google.android.engage.service.BroadcastReceiverPermissions.BROADCAST_REQUEST_DATA_PUBLISH_PERMISSION,
+                         /*scheduler=*/null);
 
-    }
+}
+```
 
 - Statically declare an implementation with the `<receiver>` tag in your
   `AndroidManifest.xml` file. This allows the application to receive broadcast
   intents when it is not running, and also allows the application to publish
   the content.
 
-    <application>
-       <receiver
-          android:name=".AppEngageBroadcastReceiver"
-          android:permission="com.google.android.engage.REQUEST_ENGAGE_DATA"
-          android:exported="true"
-          android:enabled="true">
-          <intent-filter>
-             <action android:name="com.google.android.engage.action.PUBLISH_RECOMMENDATION" />
-          </intent-filter>
-          <intent-filter>
-             <action android:name="com.google.android.engage.action.PUBLISH_FEATURED" />
-          </intent-filter>
-          <intent-filter>
-             <action android:name="com.google.android.engage.action.PUBLISH_CONTINUATION" />
-          </intent-filter>
-       </receiver>
-    </application>
+```xml
+<application>
+   <receiver
+      android:name=".AppEngageBroadcastReceiver"
+      android:permission="com.google.android.engage.REQUEST_ENGAGE_DATA"
+      android:exported="true"
+      android:enabled="true">
+      <intent-filter>
+         <action android:name="com.google.android.engage.action.PUBLISH_RECOMMENDATION" />
+      </intent-filter>
+      <intent-filter>
+         <action android:name="com.google.android.engage.action.PUBLISH_FEATURED" />
+      </intent-filter>
+      <intent-filter>
+         <action android:name="com.google.android.engage.action.PUBLISH_CONTINUATION" />
+      </intent-filter>
+   </receiver>
+</application>
+```
 
 The following [intents](https://developer.android.com/reference/android/content/Intent) is sent by the
 service:

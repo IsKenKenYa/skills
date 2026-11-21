@@ -15,25 +15,25 @@ function makeProject(files) {
   return root;
 }
 
-test('R-2 detectModel：AppScope/app.json5 → stage', () => {
+test('detectModel：AppScope/app.json5 → stage', () => {
   const root = makeProject({ 'AppScope/app.json5': '{}', 'entry/src/main/module.json5': '{}' });
   assert.equal(detectModel(root), 'stage');
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-2 detectModel：config.json（无 Stage 特征）→ fa', () => {
+test('detectModel：config.json（无 Stage 特征）→ fa', () => {
   const root = makeProject({ 'config.json': '{}' });
   assert.equal(detectModel(root), 'fa');
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-2 detectModel：无特征 → unknown', () => {
+test('detectModel：无特征 → unknown', () => {
   const root = makeProject({ 'README.md': 'x' });
   assert.equal(detectModel(root), 'unknown');
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1 enumerateFiles：含 .ets/.ts 与配置，排除 node_modules/oh_modules/.hvigor/build', () => {
+test('enumerateFiles：含 .ets/.ts 与配置，排除 node_modules/oh_modules/.hvigor/build', () => {
   const root = makeProject({
     'entry/src/main/ets/Index.ets': 'x',
     'entry/src/main/ets/pages/Detail.ts': 'x',
@@ -55,7 +55,7 @@ test('R-1 enumerateFiles：含 .ets/.ts 与配置，排除 node_modules/oh_modul
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1 引用提取：具名(剥离别名/逐符号独立项)/默认/动态导入与配置文件引用，file:line 准确', () => {
+test('引用提取：具名(剥离别名/逐符号独立项)/默认/动态导入与配置文件引用，file:line 准确', () => {
   const root = makeProject({
     'a.ets': [
       "import { publish, cancel as cancelNotification } from '@ohos.notificationManager';",
@@ -92,7 +92,7 @@ test('R-1 引用提取：具名(剥离别名/逐符号独立项)/默认/动态�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1/v1.2 enumerateFiles：含 Native 源码 {.cpp,.cc,.cxx,.h,.hpp}，排除 Pods/DerivedData（大小写不敏感）', () => {
+test('enumerateFiles：含 Native 源码 {.cpp,.cc,.cxx,.h,.hpp}，排除 Pods/DerivedData（大小写不敏感）', () => {
   const root = makeProject({
     'entry/src/main/cpp/napi_init.cpp': 'x',
     'entry/src/main/cpp/types/lib.cpp': 'x',
@@ -118,7 +118,7 @@ test('R-1/v1.2 enumerateFiles：含 Native 源码 {.cpp,.cc,.cxx,.h,.hpp}，排�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1/v1.2 Native 提取：NDK 头包含 + OH_* 符号（module 归一为最近 NDK include）+ 非 NDK 头不计', () => {
+test('Native 提取：NDK 头包含 + OH_* 符号（module 归一为最近 NDK include）+ 非 NDK 头不计', () => {
   const root = makeProject({
     'n.cpp': [
       '#include <vector>',
@@ -145,7 +145,7 @@ test('R-1/v1.2 Native 提取：NDK 头包含 + OH_* 符号（module 归一为最
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1/TASK-7 动态加载：dlopen 字面量计入（module=so 库名）；变量形式仅提示不计入', () => {
+test('动态加载：dlopen 字面量计入（module=so 库名）；变量形式仅提示不计入', () => {
   const root = makeProject({
     'n.cpp': [
       'void L(void* h, const char* p) {',
@@ -162,7 +162,7 @@ test('R-1/TASK-7 动态加载：dlopen 字面量计入（module=so 库名）；�
   rmSync(root, { recursive: true, force: true });
 });
 
-test('R-1/TASK-7 ArkTS 动态加载：变量形式 import(x) 仅提示不计入', () => {
+test('ArkTS 动态加载：变量形式 import(x) 仅提示不计入', () => {
   const root = makeProject({
     'a.ets': [
       "export async function f(n: string) {",
@@ -179,7 +179,7 @@ test('R-1/TASK-7 ArkTS 动态加载：变量形式 import(x) 仅提示不计入'
   rmSync(root, { recursive: true, force: true });
 });
 
-test('v1.3.0 C-API 清单头识别：arkui/rawfile/napi 前缀 + plugin_utils 双形态（含 libarkui_ios 路径）', () => {
+test('C-API 清单头识别：arkui/rawfile/napi 前缀 + plugin_utils 双形态（含 libarkui_ios 路径）', () => {
   const root = makeProject({
     'capi.cpp': [
       '#include <arkui/native_node.h>',
@@ -196,7 +196,7 @@ test('v1.3.0 C-API 清单头识别：arkui/rawfile/napi 前缀 + plugin_utils �
   assert.ok(mods.has('napi/native_api.h'), 'napi/ 头识别');
   assert.ok(mods.has('node_api.h'), 'node_api.h 识别');
   assert.ok(mods.has('rawfile/raw_file_manager.h'), 'rawfile/ 头识别');
-  assert.ok(mods.has('plugin_utils.h'), 'plugin_utils.h 裸名识别（v1.3.0 清单成员）');
+  assert.ok(mods.has('plugin_utils.h'), 'plugin_utils.h 裸名识别（清单成员）');
   assert.ok(mods.has('libarkui_ios/include/plugin_utils.h'), 'libarkui_ios 路径形态识别（docs 集成教程实证形态）');
   assert.equal(inv.length, 6, '全部 include 计入、无多余');
   rmSync(root, { recursive: true, force: true });
@@ -298,7 +298,7 @@ test('审计看护 P12：export-from 再导出计具名符号与星号再导出'
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD1：@kit 导入展开（索引在场）——具名符号落真实模块；星号/动态展开成员；未解析保留 @kit', () => {
+test('@kit 导入展开（索引在场）——具名符号落真实模块；星号/动态展开成员；未解析保留 @kit', () => {
   const root = makeProject({
     'a.ets': [
       "import { onlyFn } from '@kit.TestKit';",
@@ -323,23 +323,23 @@ test('SD1：@kit 导入展开（索引在场）——具名符号落真实模块
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD1：降级（无索引）@kit 原样保留，判定侧显式 unknown', async () => {
+test('降级（无索引）@kit 原样保留，判定侧显式 unknown', async () => {
   const root = makeProject({ 'a.ets': "import { onlyFn } from '@kit.TestKit';\n" });
   const { inventory: inv } = extractReferences(root, ['a.ets']);
-  // SD29：未知/降级 kit 归属不可判定 → source=unknown（不虚计 ohos/hms）
+  // ：未知/降级 kit 归属不可判定 → source=unknown（不虚计 ohos/hms）
   assert.deepEqual(inv, [{ source: 'unknown', module: '@kit.TestKit', symbol: 'onlyFn', file: 'a.ets', line: 1 }]);
   rmSync(root, { recursive: true, force: true });
   const { classify } = await import('./classify.js');
   const { adaptation } = classify(
     [{ source: 'unknown', module: '@kit.TestKit', symbol: 'onlyFn', file: 'a.ets', line: 1 }],
     await import('./classify.js').then((m) => m.loadRules()), null);
-  // RD7（v1.7.0）：未展开 kit 由 unknown 改归 business_decision（类比 @hms.* 闭源生态处理）
+  // ：未展开 kit 由 unknown 改归 business_decision（类比 @hms.* 闭源生态处理）
   const item = adaptation.business_decision.find((i) => i.module === '@kit.TestKit');
   assert.ok(item, '判定归 business_decision');
   assert.match(item.reason, /@kit.*未展开/);
 });
 
-test('SD2：sysroot 声明索引优先归属——未直接 include 的符号挂到声明头而非最近 include', async () => {
+test('sysroot 声明索引优先归属——未直接 include 的符号挂到声明头而非最近 include', async () => {
   const { buildNativeSymbolIndex } = await import('./native-index.js');
   const idx = buildNativeSymbolIndex('benchmark/mini-sdk/native/sysroot/usr/include');
   assert.equal(idx.get('OH_NativeWindow_Create'), 'native_window/native_window.h');
@@ -356,12 +356,12 @@ test('SD2：sysroot 声明索引优先归属——未直接 include 的符号挂
   const { inventory: inv } = extractReferences(root, ['a.cpp'], { nativeIndex: idx });
   const win = inv.find((i) => i.symbol === 'OH_NativeWindow_Create');
   const log = inv.find((i) => i.symbol === 'OH_LOG_Print');
-  assert.equal(win.module, 'native_window/native_window.h', 'SD2：归属声明头而非 hilog');
+  assert.equal(win.module, 'native_window/native_window.h', '归属声明头而非 hilog');
   assert.equal(log.module, 'hilog/log.h');
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD11（r2）：注释提及不计分 + 声明权重压过引用频次', async () => {
+test('注释提及不计分 + 声明权重压过引用频次', async () => {
   const { buildNativeSymbolIndex } = await import('./native-index.js');
   const idx = buildNativeSymbolIndex('benchmark/mini-sdk/native/sysroot/usr/include');
   // arkui/native_node.h 仅在文档注释中提及 OH_PixelmapNative_Release（剥注释后 0 分）
@@ -373,7 +373,7 @@ test('SD11（r2）：注释提及不计分 + 声明权重压过引用频次', as
   rmSync(root, { recursive: true, force: true });
 });
 
-test('SD16（统一轮）：多行本地 import 后跟单行 @hms import——不吞、不误归、垃圾符号不产', () => {
+test('多行本地 import 后跟单行 @hms import——不吞、不误归、垃圾符号不产', () => {
   const root = makeProject({
     'a.ets': [
       "import {",
@@ -397,8 +397,8 @@ test('SD16（统一轮）：多行本地 import 后跟单行 @hms import——�
   rmSync(root, { recursive: true, force: true });
 });
 
-// ── SD34（真机实测）：真实 IDE FA 工程（entry/src/main/config.json 模块级形态） ───
-test('SD34：IDE FA 工程（<module>/src/main/config.json 且无 module.json5）判 fa；混合形态不误判', () => {
+// ── （真机实测）：真实 IDE FA 工程（entry/src/main/config.json 模块级形态） ───
+test('IDE FA 工程（<module>/src/main/config.json 且无 module.json5）判 fa；混合形态不误判', () => {
   const root = mkdtempSync(join(tmpdir(), 'f2-sd34-'));
   // IDE FA 真实形态：build-profile+oh-package+entry/src/main/config.json（无 module.json5）
   writeFileSync(join(root, 'build-profile.json5'), '{ "modules": [{ "name": "entry", "srcPath": "./entry" }] }');

@@ -10,7 +10,6 @@ DevEco Studio auto-detection:
   - Windows: C:\\Program Files\\Huawei\\DevEco Studio\\
   - macOS:   /Applications/DevEco Studio.app/Contents/
   - Linux:   /opt/DevEco Studio/ or ~/DevEco Studio/
-  - WSL2:    /mnt/c/Program Files/Huawei/DevEco Studio/
 
 After locating DevEco Studio root, toolchains are searched under:
   <root>/sdk/default/openharmony/toolchains/
@@ -25,13 +24,6 @@ from pathlib import Path
 from typing import Optional
 
 
-def _is_wsl() -> bool:
-    try:
-        return "microsoft" in open("/proc/version").read().lower()
-    except Exception:
-        return False
-
-
 def _find_deveco_root() -> Optional[str]:
     root = os.environ.get("DEVECO_HOME")
     if root and Path(root).is_dir():
@@ -40,11 +32,10 @@ def _find_deveco_root() -> Optional[str]:
     candidates = []
     system = platform.system()
 
-    if system == "Windows" or _is_wsl():
-        prefix = "/mnt/c" if _is_wsl() else "C:"
+    if system == "Windows":
         candidates.extend([
-            f"{prefix}/Program Files/Huawei/DevEco Studio",
-            f"{prefix}/Program Files (x86)/Huawei/DevEco Studio",
+            "C:/Program Files/Huawei/DevEco Studio",
+            "C:/Program Files (x86)/Huawei/DevEco Studio",
         ])
     elif system == "Darwin":
         candidates.extend([
@@ -77,16 +68,7 @@ def _toolchain_dirs() -> list[str]:
 def _win_temp_dir() -> str:
     system = platform.system()
     if system == "Windows":
-        return os.environ.get("TEMP", os.path.expandvars(r"%LOCALAPPDATA%\Temp"))
-    if _is_wsl():
-        username = os.environ.get("USER", "user")
-        for candidate in [
-            f"/mnt/c/Users/{username}/AppData/Local/Temp",
-            "/mnt/c/Users/Administrator/AppData/Local/Temp",
-        ]:
-            if Path(candidate).is_dir():
-                return candidate
-        return f"/mnt/c/Users/{username}/AppData/Local/Temp"
+        return os.environ.get("TEMP", os.environ.expandvars(r"%LOCALAPPDATA%\Temp"))
     return os.environ.get("TMPDIR", "/tmp")
 
 
@@ -95,7 +77,7 @@ def find_hdc() -> Optional[str]:
     if env and shutil.which(env):
         return env
 
-    names = ["hdc.exe", "hdc"] if (_is_wsl() or platform.system() == "Windows") else ["hdc"]
+    names = ["hdc.exe", "hdc"] if platform.system() == "Windows" else ["hdc"]
     for d in _toolchain_dirs():
         for name in names:
             p = Path(d) / name
@@ -115,16 +97,12 @@ def find_trace_streamer() -> Optional[str]:
     if env and shutil.which(env):
         return env
 
-    if _is_wsl():
-        names = ["trace_streamer.exe", "trace_streamer_windows.exe",
-                 "trace_streamer_linux", "trace_streamer"]
-    else:
-        platform_map = {
-            "win32": ["trace_streamer_windows.exe", "trace_streamer.exe", "trace_streamer"],
-            "linux": ["trace_streamer_linux", "trace_streamer"],
-            "darwin": ["trace_streamer_mac", "trace_streamer_darwin", "trace_streamer"],
-        }
-        names = platform_map.get(sys.platform, ["trace_streamer"])
+    platform_map = {
+        "win32": ["trace_streamer_windows.exe", "trace_streamer.exe", "trace_streamer"],
+        "linux": ["trace_streamer_linux", "trace_streamer"],
+        "darwin": ["trace_streamer_mac", "trace_streamer_darwin", "trace_streamer"],
+    }
+    names = platform_map.get(sys.platform, ["trace_streamer"])
 
     search_dirs = _toolchain_dirs()
     root = _find_deveco_root()
@@ -156,12 +134,25 @@ def find_addr2line() -> Optional[str]:
     }
     names = platform_map.get(sys.platform, ["addr2line"])
 
-    for d in _toolchain_dirs():
+    # DevEco Studio's llvm-addr2line lives under native/llvm/bin/, NOT toolchains/
+    # (toolchains/ has hdc but not llvm tools). Build the correct search dirs.
+    search_dirs = _toolchain_dirs()  # toolchains/ (for completeness)
+    root = _find_deveco_root()
+    if root:
+        search_dirs.extend([
+            str(Path(root) / "sdk" / "default" / "openharmony" / "native" / "llvm" / "bin"),
+            str(Path(root) / "sdk" / "openharmony" / "native" / "llvm" / "bin"),
+        ])
+
+    for d in search_dirs:
         for name in names:
             p = Path(d) / name
             if p.exists():
                 return str(p)
 
+    # System PATH fallback — prefer llvm-addr2line over addr2line
+    # (MinGW/GNU binutils addr2line may not support DWARF-5 ARM64 ELF;
+    #  llvm-addr2line from LLVM toolchain handles all DWARF versions)
     for name in names:
         found = shutil.which(name)
         if found:

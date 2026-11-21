@@ -5,7 +5,7 @@ description: 在 Compose Android 中使用 NavigationEvent（androidx.navigation
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-01'
+  last-updated: '2026-11-12'
   keywords:
   - Android
   - Navigation Event

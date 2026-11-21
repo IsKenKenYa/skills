@@ -283,6 +283,14 @@ def build_top10():
     df_old_det['size_num'] = df_old_det['size'].apply(parse_mb)
     df_new_det['size_num'] = df_new_det['size'].apply(parse_mb)
 
+    # Fallback: 汇总表按明细阈值截断/折叠为「其他」时，SO 在 so_to_field 中查不到，
+    # 从详细数据补齐归属领域（详细数据含全部 so 行，一层/二层领域列无合并单元格 NaN）
+    for df_det in [df_old_det, df_new_det]:
+        for _, row in df_det.iterrows():
+            short = str(row['so_short']).strip()
+            if short and short not in so_to_field:
+                so_to_field[short] = (str(row['一层领域']).strip(), str(row['二层领域']).strip())
+
     lines = ["## 五、Top10 劣化 SO\n"]
     lines.append(f"> **排名规则**：以 SO 为键（非 SO+type_name），同一 SO 的多个 type_name 差值累加得出总差值，按总差值降序取前 10；排除虚拟分类。type_name 明细列标注各 type_name 的差值。\n")
     lines.append("| # | SO | 归属领域 | type_name 明细 | {}(MB) | {}(MB) | 差值(MB) |".format(OLD_LABEL, NEW_LABEL))
@@ -421,8 +429,8 @@ def build_dma_comparison():
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser(description="生成两版本对比报告")
-    ap.add_argument("--old-dir", required=True, help="旧版目录 (output/dingtalk_8.0.21)")
-    ap.add_argument("--new-dir", required=True, help="新版目录 (output/dingtalk_8.3.4)")
+    ap.add_argument("--old-dir", required=True, help="旧版目录 (output/myapp_8.0.21)")
+    ap.add_argument("--new-dir", required=True, help="新版目录 (output/myapp_8.3.4)")
     ap.add_argument("--old-label", required=True, help="旧版标签 (v8.0.21)")
     ap.add_argument("--new-label", required=True, help="新版标签 (v8.3.4)")
     ap.add_argument("-o", "--output", help="输出 md 路径 (默认 output/对比报告_<old>_vs_<new>.md)")
@@ -443,26 +451,42 @@ if __name__ == "__main__":
     step3_sos = []
     step4_sos = []
     step5_sos = []
+
+    dma_only_sos = []  # 纯 DMA 型（无 SO_SIZE/HAP 明细），仅由第五章 DMA 对比覆盖
+
     for _, row in top10_df.iterrows():
         so = row['so']
         detail = row['type_name_detail']
         has_arkts = 'ARKTS_HEAP' in detail
         has_so_size_or_hap = 'SO_SIZE' in detail or 'HAP' in detail
+        # DMA/SO_SIZE/HAP 均非 native heap 运行时分配（DMA 为 gralloc/dmabuf，不经 malloc），
+        # htrace .db 的 native_hook 表无对应调用栈，全为这三种类型时不分发到步骤 4，
+        # 否则步骤 4 聚类必然报"无匹配调用栈"、火焰图无法生成（libhdi.z.so/libbuffer_handle.z.so 教训）
         type_names = [t.strip().split(':')[0].strip() for t in detail.split(',')]
-        all_so_size_hap = all(t in ('SO_SIZE', 'HAP') for t in type_names)
+        all_non_native_heap = all(t in ('SO_SIZE', 'HAP', 'DMA') for t in type_names)
+
         if has_arkts:
             step3_sos.append(so)
             step4_sos.append(so)
-        elif not all_so_size_hap:
+        elif not all_non_native_heap:
             step4_sos.append(so)
         if has_so_size_or_hap:
             step5_sos.append(so)
+        elif all_non_native_heap and 'DMA' in type_names:
+            dma_only_sos.append(so)
 
     # 一、深度分析结果（首章，含严重性定级）
     deep_md = "## 一、深度分析结果\n\n"
     deep_md += f"**步骤 3 (ArkTS Heap) 触发 SO**: {', '.join(step3_sos) if step3_sos else '无'}\n\n"
     deep_md += f"**步骤 4 (Native Heap) 触发 SO**: {', '.join(step4_sos) if step4_sos else '无'}\n\n"
     deep_md += f"**步骤 5 (SO_SIZE/HAP smaps) 触发 SO**: {', '.join(step5_sos) if step5_sos else '无'}\n\n"
+    if dma_only_sos:
+        report += (
+            "**DMA 型劣化 SO（type_name 仅含 DMA，无 SO_SIZE/HAP 明细）**: "
+            f"{', '.join(dma_only_sos)}\n\n"
+            "> 这类 SO 的内存为 gralloc/dmabuf 分配，不经 malloc，native_hook 无调用栈数据，"
+            "步骤 3/4/5 均无法覆盖——归因依赖第五章 DMA 对比分析（dma_detail.xlsx 按 buf_type/buf_name 拆解）。\n\n"
+        )
     deep_md += "（深度分析结果将在步骤 3/4/5 执行后填充）\n"
 
     report = f"# 应用冷启动内存对比：{OLD_LABEL} vs {NEW_LABEL}\n\n"

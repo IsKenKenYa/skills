@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { scanMarks } from './sdk-marks.js';
@@ -56,7 +56,7 @@ function main() {
   }
   const doc = JSON.parse(readFileSync(rulesPath, 'utf8'));
   const markIndex = scanMarks(validation.apiDir);
-  const sourceLabel = `OH SDK ${sdkDir.split('/').filter(Boolean).pop() || sdkDir} ets/api`;
+  const sourceLabel = `OH SDK ${basename(sdkDir) || sdkDir} ets/api`;
   const { seeded, partialModules } = seedRules(doc, markIndex, { sourceLabel });
 
   if (seeded.length > 0) {

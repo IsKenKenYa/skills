@@ -5,7 +5,7 @@ description: 提供基于 Android Credential Manager API 实现已验证邮箱�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-16'
+  last-updated: '2026-11-10'
   keywords:
   - implementation
   - Android
@@ -117,7 +117,7 @@ actions:
 ## Overview
 
 This guide describes how to implement verified email retrieval using the
-[Digital Credentials Verifier API](references/android/identity/digital-credentials/credential-verifier.md) through an [OpenID for Verifiable
+[Digital Credentials Verifier API](references/android/identity/digital-credentials/credential-verifier/request-credential.md) through an [OpenID for Verifiable
 Presentations (OpenID4VP)](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) request.
 
 ## Add dependencies
@@ -147,9 +147,11 @@ dependencies {
 
 Use your app or activity context to create a `CredentialManager` object.
 
-    // Use your app or activity context to instantiate a client instance of
-    // CredentialManager.
-    private val credentialManager = CredentialManager.create(context)
+```kotlin
+// Use your app or activity context to instantiate a client instance of
+// CredentialManager.
+private val credentialManager = CredentialManager.create(context)
+```
 
 ## Construct the Digital Credential request
 
@@ -162,46 +164,48 @@ The OpenID4VP request JSON must follow a specific structure. The current
 providers support a JSON structure with an outer `"digital": {"requests":
 [...]}` wrapper.
 
-        val nonce = generateSecureRandomNonce()
+```kotlin
+    val nonce = generateSecureRandomNonce()
 
-        // This request follows the OpenID4VP spec
-        val openId4vpRequest = """
+    // This request follows the OpenID4VP spec
+    val openId4vpRequest = """
+{
+  "requests": [
     {
-      "requests": [
-        {
-          "protocol": "openid4vp-v1-unsigned",
-          "data": {
-            "response_type": "vp_token",
-            "response_mode": "dc_api",
-            "nonce": "$nonce",
-            "dcql_query": {
-              "credentials": [
-                {
-                  "id": "user_info_query",
-                  "format": "dc+sd-jwt",
-                   "meta": { 
-                      "vct_values": ["UserInfoCredential"] 
-                   },
-                  "claims": [ 
-                    {"path": ["email"]}, 
-                    {"path": ["name"]},  
-                    {"path": ["given_name"]},
-                    {"path": ["family_name"]},
-                    {"path": ["picture"]},
-                    {"path": ["hd"]},
-                    {"path": ["email_verified"]}
-                  ]
-                }
+      "protocol": "openid4vp-v1-unsigned",
+      "data": {
+        "response_type": "vp_token",
+        "response_mode": "dc_api",
+        "nonce": "$nonce",
+        "dcql_query": {
+          "credentials": [
+            {
+              "id": "user_info_query",
+              "format": "dc+sd-jwt",
+               "meta": { 
+                  "vct_values": ["UserInfoCredential"] 
+               },
+              "claims": [ 
+                {"path": ["email"]}, 
+                {"path": ["name"]},  
+                {"path": ["given_name"]},
+                {"path": ["family_name"]},
+                {"path": ["picture"]},
+                {"path": ["hd"]},
+                {"path": ["email_verified"]}
               ]
             }
-          }
+          ]
         }
-      ]
+      }
     }
-    """
+  ]
+}
+"""
 
-        val getDigitalCredentialOption = GetDigitalCredentialOption(requestJson = openId4vpRequest)
-        val request = GetCredentialRequest(listOf(getDigitalCredentialOption))
+    val getDigitalCredentialOption = GetDigitalCredentialOption(requestJson = openId4vpRequest)
+    val request = GetCredentialRequest(listOf(getDigitalCredentialOption))
+```
 
 The request contains the following key information:
 
@@ -233,29 +237,31 @@ a `GetCredentialRequest`, and call `getCredential()`.
 
 Present the user with the request, using the Credential Manager built-in UI.
 
-    coroutineScope {
-        try {
-            // Requesting Digital Credential from user...
-            val result = credentialManager.getCredential(activity, request)
+```kotlin
+coroutineScope {
+    try {
+        // Requesting Digital Credential from user...
+        val result = credentialManager.getCredential(activity, request)
 
-            when (val credential = result.credential) {
-                is DigitalCredential -> {
-                    val responseJsonString = credential.credentialJson
+        when (val credential = result.credential) {
+            is DigitalCredential -> {
+                val responseJsonString = credential.credentialJson
 
-                    // Successfully received digital credential response.
+                // Successfully received digital credential response.
 
-                    // Next, parse this response and send it to your server.
-                    // ...
-                }
-
-                else -> {
-                    // handle Unexpected State() - Up to the developer
-                }
+                // Next, parse this response and send it to your server.
+                // ...
             }
-        } catch (e: Exception) {
-            // handle exceptions - Up to the developer
+
+            else -> {
+                // handle Unexpected State() - Up to the developer
+            }
         }
+    } catch (e: Exception) {
+        // handle exceptions - Up to the developer
     }
+}
+```
 
 > [!NOTE]
 > **Note:** There is no equivalent of Sign in with Google's `preferImmediatelyAvailableCredentials` for Digital Credentials. If no verifiable credential is found (for example, no eligible account on device), the user will be shown a "No options available" or similar system screen.
@@ -275,27 +281,29 @@ user's name.
 The following code extracts the raw [Selective Disclosure JWT
 (SD-JWT)](https://datatracker.ietf.org/doc/rfc9901/) and uses a helper to decode its claims.
 
-    // 1. Parse the outer JSON wrapper to get the `vp_token`
-    val responseData = JSONObject(responseJsonString)
-    val dataObject = responseData.getJSONObject("data")
-    val vpToken = dataObject.getJSONObject("vp_token")
+```kotlin
+// 1. Parse the outer JSON wrapper to get the `vp_token`
+val responseData = JSONObject(responseJsonString)
+val dataObject = responseData.getJSONObject("data")
+val vpToken = dataObject.getJSONObject("vp_token")
 
-    // 2. Extract the raw SD-JWT string
-    val credentialId = vpToken.keys().next()
-    val rawSdJwt = vpToken.getJSONArray(credentialId).getString(0)
+// 2. Extract the raw SD-JWT string
+val credentialId = vpToken.keys().next()
+val rawSdJwt = vpToken.getJSONArray(credentialId).getString(0)
 
-    // 3. Use your parser to get the verified claims
-    // Server-side validation/parsing is highly recommended.
+// 3. Use your parser to get the verified claims
+// Server-side validation/parsing is highly recommended.
 
-    // Assumes a local parser like the one in our SdJwtParser.kt sample
-    val claims = SdJwtParser.parse(rawSdJwt)
-    Log.d("TAG", "Parsed Claims: ${claims.toString(2)}")
+// Assumes a local parser like the one in our SdJwtParser.kt sample
+val claims = SdJwtParser.parse(rawSdJwt)
+Log.d("TAG", "Parsed Claims: ${claims.toString(2)}")
 
-    // 4. Create your VerifiedUserInfo object with REAL data
-    val userInfo = VerifiedUserInfo(
-        email = claims.getString("email"),
-        displayName = claims.optString("name", claims.getString("email"))
-    )
+// 4. Create your VerifiedUserInfo object with REAL data
+val userInfo = VerifiedUserInfo(
+    email = claims.getString("email"),
+    displayName = claims.optString("name", claims.getString("email"))
+)
+```
 
 ## Handle the response
 
@@ -306,42 +314,44 @@ The following is an example of what the raw `responseJsonString` looks like, and
 what the claims look like after parsing the inner SD-JWT where you get
 additional metadata as well along with verified email:
 
-    /*
-    // Example of the raw JSON response from credential.credentialJson:
-    {
-      "protocol": "openid4vp-v1-unsigned",
-      "data": {
-        "vp_token": {
-          // This key matches the 'id' you set in your dcql_query
-          "user_info_query": [
-            // The SD-JWT string (Issuer JWT ~ Disclosures ~ Key Binding JWT)
-            "eyJhbGciOiJ...~WyI...IiwgImVtYWlsIiwgInVzZXJAZXhhbXBsZS5jb20iXQ~...~eyJhbGciOiJ..."
-          ]
-        }
-      }
+```json
+/*
+// Example of the raw JSON response from credential.credentialJson:
+{
+  "protocol": "openid4vp-v1-unsigned",
+  "data": {
+    "vp_token": {
+      // This key matches the 'id' you set in your dcql_query
+      "user_info_query": [
+        // The SD-JWT string (Issuer JWT ~ Disclosures ~ Key Binding JWT)
+        "eyJhbGciOiJ...~WyI...IiwgImVtYWlsIiwgInVzZXJAZXhhbXBsZS5jb20iXQ~...~eyJhbGciOiJ..."
+      ]
     }
+  }
+}
 
-    // Example of the parsed and verified claims from the SD-JWT on your server:
-    {
-      "cnf": {
-        "jwk": {..}
-      },
-      "exp": 1775688222,
-      "iat": 1775083422,
-      "iss": "https://verifiablecredentials-pa.googleapis.com",
-      "vct": "UserInfoCredential",
-      "email": "jane.doe.246745@gmail.com",
-      "email_verified": true,
-      "given_name": "Jane",
-      "family_name": "Doe",
-      "name": "Jane Doe",
-      "picture": "http://example.com/janedoe/me.jpg",
-      "hd": ""
-    }
-     */
+// Example of the parsed and verified claims from the SD-JWT on your server:
+{
+  "cnf": {
+    "jwk": {..}
+  },
+  "exp": 1775688222,
+  "iat": 1775083422,
+  "iss": "https://verifiablecredentials-pa.googleapis.com",
+  "vct": "UserInfoCredential",
+  "email": "jane.doe.246745@gmail.com",
+  "email_verified": true,
+  "given_name": "Jane",
+  "family_name": "Doe",
+  "name": "Jane Doe",
+  "picture": "http://example.com/janedoe/me.jpg",
+  "hd": ""
+}
+ */
+```
 
 > [!IMPORTANT]
-> **Important:** We highly recommend that after receiving the verified email, you trigger Credential Manager's [passkey creation](https://developer.android.com/identity/credential-manager/passkeys/create-passkeys).
+> **Important:** We highly recommend that after receiving the verified email, you trigger Credential Manager's [passkey creation](references/android/identity/passkeys/create-passkeys.md).
 
 ## Server-side validation for account creation
 
@@ -380,24 +390,26 @@ intercepted or spoofed before provisioning the new account.
 > [!WARNING]
 > **Warning:** As mentioned in [Parse the response on the client](#parse-response), from August 2026, the [response JSON](https://developer.android.com/reference/androidx/credentials/DigitalCredential#getCredentialJson()) format has been updated to match W3C standards. Ensure your client-side parsing and server-side validation handle both formats during the transition period, while the older implementation is phased out. Apps that begin to integrate the email verification flow after August 2026 need to use the new format only.
 
-    try {
-        // Send the raw credential response and the original nonce to your server.
-        // Your server must validate the response. createAccountWithVerifiedCredentials
-        // is a custom implementation per each RP for server side verification and account creation.
-        val serverResponse = createAccountWithVerifiedCredentials(responseJsonString, nonce)
+```kotlin
+try {
+    // Send the raw credential response and the original nonce to your server.
+    // Your server must validate the response. createAccountWithVerifiedCredentials
+    // is a custom implementation per each RP for server side verification and account creation.
+    val serverResponse = createAccountWithVerifiedCredentials(responseJsonString, nonce)
 
-        // Server returns the new account info (e.g., email, name)
-        val claims = JSONObject(serverResponse.json)
+    // Server returns the new account info (e.g., email, name)
+    val claims = JSONObject(serverResponse.json)
 
-        val userInfo = VerifiedUserInfo(
-            email = claims.getString("email"),
-            displayName = claims.optString("name", claims.getString("email"))
-        )
+    val userInfo = VerifiedUserInfo(
+        email = claims.getString("email"),
+        displayName = claims.optString("name", claims.getString("email"))
+    )
 
-        // handle response - Up to the developer
-    } catch (e: Exception) {
-        // handle exceptions - Up to the developer
-    }
+    // handle response - Up to the developer
+} catch (e: Exception) {
+    // handle exceptions - Up to the developer
+}
+```
 
 ## Passkey creation
 

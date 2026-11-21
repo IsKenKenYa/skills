@@ -1,4 +1,4 @@
-# VM-16 真实 demo 采样清单（TASK-9）
+#  真实 demo 采样清单
 
 > 选型原则（design）：开源 OH 应用工程（含 @ohos.*/@hms.* 与 Native 混合引用），固化入 fixture 清单；
 > 通过标准：unknown 占比 ≤20% 且逐项可归因（超出则补规则条目后复测）。

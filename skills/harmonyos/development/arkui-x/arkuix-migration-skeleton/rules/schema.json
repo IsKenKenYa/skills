@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "arkuix-migration-skeleton/skeleton-result.schema.json",
   "title": "SkeletonResult",
-  "description": "ArkUI-X 迁移骨架生成结果（F1 SkeletonResult 契约，spec SKRS-1 v1.1，schema_version=1）",
+  "description": "ArkUI-X 迁移骨架生成结果（F1 SkeletonResult 契约，spec ，schema_version=1）",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -33,7 +33,7 @@
         "android",
         "ios"
       ],
-      "description": "平台选项（骨架生成前用户选择，默认 both；v1.1）"
+      "description": "平台选项（骨架生成前用户选择，默认 both）"
     },
     "android_shell": {
       "type": "string",
@@ -46,6 +46,14 @@
     "shared_arkts_dir": {
       "type": "string",
       "description": "共享 ArkTS 目录相对路径（modify=原工程 entry（就地）；new=ets_stage/source/entry）"
+    },
+    "platform_baseline": {
+      "$ref": "#/definitions/platformBaseline",
+      "description": "平台版本基线（生成产物实测提取：Android minSdk/target/compileSdk、iOS deployment target；F4 适用版本澄清消费，可选）"
+    },
+    "config_migration": {
+      "$ref": "#/definitions/configMigration",
+      "description": "new 模式配置文件迁移决策与结果（配置迁移强确认门；modify 模式不输出，可选）"
     },
     "environment": {
       "type": "object",
@@ -66,7 +74,7 @@
           "$ref": "#/definitions/arkuiXSdkStatus"
         }
       },
-      "description": "开发环境检测结果（R-1/R-2；两平台均检测与 platform 选择无关；不阻断骨架生成）"
+      "description": "开发环境检测结果（两平台均检测与 platform 选择无关；不阻断骨架生成）"
     }
   },
   "allOf": [
@@ -112,6 +120,129 @@
     }
   ],
   "definitions": {
+    "configMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "yes",
+            "no"
+          ],
+          "description": "new 模式配置迁移决策（强确认门：非 TTY 须显式 --migrate-configs）"
+        },
+        "merged": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "action"
+            ],
+            "properties": {
+              "file": { "type": "string" },
+              "action": { "type": "string" },
+              "keys": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "copied": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "kept_template": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "reason"
+            ],
+            "properties": {
+              "file": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": { "type": "boolean" },
+            "missing": { "type": "array", "items": { "type": "string" } },
+            "unexpected_changes": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "platformBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "android": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min_sdk"
+          ],
+          "properties": {
+            "min_sdk": {
+              "type": "integer",
+              "description": "Android minSdkVersion（适用版本下限，生成产物实测提取）"
+            },
+            "target_sdk": {
+              "type": "integer",
+              "description": "Android targetSdkVersion"
+            },
+            "compile_sdk": {
+              "type": "integer",
+              "description": "Android compileSdkVersion"
+            }
+          }
+        },
+        "ios": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deployment_target"
+          ],
+          "properties": {
+            "deployment_target": {
+              "type": "string",
+              "description": "iOS IPHONEOS_DEPLOYMENT_TARGET（如 \"10.0\"）"
+            }
+          }
+        },
+        "openharmony": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "OpenHarmony 侧版本基线（产物 build-profile/hvigor-config 实测提取；Compile SDK 版本选择落账）",
+          "properties": {
+            "compile_sdk_version": {
+              "type": "string",
+              "description": "build-profile 的 compileSdkVersion（OpenHarmony 形态：数字 apiLevel 或 \"26.0.0\"）"
+            },
+            "runtime_os": {
+              "type": "string",
+              "description": "runtimeOS（本 Skill 恒 OpenHarmony 形态）"
+            },
+            "model_version": {
+              "type": "string",
+              "description": "hvigor/hvigor-config.json5 的 modelVersion"
+            }
+          }
+        }
+      }
+    },
     "platformStatus": {
       "type": "object",
       "additionalProperties": false,
@@ -152,7 +283,7 @@
         },
         "modify_available": {
           "type": "boolean",
-          "description": "API 24+ 门槛判定（ace modify 自 API 24 起提供）"
+          "description": "API 22+ 门槛判定（ace modify 自 API 22 起提供）"
         }
       }
     }

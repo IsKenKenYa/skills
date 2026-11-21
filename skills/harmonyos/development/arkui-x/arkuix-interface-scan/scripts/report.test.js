@@ -41,7 +41,7 @@ function sampleReport() {
   };
 }
 
-test('R-10 renderJson：键序固定，过 SRS-1 字段断言', () => {
+test('renderJson：键序固定，关键字段断言', () => {
   const text = renderJson(sampleReport());
   const parsed = JSON.parse(text);
   assert.deepEqual(Object.keys(parsed), ['schema_version', 'project_model', 'sdk', 'inventory', 'adaptation']);
@@ -53,18 +53,18 @@ test('R-10 renderJson：键序固定，过 SRS-1 字段断言', () => {
     'source', 'module', 'symbol', 'occurrences', 'locations', 'reason', 'advice', 'suggested_alternative']);
 });
 
-test('R-10 renderJson：降级报告无 sdk 字段', () => {
+test('renderJson：降级报告无 sdk 字段', () => {
   const report = sampleReport();
   delete report.sdk;
   const parsed = JSON.parse(renderJson(report));
   assert.equal(parsed.sdk, undefined);
 });
 
-test('INV-2 renderJson 确定性：同输入两次渲染逐字节一致', () => {
+test('renderJson 确定性：同输入两次渲染逐字节一致', () => {
   assert.equal(renderJson(sampleReport()), renderJson(sampleReport()));
 });
 
-test('R-9 renderMarkdown：六分类组织+F3 桥接标注+⑥替代建议+unknown 清单', () => {
+test('renderMarkdown：六分类组织+F3 桥接标注+⑥替代建议+unknown 清单', () => {
   const md = renderMarkdown(sampleReport(), {});
   assert.match(md, /① 完整直用/);
   assert.match(md, /③ 等价桥接（equivalent_bridge）— 将由 F3 生成桥接/);
@@ -76,7 +76,7 @@ test('R-9 renderMarkdown：六分类组织+F3 桥接标注+⑥替代建议+unkno
   assert.match(md, /\/sdk\/26\.0\.0/);
 });
 
-test('R-14 renderMarkdown：降级标注', () => {
+test('renderMarkdown：降级标注', () => {
   const report = sampleReport();
   delete report.sdk;
   const md = renderMarkdown(report, { degraded: true });
@@ -84,20 +84,20 @@ test('R-14 renderMarkdown：降级标注', () => {
   assert.match(md, /未检出（单源判定）/);
 });
 
-test('R-2 renderMarkdown：FA 提示', () => {
+test('renderMarkdown：FA 提示', () => {
   const report = sampleReport();
   report.project_model = 'fa';
   const md = renderMarkdown(report, {});
   assert.match(md, /FA 模型不支持，仅支持 Stage 模型/);
 });
 
-test('INV-2 renderMarkdown：报告不含源码正文（仅白名单字段渲染）', () => {
+test('renderMarkdown：报告不含源码正文（仅白名单字段渲染）', () => {
   const md = renderMarkdown(sampleReport(), {});
   // 源码正文特征（函数体/语句）不应出现；仅位置与理由
   assert.doesNotMatch(md, /function foo|const x =|=> \{/);
 });
 
-test('v1.2 renderMarkdown：来源列展示（ohos/hms/ndk）', () => {
+test('renderMarkdown：来源列展示（ohos/hms/ndk）', () => {
   const report = sampleReport();
   report.adaptation.full_direct.push({
     source: 'ndk', module: 'ace/xcomponent/native_interface_xcomponent.h', symbol: '*include*',
@@ -110,7 +110,7 @@ test('v1.2 renderMarkdown：来源列展示（ohos/hms/ndk）', () => {
   assert.match(md, /\| ndk \|/);
 });
 
-test('TASK-10 computePlatformRatio：分子=命中 platform 符号级条目，分母=已判定 @ohos.*（不含 unknown/@hms.*）', () => {
+test('computePlatformRatio：分子=命中 platform 符号级条目，分母=已判定 @ohos.*（不含 unknown/@hms.*）', () => {
   const rules = loadRules();
   const report = sampleReport();
   // sampleReport 六分类 @ohos.*：notificationManager#publish、geoLocationManager#getCurrentLocation、
@@ -125,7 +125,7 @@ test('TASK-10 computePlatformRatio：分子=命中 platform 符号级条目，�
   assert.equal(ratio.known, true);
 });
 
-test('TASK-10 renderMarkdown：单平台占比统计节（实时计算）', () => {
+test('renderMarkdown：单平台占比统计节（实时计算）', () => {
   const rules = loadRules();
   const report = sampleReport();
   report.adaptation.full_direct.push({
@@ -136,13 +136,13 @@ test('TASK-10 renderMarkdown：单平台占比统计节（实时计算）', () =
   assert.match(md, /单平台支持接口占比：1\/4（25%）/);
 });
 
-test('TASK-10 renderMarkdown：规则表无单平台条目时显示 0% 并注明', () => {
+test('renderMarkdown：规则表无单平台条目时显示 0% 并注明', () => {
   const rules = { meta: {}, byKey: new Map([['@ohos.router#router', { module: '@ohos.router', symbol: null, category: 'reduced_direct', reason: 'r', advice: 'a' }]]) };
   const md = renderMarkdown(sampleReport(), { rules });
   assert.match(md, /单平台支持接口占比：0%（规则表暂无单平台条目）/);
 });
 
-test('TASK-7 renderMarkdown：动态加载提示（变量/拼接形式位置清单）', () => {
+test('renderMarkdown：动态加载提示（变量/拼接形式位置清单）', () => {
   const md = renderMarkdown(sampleReport(), {
     dynamicHints: [
       { file: 'a.ets', line: 7, kind: 'dynamic-import' },
@@ -154,7 +154,7 @@ test('TASK-7 renderMarkdown：动态加载提示（变量/拼接形式位置清�
   assert.match(md, /n\.cpp:24（dlopen）/);
 });
 
-test('v1.2.0 真实单平台条目计入占比（picker#save + window#on → 2/2）', () => {
+test('真实单平台条目计入占比（picker#save + window#on → 2/2）', () => {
   const rules = loadRules();
   const report = sampleReport();
   report.adaptation.full_direct.push(

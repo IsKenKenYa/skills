@@ -284,7 +284,10 @@ def parse_shortest_json(path):
         key = key.replace('\t', ' ')
         raw = raw.replace('\t', ' ')
         rtype, side = _root_kind(obj.get('rootName') or obj.get('name') or '')
-        ret = (obj.get('retainedSize') or 0) / 1024.0
+        # shortest-path.mjs 的 --json 输出用 `size`(字节，含 --aggregate 聚簇求和)；
+        # 旧版/其他来源可能用 `retainedSize`，两者兼容读取。
+        ret_bytes = obj.get('size') if obj.get('size') is not None else obj.get('retainedSize')
+        ret = (ret_bytes or 0) / 1024.0
         cnt = int(obj.get('count', 1) or 1)
         e = chains.get(key)
         if e is None:

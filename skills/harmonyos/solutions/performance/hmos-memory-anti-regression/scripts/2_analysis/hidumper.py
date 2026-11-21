@@ -41,8 +41,6 @@ def add_so_data(file, res):
         if len(line) != 12 or line[-2] == 'Category':
             continue
         # Use Pss + Swap (line[2] + line[7]) to match meminfo.xlsx units
-
-
         size = (int(line[1]) + int(line[7])) * 1024
         category = line[-2]
         name = line[-1]

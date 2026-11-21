@@ -19,7 +19,7 @@ const ADAPTATION_ITEM_REQUIRED = [
 ];
 const INVENTORY_ITEM_REQUIRED = ['source', 'module', 'symbol', 'file', 'line'];
 
-test('SRS-1 顶层字段齐备且必填性正确（sdk 为可选）', () => {
+test('顶层字段齐备且必填性正确（sdk 为可选）', () => {
   const props = schema.properties;
   for (const field of SRS1_TOP_REQUIRED) {
     if (!(field in props)) throw new Error(`缺少顶层字段: ${field}`);
@@ -71,14 +71,14 @@ test('adaptation 项字段与必填齐备', () => {
     if (!item.required.includes(f)) throw new Error(`adaptation 项 ${f} 应为必填`);
   }
   if (JSON.stringify(props.source.enum) !== JSON.stringify(['ohos', 'hms', 'ndk', 'unknown'])) {
-    throw new Error('adaptation 项 source 枚举应为 ohos/hms/ndk/unknown（v1.2 + SD29）');
+    throw new Error('adaptation 项 source 枚举应为 ohos/hms/ndk/unknown');
   }
 });
 
-test('v1.2 inventory 项 source 枚举含 ndk（SD29 增补 unknown）', () => {
+test('inventory 项 source 枚举含 ndk（增补 unknown）', () => {
   const invSource = schema.properties.inventory.items.properties.source;
   if (JSON.stringify(invSource.enum) !== JSON.stringify(['ohos', 'hms', 'ndk', 'unknown'])) {
-    throw new Error(`inventory 项 source 枚举应为 ohos/hms/ndk/unknown（v1.2 + SD29）: ${JSON.stringify(invSource.enum)}`);
+    throw new Error(`inventory 项 source 枚举应为 ohos/hms/ndk/unknown: ${JSON.stringify(invSource.enum)}`);
   }
 });
 

@@ -5,7 +5,7 @@ description: 帮助开发者集成、调试和解决 Play Engage SDK 实现问�
 license: Complete terms in LICENSE.txt
 metadata:
   author: Google LLC
-  last-updated: '2026-09-22'
+  last-updated: '2026-11-14'
   keywords:
   - android
   - engage
@@ -24,13 +24,13 @@ Follow these steps to assist the developer:
 
 1. **Identify vertical and cluster:**
 
-   - Ask the developer which vertical their app belongs to based on **[references/schemas/](references/schemas)**.
+   - Ask the developer which vertical their app belongs to based on **`references/schemas/`**.
    - Check if the integration is for TV or mobile. If the integration is for TV, read the TV-specific sections in [patterns.md](references/patterns.md) as well.
-   - Use `{VERTICAL}.md` in the **[references/schemas/](references/schemas)** directory to identify the corresponding Engage entities and the `client` class name. The `client` field in the JSON provides the full class name. For example, `com.google.android.engage.food.service.AppEngageFoodClient`.
+   - Use `{VERTICAL}.md` in the **`references/schemas/`** directory to identify the corresponding Engage entities and the `client` class name. The `client` field in the JSON provides the full class name. For example, `com.google.android.engage.food.service.AppEngageFoodClient`.
    - **Note:** Initializing the client class requires a `Context` parameter. For example, `AppEngageFoodClient(context)`.
    - Always refer to [common.md](references/common.md) for common entities.
    - Ask which cluster type they want to publish from the supported cluster types for that vertical.
-   - Find the method to call from `{VERTICAL}.md` in the **[references/schemas/](references/schemas)** directory for the specified cluster. Each method will specify the request it expects.
+   - Find the method to call from `{VERTICAL}.md` in the **`references/schemas/`** directory for the specified cluster. Each method will specify the request it expects.
    - Get the request structure from [requests.md](references/requests.md) and clusters from [clusters.md](references/clusters.md). Then suggest and use sources to fill the fields in the request structure correctly, along with the required entities and clusters.
 2. **Generate structured boilerplate code:**
 
@@ -45,7 +45,7 @@ Follow these steps to assist the developer:
 3. **Suggest entity mapping:**
 
    - Ask the developer to provide their local model schema (for example, a data class or a JSON snippet).
-   - If they haven't provided one, share entities from `{VERTICAL}.md` in the **[references/schemas/](references/schemas)** directory as a guide.
+   - If they haven't provided one, share entities from `{VERTICAL}.md` in the **`references/schemas/`** directory as a guide.
    - Once the local model is identified, suggest a mapping to the corresponding Engage entity.
    - Generate the conversion logic using the `ItemToEntityConverter` pattern in [patterns.md](references/patterns.md) and add it to the generated `{ENGAGE_CODE_DIR}/ItemToEntityConverter`.
 4. **Suggest data source:**
@@ -55,7 +55,7 @@ Follow these steps to assist the developer:
    - Use `{ENGAGE_CODE_DIR}/ItemToEntityConverter` to convert this data to an Engage entity.
    - Use obtained Engage entity model data with `{ENGAGE_CODE_DIR}/
      ClusterRequestFactory` to get cluster requests.
-   - Call corresponding cluster publishing method obtained from `{VERTICAL}.md` in the **[references/schemas/](references/schemas)** directory with the obtained request in previous step in `{ENGAGE_CODE_DIR}/EngageWorker`.
+   - Call corresponding cluster publishing method obtained from `{VERTICAL}.md` in the **`references/schemas/`** directory with the obtained request in previous step in `{ENGAGE_CODE_DIR}/EngageWorker`.
 5. **Gradle and manifest updates:**
 
    - Suggest updates to `build.gradle` and `AndroidManifest.xml`.
@@ -71,10 +71,9 @@ Follow these steps to assist the developer:
      - \[ \] Registered `EngageBroadcastReceiver` **dynamically** by calling `EngageBroadcastReceiver.register(context)` in the `Application` class or main `Activity` class.
      - \[ \] Implemented the `register` method in `EngageBroadcastReceiver`'s `companion object` to handle dynamic registration.
      - \[ \] Handled empty data lists in `EngageWorker` (for example, by deleting the cluster instead of publishing empty data).
-     - \[ \] Used `--no-daemon` for all Gradle compilations.
    - Perform a Gradle sync.
    - If errors occur (such as import failures, namespace conflicts, or compile errors), read **[references/troubleshooting.md](references/troubleshooting.md)** to resolve them.
-   - Execute a Gradle compilation. You must run `./gradlew compileDebugUnitTestSources --no-daemon` or `./gradlew assembleDebug --no-daemon`. See **[references/troubleshooting.md](references/troubleshooting.md)** for compile rules and warnings about fast-compilation shortcuts. Repeat this step until compilation is successful.
+   - Execute a Gradle compilation (`./gradlew compileDebugUnitTestSources` or `./gradlew assembleDebug`). See **[references/troubleshooting.md](references/troubleshooting.md)** for compile rules and warnings about fast-compilation shortcuts. Repeat this step until compilation is successful.
 7. **User checklist:** At the end of code generation, notify the user to go
    through this checklist to verify that the integration is complete and as
    intended:

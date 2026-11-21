@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 /**
- * 模型前置（R-8/R-9，INV-1）：
+ * 模型前置：
  * - fa           → reject_fa（提示 FA 不支持，零写）
  * - 缺失/不可解析/unknown → reject_unknown（引导先运行 F2，零写）
  * - stage        → pass

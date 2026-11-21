@@ -11,9 +11,9 @@ if "%isAceBuildFlag%" == "true" goto :eof
 set scriptBuildFlag=true
 if "%scriptBuildFlag%" == "false" goto :eof
 
-set project_path=/var/folders/fs/rncsy13d245981kgp_6sq1kr0000gn/T/aceProject/Users/yunjie/workspace/arkuix-skill-fieldtest/audio-haptic-sound-vibration-collaboration/f1_new_out
-set ohpm_path=/Applications/deveco-studio.app/Contents/tools/ohpm/bin/ohpm
-set arkuiXSdkPath=/Users/yunjie/Library/ArkUI-X/Sdk/26.0.0/arkui-x
+set project_path=__PROJECT_PATH__
+set ohpm_path=__OHPM_PATH__
+set arkuiXSdkPath=__ARKUIX_SDK_PATH__
 
 @REM You can change the module name you want to compile.
 set moduleLists=entry

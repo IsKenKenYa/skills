@@ -222,7 +222,7 @@ def add_anno_data(anno_file, callchains):
     print("添加混合模式数据")
     startts = config_data["startts"]
     endts = config_data["endts"]
-    anno_data = query_native_hook(config_data["htrace_dir"], event_types=['MmapEvent'], startts=startts, endts=endts)
+    anno_data = query_native_hook(config_data["htrace_dir"], event_types=['MmapEvent'], startts=startts, endts=endts, aggregate=False)
     anno_data = filter_anno(anno_data)
     if not anno_data:
         return

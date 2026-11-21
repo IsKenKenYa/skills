@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """应用 HTrace 数据采集 (Python 实现, 复用 CmdRunner)。
 
-跨主机 OS (Linux/macOS/Windows/WSL): pathlib 处理路径, 复用 _lib/cmd_runner.CmdRunner
+跨主机 OS (Linux/macOS/Windows): pathlib 处理路径, 复用 _lib/cmd_runner.CmdRunner
 的 hdc 封装 (run_on_device/push_to_device/pull_from_device/find_hdc), 不再依赖 bash 脚本。
 
 用法:
-  python scripts/1_collection/collect.py --app <应用名> [--yes] [--no-pull] <版本标签> [时长]
-  例: python scripts/1_collection/collect.py --app dingtalk --yes v1 30
+  python scripts/1_collection/collect.py --app <应用名> [--yes] <版本标签> [时长]
+  例: python scripts/1_collection/collect.py --app myapp --yes v1 30
 
 采集流程:
   Phase 1: 应用安装检查 + 登录前置操作 (--login-script 时自动执行登录脚本, 否则人工确认)
   Phase 2: 杀死应用 + 启动 htrace (nativehook 详细模式, startup_mode=true 冷启动)
+            + 清空 hilog 缓冲区 (hilog -r)
            --scenario 时自动运行场景复现替代手工操作
-  Phase 3: 采集 showmap / smaps / mm_dmabuf_info
+  Phase 3: 采集 showmap / smaps / mm_dmabuf_info / hilog / 窗口dump
   Phase 4: 重新拉起进程 + 采集 heapsnapshot
-  Phase 5: 拉取 htrace 及其余产物（--no-pull 时跳过）
+  Phase 5: 拉取 htrace 及其余产物
 """
 import argparse
 import json
@@ -48,9 +49,9 @@ session_config {
 plugin_configs {
   plugin_name: "nativehook"
   sample_interval: 1000
-  is_protobuf_serialize:true
   config_data {
     save_file: false
+    filter_size:128
     smb_pages: 16384
     max_stack_depth: 50
     process_name: "{process_name}"
@@ -61,7 +62,6 @@ plugin_configs {
     record_accurately: true
     offline_symbolization: true
     statistics_interval: 0
-    sample_interval: 1000
     startup_mode: true
     js_stack_report: 1
     max_js_stack_depth: 16
@@ -79,7 +79,6 @@ plugin_configs {
     restrace_tag: "RES_GPU_CL_IMAGE"
     unique_stack_table_size:256
     use_file_cache_mode:true
-    file_cache_buffer_size:67108864
   }
 }
 """
@@ -222,12 +221,12 @@ def _get_ability_from_device(runner: CmdRunner, bundle: str) -> str:
 def _run_login_script(scenario_dir: str, scenario_name: str) -> bool:
     """执行登录预制 Hypium 脚本并校验结果。
 
-    同步执行 `python main.py <scenario_name>` (不传 --skip-launch, 登录脚本需要自己拉起应用),
+    同步执行 `python main.py <scenario_name>`,
     等待结束后复用 _check_scenario_result 解析 xdevice 报告判断成败。
 
     Args:
         scenario_dir: Hypium 工程根目录 (含 main.py)
-        scenario_name: 登录用例名 (如 KuaishouPrerequisiteSetup)
+        scenario_name: 登录用例名 (如 MyappPrerequisiteSetup)
     Returns:
         True=脚本执行成功, False=失败
     """
@@ -372,24 +371,24 @@ def _estimate_scenario_duration(scenario_dir: str, scenario_name: str = "") -> i
                             continue
                         exec_time = module.get("time")  # float, 秒
                         if exec_time and exec_time > 0:
-                            estimated = int(exec_time) + 5  # 加 5s 缓冲
-                            print(f"  [估算] 从历史报告读取场景耗时: {exec_time:.0f}s + 5s 缓冲 = {estimated}s"
+                            estimated = int(exec_time)
+                            print(f"  [估算] 从历史报告读取场景耗时: {exec_time:.0f}s = {estimated}s"
                                   f" (来源: {report_file.relative_to(scenario_dir)})")
                             return estimated
                 except Exception:
                     pass  # 解析失败, 回退默认值
 
     # 策略 2: 保守默认值 (覆盖大多数场景: 初始化 + 固定步骤 + 滑动 + 等待)
-    default_duration = 180
+    default_duration = 120
     print(f"  [估算] 无历史报告, 使用保守默认值: {default_duration}s")
     return default_duration
 
 
 def _launch_scenario_replay(scenario_dir: str, scenario_name: str
                             ) -> subprocess.Popen | None:
-    """后台启动场景复现 (通过外部 Hypium 工程的 main.py --skip-launch)。
+    """后台启动场景复现 (通过外部 Hypium 工程的 main.py)。
 
-    collect.py 已通过 aa start 拉起应用, 场景复现跳过启动步骤。
+    场景模式下由 Hypium 脚本负责拉起应用, collect.py 不执行 aa start。
     场景的具体参数 (滑动次数/间隔/等待时长等) 由 Hypium 工程自身的默认值决定,
     collect.py 只负责触发脚本, 不关心场景内部逻辑。
     执行结果由 xdevice 写入 <scenario_dir>/reports/<timestamp>/,
@@ -397,7 +396,7 @@ def _launch_scenario_replay(scenario_dir: str, scenario_name: str
 
     Args:
         scenario_dir: Hypium 工程根目录 (含 main.py)
-        scenario_name: xdevice 测试用例名 (如 KuaishouScenarioReplay)
+        scenario_name: xdevice 测试用例名 (如 MyappScenarioReplay)
 
     返回 Popen 实例 (调用方需 wait), 失败返回 None。
     """
@@ -408,9 +407,8 @@ def _launch_scenario_replay(scenario_dir: str, scenario_name: str
     cmd = [
         sys.executable, str(main_py),
         scenario_name,
-        "--skip-launch",
     ]
-    print(f"  启动场景复现: {scenario_name} (--skip-launch)")
+    print(f"  启动场景复现: {scenario_name}")
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,
                                 text=True, cwd=str(main_py.parent))
@@ -434,7 +432,7 @@ def _check_scenario_result(scenario_dir: str, scenario_name: str,
 
     Args:
         scenario_dir: Hypium 工程根目录
-        scenario_name: 场景名 (如 kuaishou, dingtalk)
+        scenario_name: 场景名 (如 Myapp)
         scenario_start_time: 场景启动时的 time.time() 时间戳, 用于过滤报告目录
 
     Returns:
@@ -473,7 +471,7 @@ def _check_scenario_result(scenario_dir: str, scenario_name: str,
                            f"(启动时间: {scenario_start_time}, "
                            f"最新报告目录: {candidate_dirs[0].name if candidate_dirs else '无'})")
 
-    # 场景名 → module 名匹配: "kuaishou" 匹配 "KuaishouScenarioReplay" 等
+    # 场景名 → module 名匹配: "Myapp" 匹配 "MyappScenarioReplay" 等
     scenario_lower = scenario_name.lower()
 
     for rdir in recent_dirs:
@@ -565,6 +563,8 @@ def phase_kill_and_htrace(runner: CmdRunner, process_name: str, bundle: str,
     local_file = str(output_dir / f"{app_label}_{duration}s.htrace")
     print("  清理设备端残留文件...")
     runner.run_on_device(["rm", "-f", remote_file])
+    # split_file: true 时旧拆分文件名含时间戳, 需通配清理
+    runner.run_on_device(["sh", "-c", f"rm -f {DEVICE_TMP}/{app_label}_{duration}s_*.htrace"])
 
     print(f"\n  ! htrace 采集即将开始，时长 {duration}s")
     print("  ⚠️ 操作时机（关键）：")
@@ -609,12 +609,16 @@ def phase_kill_and_htrace(runner: CmdRunner, process_name: str, bundle: str,
         print(f"  请检查: hdc shell ls -la {runner.hiprofiler_cmd}")
         return None, remote_file, local_file, True
     print("  hiprofiler_cmd 进程已确认运行")
+    # 清空 hilog 缓冲区，确保后续 dump 只含本次场景日志（供 ArkWeb 案例匹配使用）
+    runner.run_on_device(["hilog", "-r"])
+    print("  hilog 缓冲区已清空")
     # 冷启动: 拉起应用捕获启动期分配
     time.sleep(1)
-    # runner.run_on_device(["aa", "start", "-a", ability, "-b", bundle])
-    # print(f"  应用已拉起 ({ability})")
+    if not scenario:
+        runner.run_on_device(["aa", "start", "-a", ability, "-b", bundle])
+        print(f"  应用已拉起 ({ability})")
 
-    # 场景复现: 后台启动 (跳过应用启停, 由 collect.py 管理)
+    # 场景复现: 后台启动 (由 Hypium 脚本管理应用启停)
     scenario_proc = None
     scenario_passed = True  # 默认通过; 无场景时无影响
     scenario_start_time = 0.0
@@ -622,9 +626,9 @@ def phase_kill_and_htrace(runner: CmdRunner, process_name: str, bundle: str,
         scenario_start_time = time.time()
         scenario_proc = _launch_scenario_replay(scenario_dir, scenario)
 
-    # 等待采集时长 + 缓冲，让 hiprofiler 写完缓冲区并退出
+    # 等待采集时长结束, trace 停止后立即采集瞬时数据
     print(f"  采集中... 等待 {duration}s")
-    time.sleep(duration + 5)
+    time.sleep(duration)
 
     # 等待场景复现脚本完成
     if scenario_proc is not None:
@@ -647,13 +651,6 @@ def phase_kill_and_htrace(runner: CmdRunner, process_name: str, bundle: str,
                 print(f"  [通过] {result_msg}")
             else:
                 print(f"\n  [失败] {result_msg}")
-
-    # 清理: 如果 hiprofiler_cmd 仍在运行则强杀
-    r = runner.run_on_device(["ps", "-elf"])
-    if "hiprofiler_cmd" in (r.stdout or ""):
-        print("  [警告] hiprofiler_cmd 仍在运行, 强制终止")
-        runner.run_on_device(["killall", "hiprofiler_cmd"], timeout=10)
-    runner.run_on_device(["rm", "-f", config_remote])
 
     pid = find_pid(runner, process_name)
     if not pid:
@@ -793,60 +790,58 @@ def phase_heapsnapshot(runner: CmdRunner, pid: str, ability: str, bundle: str,
 def phase_pull(runner: CmdRunner, remote_file: str, local_file: str) -> None:
     print("\n===============================================\n  Phase 5: 拉取 htrace 及其余产物\n===============================================")
     print("  拉取 htrace 文件...")
-    runner.pull_from_device(remote_file, local_file)
-    local_path = Path(local_file)
-    if not local_path.exists():
-        print("  [错误] htrace 文件拉取失败，本地文件不存在")
+
+    # split_file: true 时 hiprofiler 生成带时间戳的拆分文件, 名称格式:
+    #   {base}_{timestamp}_{N}.htrace (如 hmapp_14.8.10_120s_20261008_211932_1.htrace)
+    # 需先列出设备上匹配的拆分文件, 逐个拉取并重命名为 {base}_{N}.htrace
+    import glob
+    remote_dir = Path(remote_file).parent.as_posix()  # as_posix: Windows backslash -> forward slash for device
+    remote_base = Path(remote_file).stem  # e.g. hmapp_14.8.10_120s
+    local_dir = str(Path(local_file).parent)
+
+    r = runner.run_on_device(["ls", remote_dir])
+    split_files = []
+    single_file = remote_file
+    for line in (r.stdout or "").splitlines():
+        line = line.strip()
+        if line.startswith(remote_base) and line.endswith(".htrace"):
+            if line == f"{remote_base}.htrace":
+                single_file = f"{remote_dir}/{line}"
+            elif f"{remote_base}_" in line:
+                split_files.append(f"{remote_dir}/{line}")
+
+    if split_files:
+        split_files.sort()
+        total_mb = 0
+        for idx, rf in enumerate(split_files, 1):
+            lf = str(Path(local_file).with_name(f"{remote_base}_{idx}.htrace"))
+            print(f"  拉取拆分文件 {idx}/{len(split_files)}: {Path(rf).name}")
+            runner.pull_from_device(rf, lf)
+            lp = Path(lf)
+            if lp.exists():
+                size_mb = lp.stat().st_size / 1048576
+                total_mb += size_mb
+                if size_mb < 10:
+                    print(f"  [警告] {lp.name}: {size_mb:.2f} MB (< 10MB), 可能采集异常")
+                else:
+                    print(f"  {lp.name}: {size_mb:.2f} MB")
+            else:
+                print(f"  [错误] 拉取失败: {lp.name}")
+        print(f"  htrace 总大小: {total_mb:.2f} MB ({len(split_files)} 个拆分文件)")
     else:
-        size_mb = local_path.stat().st_size / 1048576
-        if size_mb == 0:
-            print("  [错误] htrace 文件大小为 0，采集失败或传输中断")
-        elif size_mb < 10:
-            print(f"  [警告] htrace 文件仅 {size_mb:.2f} MB (< 10MB), 可能采集异常")
+        runner.pull_from_device(single_file, local_file)
+        local_path = Path(local_file)
+        if not local_path.exists():
+            print("  [错误] htrace 文件拉取失败，本地文件不存在")
         else:
-            print(f"  {local_file}: {size_mb:.2f} MB")
+            size_mb = local_path.stat().st_size / 1048576
+            if size_mb == 0:
+                print("  [错误] htrace 文件大小为 0，采集失败或传输中断")
+            elif size_mb < 10:
+                print(f"  [警告] htrace 文件仅 {size_mb:.2f} MB (< 10MB), 可能采集异常")
+            else:
+                print(f"  {local_file}: {size_mb:.2f} MB")
     print("  [完成] 所有产物已拉取")
-
-
-def phase_reboot(runner: CmdRunner) -> bool:
-    """重启设备并等待重启完成。返回是否成功。"""
-    print("\n===============================================\n  设备重启\n===============================================")
-    print("  重启设备中...")
-    runner.run_on_device(["reboot"], timeout=10)
-
-    print("  等待设备重启...")
-    time.sleep(30)
-
-    max_wait = 120
-    for i in range(max_wait // 5):
-        time.sleep(5)
-        try:
-            r = subprocess.run(
-                [runner.hdc, "list", "targets"],
-                capture_output=True, text=True, timeout=10, env=hdc_env())
-            if r.stdout and r.stdout.strip():
-                print(f"  设备已上线: {r.stdout.strip()}")
-                break
-        except Exception:
-            pass
-    else:
-        print("  [错误] 设备重启后未上线")
-        return False
-
-    print("  等待系统启动完成 (30s)...")
-    time.sleep(30)
-
-    r = runner.run_on_device(["getprop", "sys.boot_completed"])
-    if "1" not in (r.stdout or ""):
-        print("  [警告] sys.boot_completed 未就绪, 额外等待 30s...")
-        time.sleep(30)
-        r = runner.run_on_device(["getprop", "sys.boot_completed"])
-        if "1" not in (r.stdout or ""):
-            print("  [错误] 系统启动未完成")
-            return False
-
-    print("  [完成] 设备重启完成")
-    return True
 
 
 def _save_collection_meta(output_dir: Path, args, duration: int) -> None:
@@ -882,15 +877,13 @@ def main() -> int:
     ap.add_argument("--process", help="覆盖 PROCESS_NAME (默认同 bundle)")
     ap.add_argument("--label", help="覆盖 APP_LABEL (默认 <app>_<tag>)")
     ap.add_argument("--output-base", help="输出基目录 (默认 ./output, 相对当前运行目录)")
-    ap.add_argument("--no-pull", action="store_true", help="不拉取设备端产物")
     ap.add_argument("--yes", action="store_true",
                     help="跳过交互确认 (AI 非交互调用须传, 前提: 调用方已与用户确认)")
     ap.add_argument("--hap", default="", help="HAP 安装包路径 (用于安装 + 版本校验)")
-    ap.add_argument("--scenario", default="", help="场景复现名称 (如 kuaishou), 采集期间自动执行替代手工操作")
+    ap.add_argument("--scenario", default="", help="场景复现名称 (如 Myapp), 采集期间自动执行替代手工操作")
     ap.add_argument("--scenario-dir", default="", help="Hypium 工程根目录路径 (含 main.py), 配合 --scenario 使用")
-    ap.add_argument("--login-scenario", default="", help="登录预制用例名 (如 KuaishouPrerequisiteSetup), 安装后自动执行替代人工登录")
+    ap.add_argument("--login-scenario", default="", help="登录预制用例名 (如 MyappPrerequisiteSetup), 安装后自动执行替代人工登录")
     ap.add_argument("--login-scenario-dir", default="", help="登录预制 Hypium 工程根目录 (含 main.py), 配合 --login-scenario 使用")
-    ap.add_argument("--no-reboot", action="store_true", help="跳过设备重启 (设备刚重启过或调试时使用)")
     args = ap.parse_args()
 
     # bundle 来源优先级: HAP 内 bundleName > --app 参数
@@ -973,14 +966,9 @@ def main() -> int:
     phase_install_check(runner, bundle, args.yes, hap_path=args.hap,
                         login_scenario=args.login_scenario, login_scenario_dir=args.login_scenario_dir)
 
-    if not args.no_reboot:
-        if not phase_reboot(runner):
-            print("[错误] 设备重启失败, 请检查设备连接后重试", file=sys.stderr)
-            return 1
-
     print("\n  即将开始应用内存数据采集，步骤:")
     print("  1. 杀死应用  2. 重启应用  3. 启动 htrace (nativehook, startup_mode=true 冷启动)")
-    print("  4. 采集 showmap/smaps/heapsnapshot  5. 拉取 htrace 及其余产物\n  请确保应用已登录并处于正常使用状态\n")
+    print("  4. 采集 showmap/smaps/heapsnapshot/hilog/窗口dump  5. 拉取 htrace 及其余产物\n  请确保应用已登录并处于正常使用状态\n")
     prompt_confirm("  准备好了？按 Enter 开始采集... ", args.yes)
 
     max_attempts = 2  # 初始采集 + 1 次自动重试
@@ -1003,14 +991,45 @@ def main() -> int:
             pid = find_pid(runner, process)
         if pid:
             phase_instant_data(runner, pid, process, output_dir)
-            phase_heapsnapshot(runner, pid, ability, bundle, process, output_dir, args.yes)
         else:
             print("\n  [警告] 重新拉起后仍无 PID, 跳过 Phase 3/4 (瞬时数据 + heapsnapshot)")
 
-        if args.no_pull:
-            print(f"\n  [--no-pull] 跳过拉取, htrace 保留在设备: {remote_file}")
+        # Phase 3 完成后, 先等待 hiprofiler_cmd 刷完缓冲并退出, 释放 nativehook 钩子.
+        # 必须在 Phase 4 (heapsnapshot) 之前完成: hidumper --mem-jsheap 在 nativehook
+        # 钩子仍挂载时会无法落盘 (180s trace 产生 2.7GB 缓冲, 刷缓冲可达 600s+).
+        # 瞬时数据(showmap/smaps)已在 Phase 3 捕获 post-scenario 内存状态, 此处仅等 profiler 退出.
+        print("\n  等待 hiprofiler_cmd 刷缓冲完成 (释放 nativehook 钩子, 为 heapsnapshot 让路)...")
+        max_flush_wait = 600
+        flush_waited = 0
+        while flush_waited < max_flush_wait:
+            time.sleep(10)
+            flush_waited += 10
+            r = runner.run_on_device(["ps", "-elf"])
+            if "hiprofiler_cmd" not in (r.stdout or ""):
+                print(f"  hiprofiler_cmd 已自然退出 (等待 {flush_waited}s)")
+                break
+            print(f"  hiprofiler_cmd 仍在刷缓冲 ({flush_waited}s)...")
         else:
-            phase_pull(runner, remote_file, local_file)
+            print(f"  [警告] hiprofiler_cmd 刷缓冲超时 (>{max_flush_wait}s)")
+
+        # 无论自然退出还是超时, 都要强杀全部 profiler 进程, 确保 nativehook 钩子释放.
+        # nativehook 钩子由 native_daemon 注入目标进程, 仅杀 hiprofiler_cmd 不释放钩子:
+        #   - 自然退出时 -k 会杀 daemons, 但可能不干净/有延迟
+        #   - 超时强杀 hiprofiler_cmd 不走 -k 路径, daemons 残留, 钩子持续阻塞 hidumper --mem-jsheap
+        # 统一 killall -9 全部 profiler 进程, 否则 Phase 4 heapsnapshot 必然失败.
+        runner.run_on_device(
+            ["killall", "-9", "hiprofiler_cmd", "hiprofilerd",
+             "hiprofiler_plugins", "native_daemon"],
+            timeout=10,
+        )
+        time.sleep(3)
+        runner.run_on_device(["rm", "-f", f"{DEVICE_TMP}/htrace_config.txt"])
+
+        # Phase 4: 所有 profiler 进程已清理, nativehook 钩子已释放, 现在采集 heapsnapshot
+        if pid:
+            phase_heapsnapshot(runner, pid, ability, bundle, process, output_dir, args.yes)
+
+        phase_pull(runner, remote_file, local_file)
 
         # 场景执行失败提示
         if args.scenario and not scenario_passed:

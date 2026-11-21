@@ -37,8 +37,13 @@ ls -la */
 
 | 技能 | 说明 |
 | --- | --- |
+| [hmos-arkui-performance-analysis](02-development/arkui/hmos-arkui-performance-analysis/SKILL.md) | 只读分析 ArkUI 组件刷新与复用、滑动、启动、动画和转场性能，提供代码证据、修改建议及验证方法 |
+| [arkui-memory-analysis](02-development/arkui/arkui-memory-analysis/SKILL.md) | ArkUI 内存热点静态分析：检测 16 类内存反模式（不可见页面/Tabs缓存/非懒加载/布局冗余等），支持源码+dump双输入 |
+| [hmos-arkui-v1-v2-migration-and-mixusage](02-development/arkui/hmos-arkui-v1-v2-migration-and-mixusage/SKILL.md) | ArkUI 状态管理 V1/V2 迁移和混用，覆盖整仓/组件迁移、跨版本数据流、Storage、渲染复用、依赖与构建验证 |
+| [hmos-arkui-dark-light-adaptation](02-development/arkui/hmos-arkui-dark-light-adaptation/SKILL.md) | 深浅色适配、颜色资源精简、WithTheme 局部主题及高性能切换，包含 V1/V2 兼容性检查 |
 | [hmos-arkui-develop-skill](02-development/arkui/hmos-arkui-develop-skill/SKILL.md) | ArkUI 代码开发助手，调用知识检索获取 API 证据后完成编码和验证 |
 | [hmos-arkui-knowledge-retriever](02-development/arkui/hmos-arkui-knowledge-retriever/SKILL.md) | ArkUI 知识检索层，提供基于本地知识库的精准检索，不涉及代码生成 |
+| [hmos-arkui-kit-window-floatwindow](02-development/arkui/hmos-arkui-kit-window-floatwindow/SKILL.md) | 悬浮类需求开发：画中画（PiPWindow）、闪控窗（floatView）、闪控球（floatingBall），覆盖分流、接口、查错与写程序 |
 | [hmos-arkui-longtake-transition](02-development/arkui/hmos-arkui-longtake-transition/SKILL.md) | ArkUI 一镜到底转场效果开发 |
 | [hmos-arkui-mvvm-pattern](02-development/arkui/hmos-arkui-mvvm-pattern/SKILL.md) | HarmonyOS ArkUI 的 MVVM 架构技能，指导项目分层设计与数据流规范 |
 | [hmos-arkui-scenario-development](02-development/arkui/hmos-arkui-scenario-development/SKILL.md) | ArkUI 场景化开发 |
@@ -50,26 +55,37 @@ ls -la */
 | [hmos-ascf-assistant](02-development/atomic-service/hmos-ascf-assistant/SKILL.md) | 为ASCF元服务开发提供指导和建议 |
 | [hmos-ascf-convert-taro](02-development/atomic-service/hmos-ascf-convert-taro/SKILL.md) | Taro 小程序转 ASCF 元服务 |
 | [hmos-ascf-convert-uniapp](02-development/atomic-service/hmos-ascf-convert-uniapp/SKILL.md) | uni-app 转 ASCF 元服务 |
+| [arkuix-interface-scan](02-development/arkui-x/arkuix-interface-scan/SKILL.md) | 扫描 OpenHarmony 工程接口引用，判定 ArkUI-X 适配性并产出迁移建议报告 |
+| [arkuix-migration-skeleton](02-development/arkui-x/arkuix-migration-skeleton/SKILL.md) | 为 OpenHarmony 工程生成 ArkUI-X 跨平台骨架 |
+| [arkuix-bridge-codegen](02-development/arkui-x/arkuix-bridge-codegen/SKILL.md) | 为需桥接的接口生成 ArkUI-X Bridge 五件套（契约/转发/双平台 BridgePlugin），围栏保护增量再生成 |
+| [arkuix-migration-orchestrator](02-development/arkui-x/arkuix-migration-orchestrator/SKILL.md) | 单命令编排 扫描→骨架→桥接→报告 全链，断点续跑/决策裁决/源码改写一体化 |
 
 ### HarmonyOS SDK
 
-| 技能 | 说明 |
-| --- | --- |
-| [hmos-one-sdk-skill](02-development/sdk/hmos-one-sdk-skill/SKILL.md) | 鸿蒙SDK高频场景 SKILL集合 |
+| 技能 | 说明                                                                  |
+| --- |---------------------------------------------------------------------|
+| [hmos-one-sdk-skill](02-development/sdk/hmos-one-sdk-skill/SKILL.md) | 鸿蒙SDK高频场景 SKILL集合                                                   |
 | [hmos-account-kit-quicklogin-client](02-development/account-kit/hmos-account-kit-quicklogin-client/SKILL.md) | 基于 HarmonyOS Account Kit 提供华为账号一键登录客户端接入指引，实现获取匿名手机号接口与华为账号一键登录组件集成 |
-| [hmos-ads-kit-access](02-development/ads-kit/hmos-ads-kit-access/SKILL.md) | HarmonyOS Ads Kit (广告服务) 开发指南 |
-| [hmos-live-view-kit-build-location](02-development/live-view-kit/hmos-live-view-kit-build-location/SKILL.md) | HarmonyOS实况窗（LiveView）代码生成助手 |
-| [hmos-map-kit-map-creation](02-development/map-kit/hmos-map-kit-map-creation/SKILL.md) | HarmonyOS Map Kit地图创建开发指南，支持地图组件创建、覆盖物管理、相机控制、图层配置等能力 |
-| [hmos-map-kit-poi-search](02-development/map-kit/hmos-map-kit-poi-search/SKILL.md) | Map Kit位置搜索与POI检索开发指南，适用于直接调用本地SDK接口获取地图元素的场景 |
-| [hmos-map-kit-route-planning](02-development/map-kit/hmos-map-kit-route-planning/SKILL.md) | Map Kit路径规划开发指南 |
-| [hmos-payment-kit-huawei-payment-integration](02-development/payment-kit/hmos-payment-kit-huawei-payment-integration/SKILL.md) | 华为支付 / 鸿蒙支付服务接入指引 |
-| [hmos-push-kit](02-development/push-kit/hmos-push-kit/SKILL.md) | 华为Push Kit推送服务集成助手（Master Skill/大路由） |
-| [hmos-push-kit-background](02-development/push-kit/hmos-push-kit/hmos-push-kit-background/SKILL.md) | 推送后台消息助手 |
-| [hmos-push-kit-notification](02-development/push-kit/hmos-push-kit/hmos-push-kit-notification/SKILL.md) | 发送通知消息助手 |
-| [hmos-push-kit-token](02-development/push-kit/hmos-push-kit/hmos-push-kit-token/SKILL.md) | Push Token 获取助手 |
-| [hmos-push-kit-voip](02-development/push-kit/hmos-push-kit/hmos-push-kit-voip/SKILL.md) | 推送应用内通话消息助手（VOIP） |
-| [hmos-scan-kit-defaultscan](02-development/scan-kit/hmos-scan-kit-defaultscan/SKILL.md) | 接入华为 Scan Kit 默认界面扫码能力 |
-| [hmos-scan-kit-customscan](02-development/scan-kit/hmos-scan-kit-customscan/SKILL.md) | 帮助开发者快速接入华为 Scan Kit 自定义界面扫码能力 |
+|[hmos-account-kit-login-api-client](02-development/account-kit/hmos-account-kit-login-api-client/SKILL.md)| 基于 HarmonyOS Account Kit 提供华为自定义按钮登录客户端接入指引                         |
+|[hmos-account-kit-login-button-client](02-development/account-kit/hmos-account-kit-login-button-client/SKILL.md)| 华为 Account Kit "华为账号登录"功能接入技能                                       |
+| [hmos-ads-kit-access](02-development/ads-kit/hmos-ads-kit-access/SKILL.md) | HarmonyOS Ads Kit (广告服务) 开发指南                                       |
+| [hmos-live-view-kit-build-location](02-development/live-view-kit/hmos-live-view-kit-build-location/SKILL.md) | HarmonyOS实况窗（LiveView）代码生成助手                                        |
+| [hmos-map-kit-map-creation](02-development/map-kit/hmos-map-kit-map-creation/SKILL.md) | HarmonyOS Map Kit地图创建开发指南，支持地图组件创建、覆盖物管理、相机控制、图层配置等能力               |
+| [hmos-map-kit-poi-search](02-development/map-kit/hmos-map-kit-poi-search/SKILL.md) | Map Kit位置搜索与POI检索开发指南，适用于直接调用本地SDK接口获取地图元素的场景                       |
+| [hmos-map-kit-route-planning](02-development/map-kit/hmos-map-kit-route-planning/SKILL.md) | Map Kit路径规划开发指南                                                     |
+| [hmos-payment-kit-huawei-payment-integration](02-development/payment-kit/hmos-payment-kit-huawei-payment-integration/SKILL.md) | 华为支付 / 鸿蒙支付服务接入指引                                                   |
+| [hmos-push-kit](02-development/push-kit/hmos-push-kit/SKILL.md) | 华为Push Kit推送服务集成助手（Master Skill/大路由）                                |
+| [hmos-push-kit-background](02-development/push-kit/hmos-push-kit/hmos-push-kit-background/SKILL.md) | 推送后台消息助手                                                            |
+| [hmos-push-kit-notification](02-development/push-kit/hmos-push-kit/hmos-push-kit-notification/SKILL.md) | 发送通知消息助手                                                            |
+| [hmos-push-kit-token](02-development/push-kit/hmos-push-kit/hmos-push-kit-token/SKILL.md) | Push Token 获取助手                                                     |
+| [hmos-push-kit-voip](02-development/push-kit/hmos-push-kit/hmos-push-kit-voip/SKILL.md) | 推送应用内通话消息助手（VOIP）                                                   |
+| [hmos-scan-kit-defaultscan](02-development/scan-kit/hmos-scan-kit-defaultscan/SKILL.md) | 接入华为 Scan Kit 默认界面扫码能力                                              |
+| [hmos-scan-kit-customscan](02-development/scan-kit/hmos-scan-kit-customscan/SKILL.md) | 帮助开发者快速接入华为 Scan Kit 自定义界面扫码能力                                      |
+| [hmos-window-smart-orientation](02-development/window/hmos-window-smart-orientation/SKILL.md) | 窗口旋转策略接入与智感旋转适配，覆盖策略选型、两种设置方式与存量固定策略改造 |
+| [hmos-window-immersive](02-development/window/hmos-window-immersive/SKILL.md) | 窗口沉浸式效果接入，覆盖三种沉浸式方案选型、安全区域避让、系统栏显隐、挖孔避让与自由窗口标题栏沉浸 |
+| [hmos-window-hover-state](02-development/window/hmos-window-hover-state/SKILL.md) | 折叠屏窗口悬停态适配，覆盖悬停监听接入、折痕避让几何、固定操作坞布局、旋转优先级与降级方案 |
+| [hmos-share-kit-gestures-share](02-development/share-kit/hmos-share-kit-gestures-share/SKILL.md) | HarmonyOS 工程接入隔空传送（gesturesShare）的助手 |
+| [hmos-share-kit-knock-share](02-development/share-kit/hmos-share-kit-knock-share/SKILL.md) | Share Kit 碰一碰接入助手 |
 
 ### 测试
 
@@ -87,17 +103,20 @@ ls -la */
 | [deveco-native-flow](04-tools/deveco/deveco-native-flow/SKILL.md) | 三端一致开发流水线（HarmonyOS/Android/iOS），支持 analyse → plan → coding → build → verify |
 | [deveco-requirement-development](04-tools/deveco/deveco-requirement-development/SKILL.md) | 覆盖鸿蒙应用需求开发全链路（需求调研与 PRD、编码与联调、代码评审） |
 | [deveco-studio-codelinter](04-tools/deveco/deveco-studio-codelinter/SKILL.md) | 对 HarmonyOS 项目运行 DevEco Studio CodeLinter 静态代码检查，解读检查结果并提供修复建议 |
+| [deveco-studio-codescanner](04-tools/deveco/deveco-studio-codescanner/SKILL.md) | 指导使用 codescanner 命令行扫描（ArkTS 23 条 + C++ 27 条资源泄漏规则），覆盖参数与规则配置、SARIF/HTML 结果解读、错误排查与工具安装引导 |
 | [deveco-studio-emulator](04-tools/deveco/deveco-studio-emulator/SKILL.md) | HarmonyOS 模拟器管理助手，专注于模拟器的创建、启动、停止、应用安装调试、场景化设备控制 |
 | [deveco-studio-hilog](04-tools/deveco/deveco-studio-hilog/SKILL.md) | HarmonyOS 日志分析助手，专注于 hilog 日志查看、崩溃日志分析、日志导出 |
 | [deveco-studio-hvigor](04-tools/deveco/deveco-studio-hvigor/SKILL.md) | HarmonyOS 应用构建工具助手，专注于使用 Hvigor 命令行工具构建 HarmonyOS 应用 |
 | [deveco-studio-verify](04-tools/deveco/deveco-studio-verify/SKILL.md) | HarmonyOS 设备验证工具，支持多设备类型验证、应用安装、UI 自动化操作、截图验证、日志收集 |
+| [hmos-module-dependency-visualizer](04-tools/modtree/hmos-module-dependency-visualizer/SKILL.md) | 模块依赖关系采集与可视化：内嵌 modtree 工具，hdc 真机一键采集或解析本地依赖日志，生成交互式 HTML 依赖图与 Markdown 报告（含循环依赖检测、扇入/扇出排行） |
+| [hmos-lazy-import-analysis](04-tools/lazy-import/hmos-lazy-import-analysis/SKILL.md) | 鸿蒙应用 import lazy 懒加载分析：解析 redundant file 报告（hdc 拉取或本地 txt）定位高耗模块，脚本检测顶层代码 + agent 预判副作用，批量确认后产出带完整证据链的修改建议报告，可选 diff 预览确认后机械改写 `import lazy` |
 
 ### 发布
 
 | 技能 | 说明 |
 | --- | --- |
-| [hmos-connect-api-cli-skill](05-lanunch-and-distribute/hmos-connect-api-cli-skill/SKILL.md) | 用内嵌 connect-api-cli 操作 AppGallery Connect：登录登出、创建应用/元服务、上传 APP、证书/Profile、ACL、真机调试安装等 |
-| [app-metadata-audit-skill](05-lanunch-and-distribute/app-metadata-audit-skill/SKILL.md) | 上架元数据预审 |
+| [hmos-connect-api-cli-skill](05-launch-and-distribute/hmos-connect-api-cli-skill/SKILL.md) | 用内嵌 connect-api-cli 操作 AppGallery Connect：登录登出、创建应用/元服务、上传 APP、证书/Profile、ACL、真机调试安装等 |
+| [app-metadata-audit-skill](05-launch-and-distribute/app-metadata-audit-skill/SKILL.md) | 上架元数据预审 |
 
 ### HMOS核心技术
 
@@ -124,13 +143,19 @@ ls -la */
 | [hmos-jsleak-analysis](06-solutions/stability/hmos-jsleak-analysis/SKILL.md) | 分析 rawheap / heapsnapshot 聚类后的内存对象数据，识别疑似内存泄漏 |
 | [hmos-memleak-analysis](06-solutions/stability/hmos-memleak-analysis/SKILL.md) | 分析 HarmonyOS 源代码（ArkTS、JS、C/C++）以检测内存泄漏 |
 | [hmos-native-memleak-analysis](06-solutions/stability/hmos-native-memleak-analysis/SKILL.md) | 分析 HarmonyOS / OpenHarmony Native内存泄漏问题，定位泄漏根因并输出完整证据链 |
-| [hmos-runtime-fix-skill](06-solutions/stability/hmos-runtime-fix-skill/SKILL.md) | 诊断和修复 ArkTS/JS 运行时崩溃、未捕获异常、堆栈跟踪，提供最小化代码修复 |
+| [hmos-dfx-analyzer](06-solutions/stability/hmos-dfx-analyzer/SKILL.md) | DFX 故障分析：确定性分诊（AppFreeze / CppCrash / JSCrash）+ 非崩溃白屏 source-first 分析，HTML 报告落盘与批量合并分析，融合并替代原 hmos-runtime-fix-skill |
+
+### 特性集成
+| 技能 | 说明 |
+| --- | --- |
+| [hmos-app-continuity-skill](06-solutions/feature-integration/hmos-app-continuity-skill/SKILL.md) | 为现有项目快速接入应用接续能力 |
 
 ### 审查
 
 | 技能 | 说明 |
 | --- | --- |
-| [hmos-skill-reviewer](.hmos-skill-reviewer/SKILL.md) | 审查和验证 Agent Skills 是否符合 Claude Skills 规范 |
+| [hmos-skill-reviewer](.aw-skills/hmos-skill-reviewer/SKILL.md) | 审查和验证 Agent Skills 是否符合 Claude Skills 规范 |
+| [hmos-skill-test-runner](.aw-skills/hmos-skill-test-runner/SKILL.md) | 加载并执行 Skill 的测试用例，逐条比对预期输出，输出测试报告 |
 
 ## 开发指南
 
@@ -235,7 +260,7 @@ skill-name/
    ```
 
 3. **开发 Skill**：
-   - 遵循 [格式规范](.hmos-skill-reviewer/references/format-rules.md)
+   - 遵循 [格式规范](.aw-skills/hmos-skill-reviewer/references/format-rules.md)
    - 每个技能包含 `SKILL.md`（`name` 与目录名一致，`description` 用第三人称写清触发场景）
    - 补充 `references/`（详细文档）、`test-cases/`（测试用例）
 
@@ -243,7 +268,7 @@ skill-name/
 
    ```bash
    # 运行格式检查
-   .hmos-skill-reviewer/scripts/check-skill-format.sh your-skill/SKILL.md
+   .aw-skills/hmos-skill-reviewer/scripts/check-skill-format.sh your-skill/SKILL.md
    # 在 AI 助手中使用测试提示词验证功能
    ```
 
@@ -265,9 +290,86 @@ skill-name/
    - 填写 PR 模板，说明改动内容与测试情况
    - 关联相关 Issue
 
-8. **触发智能检视**：
+8. **触发智能检视门禁**：
    - 在 PR 下方评论 `start ai check` 触发智能检视流水线
+   - 流水线执行两维度检视：
+     - **维度一（规范性检查）**：由 `.aw-skills/hmos-skill-reviewer` 对 SKILL.md 进行格式规范性、内容职责、组织结构审查
+     - **维度二（测试用例执行）**：由 `.aw-skills/hmos-skill-test-runner` 加载 skill 的 `test-cases/` 测试用例并执行，验证功能正确性
+   - 两维度均通过 → 准入通过；任一不通过 → PR 被阻塞
    - 流水线通过后等待仓库管理员审查合入
+
+## 本地检视
+
+> **为什么需要本地检视？** 当前大量上库的 Skill 未在本地提前做检视，导致门禁流水线反复报错、PR 往返修改次数多。建议开发者在提交 PR 前先在本地完成以下两步检视，一次性通过门禁。
+
+### 步骤一：规范性检视（hmos-skill-reviewer）
+
+使用 Claude Code 或 opencode 加载 `.aw-skills/hmos-skill-reviewer/SKILL.md`，对你新建或修改的 Skill 执行规范性审查。
+
+**检查什么：**
+
+| 维度 | 检查项 |
+|------|--------|
+| 格式规范性 | YAML frontmatter 是否合法、name 与目录名是否一致、description 长度与人称 |
+| 内容职责 | SKILL.md 是否聚焦"如何做"而非知识科普、详细内容是否已移至 references/ |
+| 组织结构 | 文件是否 < 500 行、引用的 references 文件是否存在、是否避免深层嵌套 |
+| 可操作性 | 是否有工作流程、检查清单、决策树 |
+
+**快速执行：**
+
+```bash
+# 方式 1：脚本快速检查（仅格式）
+.aw-skills/hmos-skill-reviewer/scripts/check-skill-format.sh your-skill/SKILL.md
+
+# 方式 2：Python 深度验证（YAML frontmatter）
+python .aw-skills/hmos-skill-reviewer/scripts/validate-frontmatter.py your-skill/SKILL.md
+
+# 方式 3：AI 助手全量审查（格式 + 内容 + 结构 + 可操作性）
+# 在 Claude Code / opencode 中加载 .aw-skills/hmos-skill-reviewer/SKILL.md
+# 然后输入：审查 your-skill/SKILL.md
+```
+
+**通过标准：** 无 Critical 问题、Warning ≤ 3 个。
+
+### 步骤二：测试用例执行（hmos-skill-test-runner）
+
+使用 AI 助手加载 `.aw-skills/hmos-skill-test-runner/SKILL.md`，对你 Skill 的 `test-cases/` 目录执行测试用例。
+
+**检查什么：**
+
+| 维度 | 检查项 |
+|------|--------|
+| 用例发现 | `test-cases/` 目录是否存在、是否含至少一种格式的用例文件 |
+| 用例解析 | 提示词是否非空、预期输出是否至少 1 条 |
+| 用例执行 | 逐条发送提示词、对比实际输出与预期输出（PASS / FAIL / PARTIAL） |
+| 报告输出 | 汇总统计 + 问题明细表（序号 / 严重度 / Skill / 位置 / 标题 / 说明 / 建议 / 依据 / 反馈） |
+
+**快速执行：**
+
+```bash
+# 在 Claude Code / opencode 中操作：
+# 1. 加载 .aw-skills/hmos-skill-test-runner/SKILL.md
+# 2. 输入：对 your-skill 执行测试用例
+# 3. 等待逐条执行完成，查看测试报告
+```
+
+**支持的用例格式：** `test-prompts.md`、`test-promts.md`、`test-case-N.md`、`test-cases.md`、`test-scene-cases.md`、通用 Markdown 兜底、JSON 三层（smoke/scene-functional/real-world）、JSON 根级自定义。
+
+**通过标准：** 所有用例 PASS（允许 SKIP 但不允许 FAIL）。
+
+### 本地检视 Checklist
+
+提交 PR 前逐项确认：
+
+- [ ] **SKILL.md 格式检查通过**（脚本 + AI 审查，无 Critical）
+- [ ] **SKILL.md 行数 < 500**（超长应拆分至 references/）
+- [ ] **name 与目录名一致**（全小写、连字符分隔）
+- [ ] **description 包含 what + when**（第三人称、≥ 50 字符）
+- [ ] **test-cases/ 目录存在**（含至少一种格式的用例文件）
+- [ ] **测试用例覆盖三大类别**（基础功能 / 边界条件 / 错误处理）
+- [ ] **每个用例有非空提示词**（有 prompt 可执行）
+- [ ] **每个用例至少 1 条预期输出**（有 expected_output 可比对）
+- [ ] **测试用例全部 PASS**（在 AI 助手中执行通过）
 
 ## License
 
