@@ -7,3 +7,12 @@
 [submodule "references/android-skills"]
 	path = references/android-skills
 	url = https://github.com/android/skills.git
+[submodule "references/openai-plugins"]
+	path = references/openai-plugins
+	url = https://github.com/openai/plugins.git
+[submodule "references/swift-concurrency-skill"]
+	path = references/swift-concurrency-skill
+	url = https://github.com/AvdLee/Swift-Concurrency-Agent-Skill.git
+[submodule "references/swiftui-agent-skill"]
+	path = references/swiftui-agent-skill
+	url = https://github.com/twostraws/SwiftUI-Agent-Skill.git
