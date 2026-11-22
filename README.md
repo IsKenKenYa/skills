@@ -8,6 +8,7 @@
 - [android/skills](https://github.com/android/skills)（Apache 2.0）— Android 官方开发 skill，description 已译为中文
 - [openai/plugins](https://github.com/openai/plugins) — build-ios-apps / build-macos-apps（Apple 平台，description 已译为中文）
 - [twostraws/SwiftUI-Agent-Skill](https://github.com/twostraws/SwiftUI-Agent-Skill)、[AvdLee/Swift-Concurrency-Agent-Skill](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill) — Apple 生态社区精品，description 已译为中文
+- [dart-lang/skills](https://github.com/dart-lang/skills)（BSD）— Dart 项目官方 15 个 skill，description 已译为中文
 - **Apple 官方 11 个**（Xcode 27.2 `xcrun agent skills export` 导出，来源 WWDC26 session 269）— description 已译为中文
 
 另有 2 个自建的安装指导 skill（`skills/meta/`），介绍各上游及官方 CLI 安装方式。`engineering/`、`in-progress/` 下另有若干自建/本土化 skill（code-review、research、wizard、loop-me 等）。
@@ -31,7 +32,7 @@ npx skills@latest add IsKenKenYa/skills
 
 调用方式说明：标记为「用户调用」的 skill 只能用 `/skill名` 手动触发；「模型/用户调用」的 skill 还能被模型根据上下文语义自动触发。
 
-## Skill 清单（共 203 个）
+## Skill 清单（共 218 个）
 
 ## 一、mattpocock 通用 Skills（39 个，description 已中文化）
 
@@ -459,7 +460,30 @@ npx skills@latest add IsKenKenYa/skills
 |-------|---------|
 | [`/swift-concurrency`](./skills/apple/swift/swift-concurrency/SKILL.md) | 诊断 Swift Concurrency 问题、把基于回调的代码重构为 async/await，并在处理 Task、Actor、@MainActor、Sendable、数据竞争、线程安全或并发架构时指导 Swift 6 迁移。 |
 
-## 五、安装指导 Skills（3 个）
+## 五、Dart 官方 Skills（15 个，description 已中文化）
+
+### Dart 官方（dart-lang/skills，15 个）
+
+
+| skill | 中文介绍 |
+|-------|---------|
+| [`/dart-add-unit-test`](./skills/dart/dart-add-unit-test/SKILL.md) | 使用 `package:test` 为函数、方法和类编写并组织单元测试。当创建新逻辑或修复 bug 时使用，确保代码正确且无回归。 |
+| [`/dart-build-cli-app`](./skills/dart/dart-build-cli-app/SKILL.md) | Dart 命令行界面（CLI）应用的架构模式、入口点结构、退出码、stream 路由与子进程生成。当构建 CLI 工具、控制台实用程序、脚本、用 `package:args`（ArgParser 或 CommandRunner）做参数解析、处理退出码、在 pubspec.yaml 中配置 executables、生成 Dart 子进程，或编译原生 CLI 二进制时使用。不要用于 Flutter UI widget、Web 应用或独立 HTTP 后端服务。 |
+| [`/dart-collect-coverage`](./skills/dart/dart-collect-coverage/SKILL.md) | 使用 coverage 包收集测试覆盖率并生成 LCOV 报告。 |
+| [`/dart-fix-runtime-errors`](./skills/dart/dart-fix-runtime-errors/SKILL.md) | 使用 get_runtime_errors 和 lsp 获取活动堆栈跟踪，定位失败行，应用修复，并通过 hot_reload 验证已解决。 |
+| [`/dart-generate-test-mocks`](./skills/dart/dart-generate-test-mocks/SKILL.md) | 使用 `package:mockito` 和 `build_runner` 定义并生成外部依赖的 mock 对象。当对依赖复杂外部服务（如 API 或数据库）的类做单元测试时使用。 |
+| [`/dart-migrate-to-checks-package`](./skills/dart/dart-migrate-to-checks-package/SKILL.md) | 把 `package:matcher` 中的 `expect` 及类似函数的用法替换为 `package:checks` 的等价物。 |
+| [`/dart-resolve-package-conflicts`](./skills/dart/dart-resolve-package-conflicts/SKILL.md) | 修复包版本冲突的工作流。当 `pub get` 因包版本不兼容而失败时使用。 |
+| [`/dart-run-static-analysis`](./skills/dart/dart-run-static-analysis/SKILL.md) | 执行 `dart analyze` 识别警告和错误，并使用 `dart fix --apply` 自动解决机械性 lint 问题。在开发过程中使用以保证代码质量，并在提交改动前使用。 |
+| [`/dart-setup-ffi-assets`](./skills/dart/dart-setup-ffi-assets/SKILL.md) | 指导 agent 使用 Dart 的 Native Assets hook 体系（通过 hook/build.dart 和 hook/link.dart，配合 package:hooks 与 package:native_toolchain_c）把 C/C++ 源码编译打包为动态或静态库（Code Assets）。当用户要求"setup native assets""compile C/C++ source code""bundle dynamic libraries""build native C code""link native assets""implement build.dart or link.dart hooks"或"inegrate C/C++ interop in Dart/Flutter"时使用。帮助 agent 免去手动工具链编排，并配置带安全哈希校验的二进制下载，或用 package:record_use 映射实现高级 linker tree-shaking。 |
+| [`/dart-use-doc-examples`](./skills/dart/dart-use-doc-examples/SKILL.md) | 如何用 {@example} 指令把外部代码示例注入 Dartdoc，以及如何用 |
+| [`/dart-use-ffigen`](./skills/dart/dart-use-ffigen/SKILL.md) | 指导 agent 使用 `package:ffigen` 自动生成 FFI 绑定，而非手写。当任务涉及编写新的 FFI 绑定、扩展 C/Objective-C/Swift 集成，或替换手写的 `dart:ffi` 配置时使用。 |
+| [`/dart-use-path-package`](./skills/dart/dart-use-path-package/SKILL.md) | 使用 `package:path` 和 `package:file` 进行跨平台文件与目录路径操作、分段拆分、扩展名提取和 context 转换。当编写、检查、拼接、拆分或重构文件路径、目录名或扩展名，或替换裸字符串路径操作（`.split('/')`、`'$dir/$file'`、`.endsWith('.ext')`、`.replaceAll('\', '/')`）时使用。不要用于 HTTP 网络 URI 路由、数据库查询字符串或非路径字符串处理。 |
+| [`/dart-use-pattern-matching`](./skills/dart/dart-use-pattern-matching/SKILL.md) | 以地道方式应用 Dart 3 模式匹配、switch 表达式和解构，用于校验数据 schema、处理代数数据类型、分解控制流。当重构复杂 if-else 链、解析多态 JSON 或 API 响应、解构 List、URI/路径段、String.split() token、Record 或 Map，或对 sealed class 强制穷尽性时使用。不要用于简单布尔条件、单变量类型提升（用 `is`）或基础集合过滤。 |
+| [`/dart-use-primary-constructors`](./skills/dart/dart-use-primary-constructors/SKILL.md) | 帮助用户编写语法和语义正确的主构造函数（primary constructors），并迁移/使用新的构造函数语法、空体分号语法、体内初始化列表语法和缩写简洁构造函数语法。 |
+| [`/dart-write-documentation`](./skills/dart/dart-write-documentation/SKILL.md) | 编写 Dart /// API 文档和 doc comment 的规则与格式指南。当为 Dart 代码写文档、为任何 Dart 声明（library、class、method、variable 等）编写 doc comment，或被要求遵循 Effective Dart 文档指南时使用。 |
+
+## 六、安装指导 Skills（3 个）
 
 | skill | 中文介绍 |
 |-------|---------|

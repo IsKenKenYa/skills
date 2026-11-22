@@ -103,8 +103,12 @@ for cat in ['official','ios','macos','swiftui','swift']:
     apple_sec.append(f"### {cat} — {apple_zh.get(cat,cat)}（{len(rows)}）\n")
     apple_sec.append(tbl(rows))
 
+# Dart（上游平铺，dart- 前缀）
+dart_all=walk('skills/dart')
+dart_sec=[f"### Dart 官方（dart-lang/skills，{len(dart_all)} 个）\n", tbl(dart_all)]
+
 meta_all=walk('skills/meta')
-total=len(mp_all)+len(hmos_all)+len(andr_all)+len(apple_all)+len(meta_all)
+total=len(mp_all)+len(hmos_all)+len(andr_all)+len(apple_all)+len(dart_all)+len(meta_all)
 
 readme=f"""# KenKenSkills
 
@@ -116,6 +120,7 @@ readme=f"""# KenKenSkills
 - [android/skills](https://github.com/android/skills)（Apache 2.0）— Android 官方开发 skill，description 已译为中文
 - [openai/plugins](https://github.com/openai/plugins) — build-ios-apps / build-macos-apps（Apple 平台，description 已译为中文）
 - [twostraws/SwiftUI-Agent-Skill](https://github.com/twostraws/SwiftUI-Agent-Skill)、[AvdLee/Swift-Concurrency-Agent-Skill](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill) — Apple 生态社区精品，description 已译为中文
+- [dart-lang/skills](https://github.com/dart-lang/skills)（BSD）— Dart 项目官方 15 个 skill，description 已译为中文
 - **Apple 官方 11 个**（Xcode 27.2 `xcrun agent skills export` 导出，来源 WWDC26 session 269）— description 已译为中文
 
 另有 2 个自建的安装指导 skill（`skills/meta/`），介绍各上游及官方 CLI 安装方式。`engineering/`、`in-progress/` 下另有若干自建/本土化 skill（code-review、research、wizard、loop-me 等）。
@@ -157,7 +162,11 @@ npx skills@latest add IsKenKenYa/skills
 
 """ + "\n\n".join(apple_sec) + f"""
 
-## 五、安装指导 Skills（{len(meta_all)} 个）
+## 五、Dart 官方 Skills（{len(dart_all)} 个，description 已中文化）
+
+""" + "\n\n".join(dart_sec) + f"""
+
+## 六、安装指导 Skills（{len(meta_all)} 个）
 
 """ + tbl(meta_all) + f"""
 
