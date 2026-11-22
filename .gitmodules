@@ -16,3 +16,6 @@
 [submodule "references/swiftui-agent-skill"]
 	path = references/swiftui-agent-skill
 	url = https://github.com/twostraws/SwiftUI-Agent-Skill.git
+[submodule "references/dart-skills"]
+	path = references/dart-skills
+	url = https://github.com/dart-lang/skills.git
